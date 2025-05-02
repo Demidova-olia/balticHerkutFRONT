@@ -13,5 +13,11 @@ export interface Product {
     images: string[];
     createdAt: string;
     updatedAt: string;
+    brand?: string;
+    isFeatured?: boolean;
+    discount?: number;
+    reviewsCount?: number;
+    tags?: string[];
+    isActive?: boolean;
   }
   

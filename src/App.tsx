@@ -1,17 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Login from "./pages/authorization/Login";
+import Register from "./pages/authorization/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
-import HomePage from "./pages/HomePage";
-import LaptopsList from "./components/Laptops/LaptopsList";
-// import LaptopItem from "./components/Laptops/LaptopItem";
-import PhonesList from "./components/Phones/PhonesList";
-// import PhoneItem from "./components/Phones/PhoneItem";
+import HomePage from "./pages/homePage/HomePage";
 import ProductsPage from "./components/Products/ProductsPage";
-// import ProductDetail from "./components/Products/ProductDetail";
-import TVsList from "./components/TVs/TVsList";
-// import TVsItem from "./components/TVs/TVsItem";
 import CategoryPage from "./pages/CategoryPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import CartPage from "./components/CartPage/CartPage";
@@ -45,9 +38,6 @@ function App() {
           {/* <Route path="/products/:id" element={<ProductDetail />} /> */}
           <Route path="/products/:category" element={<CategoryPage />} />
           <Route path="product/:id" element={<ProductDetailPage />} />
-          <Route path="/laptops" element={<LaptopsList />} />
-          <Route path="/phones" element={<PhonesList />} />
-          <Route path="/tvs" element={<TVsList />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
