@@ -1,24 +1,22 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useCart } from "../../hooks/useCart";
 import axiosInstance from "../../utils/axios";
-import "./HomePage.scss";
-
 import { Product } from "../../types/product";
-import { Category } from "../../types/category";
-
+import { CategoryWithSubcategories } from "../../types/category";
 import NavBar from "../../components/NavBar/NavBar";
 import Loading from "../../components/Loading/Loading";
-import ProductCard from "../../components/ProductCard/ProductCard";
+import CategoryTree from "../../components/CategoryTree/CategoryTree";
+import SearchBar from "../../components/SearchBar/SearchBar";
+import ProductGrid from "../../components/ProductGrid/ProductGrid";
+// import "./HomePage.scss";
 
 const HomePage: React.FC = () => {
-  const { addToCart } = useCart();
   const [searchParams, setSearchParams] = useSearchParams();
-
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState(searchParams.get("subcategory") || "");
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,76 +24,46 @@ const HomePage: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const categoriesResponse = await axiosInstance.get("/categories");
-        setCategories(categoriesResponse.data);
-
-        const searchQuery = searchParams.get("search") || "";
-        const response = await axiosInstance.get(`/products?search=${searchQuery}`);
-        const productList = response.data.products || [];
-        setProducts(productList);
+        const [categoriesRes, productsRes] = await Promise.all([
+          axiosInstance.get("/categories/with-subcategories"),
+          axiosInstance.get(`/products?search=${searchTerm}`)
+        ]);
+        setCategories(categoriesRes.data);
+        setProducts(productsRes.data.products || []);
         setError(null);
-      } catch (error) {
-        setError("Failed to fetch products.");
-        console.error(error);
+      } catch (err) {
+        setError("Failed to fetch data.");
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [searchParams]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSearchTerm = e.target.value;
-    setSearchTerm(newSearchTerm);
-    setSearchParams({ search: newSearchTerm });
+    const value = e.target.value;
+    setSearchTerm(value);
+    setSearchParams({ search: value, subcategory: selectedSubcategory });
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCategory(e.target.value);
+  const handleSubcategorySelect = (subcategoryName: string) => {
+    setSelectedSubcategory(subcategoryName);
+    setSearchParams({ search: searchTerm, subcategory: subcategoryName });
   };
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch =
-      searchTerm === "" ||
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase());
-  
-    const matchesCategory =
-      !selectedCategory ||
-      (typeof product.category === "object" && product.category?.name === selectedCategory);
-  
-    return matchesSearch && matchesCategory;
+    const matchesSearch = !searchTerm || product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSubcategory =
+      !selectedSubcategory ||
+      (typeof product.subcategory === "object" && product.subcategory?.name === selectedSubcategory);
+    return matchesSearch && matchesSubcategory;
   });
 
   return (
     <>
-      <div className="navigation-bar">
-        <NavBar />
-      </div>
-
-      <div className="search-filters">
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="search-input"
-        />
-
-        <select
-          value={selectedCategory}
-          onChange={handleCategoryChange}
-          className="category-select"
-        >
-          <option value="">All Categories</option>
-          {categories.map((category) => (
-            <option key={category._id} value={category.name}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      <NavBar />
+      <SearchBar value={searchTerm} onChange={handleSearchChange} />
 
       <div className="welcome-message">
         <h2>Welcome to our store!</h2>
@@ -103,35 +71,26 @@ const HomePage: React.FC = () => {
         <p>Select a category to start exploring!</p>
       </div>
 
+      <CategoryTree
+        categories={categories}
+        openCategory={openCategory}
+        selectedSubcategory={selectedSubcategory}
+        onCategoryToggle={setOpenCategory}
+        onSubcategorySelect={handleSubcategorySelect}
+      />
+
       <h1>Our Top Products</h1>
 
       {loading ? (
         <Loading text="Loading products..." />
       ) : error ? (
         <p>{error}</p>
-      ) : filteredProducts.length === 0 ? (
-        <p>No products found.</p>
       ) : (
-        <div className="product-grid">
-          {filteredProducts.map((product) => (
-            <ProductCard
-              key={product._id}
-              product={product}
-              onAddToCart={() =>
-                addToCart({
-                  id: product._id,
-                  name: product.name,
-                  price: product.price,
-                  quantity: 1,
-                  image: product.images?.[0],
-                })
-              }
-            />
-          ))}
-        </div>
+        <ProductGrid products={filteredProducts} />
       )}
     </>
   );
 };
 
 export default HomePage;
+

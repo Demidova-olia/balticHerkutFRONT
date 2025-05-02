@@ -1,6 +1,6 @@
 import { useAuth } from "../../hooks/useAuth";
 import { NavLink, useNavigate } from "react-router-dom";
-import "./NavBar.scss";
+// import "./NavBar.scss";
 
 const NavBar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();

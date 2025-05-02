@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
 import axiosInstance from '../../utils/axios';
 import { toast } from 'react-toastify';
-import './Register.css';
+// import './Register.css';
 
 function Register() {
   const navigate = useNavigate();

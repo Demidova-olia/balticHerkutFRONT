@@ -1,3 +1,5 @@
+import { Subcategory } from "./subcategory";
+
 export interface Category {
     _id: string;
     name: string;
@@ -5,4 +7,6 @@ export interface Category {
     image?: string;
     createdAt: string;
   }
-  
+  export interface CategoryWithSubcategories extends Category {
+    subcategories: Subcategory[];
+  }
