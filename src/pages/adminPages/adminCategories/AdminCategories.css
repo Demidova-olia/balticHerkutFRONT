@@ -1,0 +1,158 @@
+.admin-categories {
+    width: 100%;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f8f8f8;
+    font-family: 'Arial', sans-serif;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .admin-categories h2 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .admin-categories > div {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: center;
+    width: 100%;
+    align-items: center;
+  }
+  
+  .admin-categories input[type="text"] {
+    padding: 0.75rem 1.2rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    width: 80%;
+    transition: border-color 0.3s ease;
+  }
+  
+  .admin-categories input[type="text"]:focus {
+    border-color: #5555e4;
+    outline: none;
+  }
+  
+  .admin-categories button {
+    padding: 0.75rem 1.5rem;
+    background-color: #5555e4;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 80%;
+    box-sizing: border-box;
+    font-size: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .admin-categories button:hover {
+    background-color: #228B22;
+  }
+  
+  .admin-categories button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .admin-categories ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 2rem;
+    width: 100%;
+    color: black;
+  }
+  
+  .admin-categories li {
+    background-color: #fff;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: transform 0.3s ease;
+  }
+  
+  .admin-categories li:hover {
+    transform: scale(1.02);
+  }
+  
+  .admin-categories li button {
+    margin-left: 0.8rem;
+    background-color: #5555e4;
+    padding: 0.5rem 1.2rem;
+  }
+  
+  .admin-categories li button:nth-child(2) {
+    background-color: #8a308a;
+  }
+  .admin-categories li button:nth-child(2):hover {
+    background-color: #228B22;
+  }
+  
+  .admin-categories a {
+    display: inline-block;
+    margin-top: 2rem;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    text-align: center;
+  }
+  
+  .admin-categories a:hover {
+    text-decoration: underline;
+  }
+  
+  @media (max-width: 760px) {
+    .admin-categories > div {
+      flex-direction: column;
+      gap: 1.2rem;
+      width: 100%;
+      align-items: center;
+    }
+  
+    .admin-categories button, .admin-categories input[type="text"] {
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .admin-categories > div {
+      gap: 1.5rem;
+      align-items: center;
+    }
+  
+    .admin-categories button {
+      padding: 1rem 1.5rem;
+      font-size: 1rem;
+    }
+  
+    .admin-categories li {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  
+    .admin-categories li button {
+      width: 90%;
+      padding: 0.9rem 1.5rem;
+      font-size: 1rem;
+      margin-top: 10px;
+    }
+  }
+  
