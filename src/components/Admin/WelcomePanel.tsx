@@ -2,7 +2,7 @@
 
 import { Card, CardContent, Typography, Box } from "@mui/material"
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings"
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "../../hooks/useAuth"
 
 const WelcomePanel: React.FC = () => {
     const { user } = useAuth()
