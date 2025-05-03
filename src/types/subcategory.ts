@@ -7,6 +7,6 @@ export interface Subcategory {
 }
 
 export interface SubcategoryPayload {
-  name: string;
-  parent: string;
+  name?: string;
+  parent?: string;
 }

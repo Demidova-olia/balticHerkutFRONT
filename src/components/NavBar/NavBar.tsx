@@ -4,8 +4,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 
 const NavBar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
-
   const navigate = useNavigate();
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -16,9 +16,8 @@ const NavBar: React.FC = () => {
       <ul>
         <li><NavLink to="/">Home</NavLink></li>
         <li><NavLink to="/products">Products</NavLink></li>
-        
 
-        {isAuthenticated && (
+        {isAuthenticated ? (
           <>
             <li><NavLink to="/profile">Profile</NavLink></li>
             <li><NavLink to="/profile/orders">Orders</NavLink></li>
@@ -27,13 +26,14 @@ const NavBar: React.FC = () => {
             {user?.role?.toUpperCase() === "ADMIN" && (
               <li><NavLink to="/admin">Admin Panel</NavLink></li>
             )}
+
             <li>
-              <button className="logout-button" onClick={handleLogout}>Logout</button>
+              <button className="logout-button" onClick={handleLogout}>
+                Logout
+              </button>
             </li>
           </>
-        )}
-
-        {!isAuthenticated && (
+        ) : (
           <>
             <li><NavLink to="/login">Login</NavLink></li>
             <li><NavLink to="/register">Register</NavLink></li>

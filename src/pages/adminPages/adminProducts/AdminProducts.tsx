@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Product } from "../../../types/product";
-import ProductService from "../../../services/ProductService";
 import { Link, useNavigate } from "react-router-dom";
+import * as ProductService from "../../../services/ProductService";
 
 const AdminProducts: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);

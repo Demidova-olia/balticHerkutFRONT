@@ -4,6 +4,7 @@ import './AdminCategories.css'
 // import Breadcrumb from '../components/Breadcrumb'
 import { Category } from '../../../types/category'
 import { useNavigate,Link } from 'react-router-dom'
+import {AdminNavBar} from '../../../components/Admin/AdminNavBar'
 
 
 const AdminCategories: React.FC = () => {
@@ -81,6 +82,7 @@ const AdminCategories: React.FC = () => {
       {/* <Breadcrumb /> */}
       <div className="admin-categories">
         <h2>Manage Categories</h2>
+        <AdminNavBar />
         <div>
           <input
             type="text"
