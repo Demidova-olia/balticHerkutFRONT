@@ -44,3 +44,10 @@ export const deleteCategory = async (id: string): Promise<void> => {
     throw new Error("Failed to delete category");
   }
 };
+
+export const CategoryService = {
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory
+};

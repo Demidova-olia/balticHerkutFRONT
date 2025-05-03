@@ -6,7 +6,7 @@ interface ProductData {
   category: string;
   subcategory: string;
   stock: number;
-  images: FileList | null;
+  images: File[];
 }
 
 const ProductService = {

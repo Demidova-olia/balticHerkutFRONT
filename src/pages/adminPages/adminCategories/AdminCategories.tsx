@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react'
 import './AdminCategories.css'
 // import Breadcrumb from '../components/Breadcrumb'
 import { Category } from '../../../types/category'
+import { useNavigate,Link } from 'react-router-dom'
 
 
 const AdminCategories: React.FC = () => {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([])
   const [newCategory, setNewCategory] = useState('')
   const [loading, setLoading] = useState(true)
@@ -13,6 +15,7 @@ const AdminCategories: React.FC = () => {
   const [addingCategory, setAddingCategory] = useState(false)
 
   useEffect(() => {
+    
     const fetchCategories = async () => {
       try {
         const data = await getCategories()
@@ -102,6 +105,16 @@ const AdminCategories: React.FC = () => {
           </li>
         ))}
       </ul>
+    </div>
+    <div className="back-button">
+        <button onClick={() => navigate(-1)} className="button">
+            Grįžti atgal
+        </button>
+
+        <button className="button"><Link to={`/`}  style={{ color: "white" }}>
+          Grįžti į pagrindinį meniu
+        </Link>
+        </button>
     </div>
     </>
   )

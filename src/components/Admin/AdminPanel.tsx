@@ -28,6 +28,11 @@ const AdminPanel: React.FC = () => {
                         Manage Categories
                     </Link>
                 </div>
+                <div className="admin-button-wrapper">
+                    <Link to="/admin/subcategories" className="admin-button">
+                        Manage Subcategories
+                    </Link>
+                </div>
             </div>
 
             <button className="button" onClick={() => navigate("/")}>
