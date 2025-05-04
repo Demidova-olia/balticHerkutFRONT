@@ -10,10 +10,12 @@ const AdminProducts: React.FC = () => {
 
   const navigate = useNavigate();
 
+  // Fetch products on component mount
   useEffect(() => {
     fetchProducts();
   }, []);
 
+  // Function to fetch products
   const fetchProducts = async () => {
     try {
       const data = await ProductService.getProducts();
@@ -26,6 +28,7 @@ const AdminProducts: React.FC = () => {
     }
   };
 
+  // Function to handle delete product action
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
@@ -38,23 +41,26 @@ const AdminProducts: React.FC = () => {
     }
   };
 
+  // Navigate to edit product page
   const handleEdit = (id: string) => {
     navigate(`/admin/products/edit/${id}`);
   };
 
+  // If loading, show loading state
   if (loading) return <p>Loading products...</p>;
+  // If error, show error message
   if (error) return <p>{error}</p>;
 
   return (
     <div className="admin-products">
       <h2>Manage Products</h2>
-      <button onClick={() => navigate("/admin/products/create")}>
+      <button onClick={() => navigate("/admin/products/create")} className="button add-product-btn">
         Add New Product
       </button>
-      <table>
+      <table className="product-table">
         <thead>
           <tr>
-            <th>Image</th> 
+            <th>Image</th>
             <th>Name</th>
             <th>Category</th>
             <th>Subcategory</th>
@@ -67,17 +73,17 @@ const AdminProducts: React.FC = () => {
         <tbody>
           {products.map((product) => (
             <tr key={product._id}>
-                <td>
+              <td>
                 {product.images && product.images.length > 0 ? (
-                    <img
+                  <img
                     src={product.images[0]}
                     alt={product.name}
                     style={{ width: "60px", height: "60px", objectFit: "cover" }}
-                    />
+                  />
                 ) : (
-                    "No Image"
+                  "No Image"
                 )}
-                </td>
+              </td>
               <td>{product.name}</td>
               <td>{typeof product.category === "string" ? product.category : product.category?.name}</td>
               <td>{typeof product.subcategory === "string" ? product.subcategory : product.subcategory?.name}</td>
@@ -85,18 +91,18 @@ const AdminProducts: React.FC = () => {
               <td>{product.stock}</td>
               <td>{product.isActive ? "Yes" : "No"}</td>
               <td>
-                <button onClick={() => handleEdit(product._id)}>Edit</button>
-                <button onClick={() => handleDelete(product._id)}>Delete</button>
+                <button onClick={() => handleEdit(product._id)} className="button edit-btn">Edit</button>
+                <button onClick={() => handleDelete(product._id)} className="button delete-btn">Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
       <div className="back-button">
-        <button onClick={() => navigate(-1)} className="button">
+        <button onClick={() => navigate(-1)} className="button back-btn">
           Go Back
         </button>
-        <Link to="/" className="button" style={{ marginLeft: 10 }}>
+        <Link to="/" className="button main-menu-btn" style={{ marginLeft: 10 }}>
           Main Menu
         </Link>
       </div>

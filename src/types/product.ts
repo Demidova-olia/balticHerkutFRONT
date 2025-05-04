@@ -20,4 +20,13 @@ export interface Product {
     tags?: string[];
     isActive?: boolean;
   }
+  export interface ProductData {
+    name: string;
+    description: string;
+    price: number;
+    category: string;
+    subcategory?: string;
+    stock: number;
+    images: File[];
+  }
   

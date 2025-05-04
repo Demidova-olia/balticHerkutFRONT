@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Subcategory, SubcategoryPayload } from "../../../types/subcategory";
 import { Category } from "../../../types/category";
-import SubcategoryService from "../../../services/SubcategoryService";
 import { getCategories } from "../../../services/CategoryService";
 import { Link, useNavigate } from "react-router-dom";
 import {AdminNavBar} from "../../../components/Admin/AdminNavBar";
+import { createSubcategory, deleteSubcategory, getSubcategories, updateSubcategory } from "../../../services/SubcategoryService";
 
 const AdminSubcategories: React.FC = () => {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ const AdminSubcategories: React.FC = () => {
   const fetchData = async () => {
     try {
       const [subs, cats] = await Promise.all([
-        SubcategoryService.getSubcategories(),
+        getSubcategories(),
         getCategories(),
       ]);
       setSubcategories(subs);
@@ -41,9 +41,9 @@ const AdminSubcategories: React.FC = () => {
 
     try {
       if (editingId) {
-        await SubcategoryService.updateSubcategory(editingId, payload);
+        await updateSubcategory(editingId, payload);
       } else {
-        await SubcategoryService.createSubcategory(payload);
+        await createSubcategory(payload);
       }
 
       resetForm();
@@ -55,7 +55,7 @@ const AdminSubcategories: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await SubcategoryService.deleteSubcategory(id);
+      await deleteSubcategory(id);
       fetchData();
     } catch (error) {
       console.error("Delete failed:", error);

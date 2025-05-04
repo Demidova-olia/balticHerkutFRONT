@@ -1,215 +1,190 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import * as ProductService from "../../services/ProductService";
-import { getCategories } from "../../services/CategoryService";
-import SubcategoryService from "../../services/SubcategoryService";
-import { Category } from "../../types/category";
-import { Subcategory } from "../../types/subcategory";
-import { Product } from "../../types/product";
+import React, { useEffect, useState } from 'react';
+import { Product } from '../../types/product';
+import { Category } from '../../types/category';
+import { Subcategory } from '../../types/subcategory';
+import { getCategories } from '../../services/CategoryService';
+import { getSubcategories } from '../../services/SubcategoryService';
 
-const ProductForm: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+interface ProductFormProps {
+  initialData?: Partial<Product>;
+  onSubmit: (data: FormData) => void;
+  submitText: string;
+}
 
-  const [product, setProduct] = useState<Partial<Product>>({});
+const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubmit, submitText }) => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
-  const [images, setImages] = useState<FileList | null>(null);
+  const [allSubcategories, setAllSubcategories] = useState<Subcategory[]>([]);
+  const [filteredSubcategories, setFilteredSubcategories] = useState<Subcategory[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>(typeof initialData.category === 'string' ? initialData.category : initialData.category?._id || '');
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(typeof initialData.subcategory === 'string' ? initialData.subcategory : initialData.subcategory?._id || '');
+  const [images, setImages] = useState<File[]>([]);
+  const [formState, setFormState] = useState({
+    name: initialData.name || '',
+    description: initialData.description || '',
+    price: initialData.price || 0,
+    stock: initialData.stock || 0,
+  });
 
-  const isEdit = Boolean(id);
-
-  const fetchProduct = useCallback(async () => {
-    if (!id) return;
-    try {
-      const data = await ProductService.getProductById(id);
-      setProduct(data);
-    } catch (error) {
-      console.error("Failed to load product", error);
-    }
-  }, [id]);
-
-  const fetchCategories = useCallback(async () => {
-    try {
-      const data = await getCategories();
-      setCategories(data);
-    } catch (error) {
-      console.error("Failed to load categories", error);
-    }
-  }, []);
-
-  const fetchSubcategories = useCallback(async () => {
-    try {
-      const data = await SubcategoryService.getSubcategories();
-      setSubcategories(data);
-    } catch (error) {
-      console.error("Failed to load subcategories", error);
-    }
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getCategories();
+        setCategories(data);
+      } catch (err) {
+        console.error("Ошибка при получении категорий:", err);
+      }
+    };
+    fetchCategories();
   }, []);
 
   useEffect(() => {
-    fetchCategories();
+    const fetchSubcategories = async () => {
+      try {
+        const data = await getSubcategories();
+        setAllSubcategories(data);
+      } catch (err) {
+        console.error("Ошибка при получении подкатегорий:", err);
+      }
+    };
     fetchSubcategories();
-    if (isEdit) fetchProduct();
-  }, [isEdit, fetchCategories, fetchSubcategories, fetchProduct]);
+  }, []);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
+  // Фильтровать подкатегории по выбранной категории
+  useEffect(() => {
+    if (selectedCategory) {
+      const filtered = allSubcategories.filter(sub =>
+        typeof sub.parent === 'string'
+          ? sub.parent === selectedCategory
+          : sub.parent._id === selectedCategory
+      );
+      setFilteredSubcategories(filtered);
+      setSelectedSubcategory('');
+    } else {
+      setFilteredSubcategories([]);
+    }
+  }, [selectedCategory, allSubcategories]);
+
+  // Если выбрана подкатегория — автоматически установить её категорию
+  useEffect(() => {
+    if (selectedSubcategory && !selectedCategory) {
+      const sub = allSubcategories.find(sub => sub._id === selectedSubcategory);
+      if (sub) {
+        const parentId = typeof sub.parent === 'string' ? sub.parent : sub.parent._id;
+        setSelectedCategory(parentId);
+      }
+    }
+  }, [selectedSubcategory, allSubcategories, selectedCategory]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setProduct((prev) => ({
-      ...prev,
-      [name]: name === "price" || name === "stock" ? Number(value) : value,
-    }));
+    setFormState(prev => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setImages(e.target.files);
+      setImages(Array.from(e.target.files));
     }
   };
 
-  const resetForm = () => {
-    setProduct({});
-    setImages(null);
-    navigate("/admin/products");
+  const handleSubcategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const subId = e.target.value;
+    setSelectedSubcategory(subId);
+    const sub = allSubcategories.find(s => s._id === subId);
+    if (sub) {
+      const parentId = typeof sub.parent === 'string' ? sub.parent : sub.parent._id;
+      setSelectedCategory(parentId);
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (
-      !product.name ||
-      !product.description ||
-      !product.price ||
-      !product.category ||
-      !product.subcategory ||
-      product.stock === undefined
-    ) {
-      alert("Please fill out all required fields");
-      return;
+    const formData = new FormData();
+    formData.append('name', formState.name);
+    formData.append('description', formState.description);
+    formData.append('price', formState.price.toString());
+    formData.append('stock', formState.stock.toString());
+    formData.append('category', selectedCategory);
+    if (selectedSubcategory) {
+      formData.append('subcategory', selectedSubcategory);
     }
-
-    const productData = {
-      name: product.name,
-      description: product.description,
-      price: Number(product.price),
-      category: typeof product.category === "string"
-        ? product.category
-        : (product.category as Category)._id,
-      subcategory: typeof product.subcategory === "string"
-        ? product.subcategory
-        : (product.subcategory as Subcategory)._id,
-      stock: Number(product.stock),
-      images: [] // not used directly here, handled via files param
-    };
-
-    const fileArray: File[] = images ? Array.from(images) : [];
-
-    try {
-      if (isEdit && id) {
-        await ProductService.updateProduct(id, productData, fileArray);
-      } else {
-        await ProductService.createProduct(productData, fileArray);
-      }
-
-      alert("Product saved successfully");
-      resetForm();
-    } catch (error) {
-      console.error("Save failed", error);
-      alert("Failed to save product");
-    }
+    images.forEach(file => formData.append('images', file));
+    onSubmit(formData);
   };
 
   return (
-    <div>
-      <h2>{isEdit ? "Edit Product" : "Create Product"}</h2>
-      <form onSubmit={handleSubmit} encType="multipart/form-data">
-        <input
-          name="name"
-          placeholder="Name"
-          value={product.name || ""}
-          onChange={handleChange}
-          required
-        />
-        <textarea
-          name="description"
-          placeholder="Description"
-          value={product.description || ""}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="number"
-          name="price"
-          placeholder="Price"
-          value={product.price || ""}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="number"
-          name="stock"
-          placeholder="Stock"
-          value={product.stock || ""}
-          onChange={handleChange}
-          required
-        />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <input
+        type="text"
+        name="name"
+        placeholder="Product name"
+        value={formState.name}
+        onChange={handleChange}
+        required
+        className="input"
+      />
+      <textarea
+        name="description"
+        placeholder="Description"
+        value={formState.description}
+        onChange={handleChange}
+        required
+        className="textarea"
+      />
+      <input
+        type="number"
+        name="price"
+        placeholder="Price"
+        value={formState.price}
+        onChange={handleChange}
+        required
+        className="input"
+      />
+      <input
+        type="number"
+        name="stock"
+        placeholder="Stock"
+        value={formState.stock}
+        onChange={handleChange}
+        required
+        className="input"
+      />
 
-        <select
-          name="category"
-          value={
-            typeof product.category === "object"
-              ? (product.category as Category)._id || ""
-              : product.category || ""
-          }
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Category</option>
-          {categories.map((cat) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
+      <select
+        value={selectedCategory}
+        onChange={(e) => setSelectedCategory(e.target.value)}
+        required
+        className="select"
+      >
+        <option value="">Select Category</option>
+        {categories.map(cat => (
+          <option key={cat._id} value={cat._id}>{cat.name}</option>
+        ))}
+      </select>
 
-        <select
-          name="subcategory"
-          value={
-            typeof product.subcategory === "object"
-              ? (product.subcategory as Subcategory)._id || ""
-              : product.subcategory || ""
-          }
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Subcategory</option>
-          {subcategories.map((sub) => (
-            <option key={sub._id} value={sub._id}>
-              {sub.name}
-            </option>
-          ))}
-        </select>
+      <select
+        value={selectedSubcategory}
+        onChange={handleSubcategoryChange}
+        disabled={!filteredSubcategories.length}
+        className="select"
+      >
+        <option value="">Select Subcategory</option>
+        {filteredSubcategories.map(sub => (
+          <option key={sub._id} value={sub._id}>{sub.name}</option>
+        ))}
+      </select>
 
-        <input type="file" multiple accept="image/*" onChange={handleImageChange} />
+      <input
+        type="file"
+        multiple
+        onChange={handleImageChange}
+        className="file-input"
+      />
 
-        {isEdit && Array.isArray(product.images) && product.images.length > 0 && (
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
-            {product.images.map((imgUrl, index) => (
-              <div key={index} style={{ width: "100px" }}>
-                <img src={imgUrl} alt={`Product ${index}`} style={{ width: "100%" }} />
-              </div>
-            ))}
-          </div>
-        )}
-
-        <button type="submit">{isEdit ? "Update" : "Create"}</button>
-        <button type="button" onClick={() => navigate("/admin/products")}>
-          Cancel
-        </button>
-      </form>
-    </div>
+      <button type="submit" className="btn btn-primary">
+        {submitText}
+      </button>
+    </form>
   );
 };
 
-export default ProductForm;
+export default AdminProductForm;

@@ -5,7 +5,7 @@ export interface Category {
     name: string;
     description?: string;
     image?: string;
-    createdAt: string;
+    createdAt?: string;
   }
   export interface CategoryWithSubcategories extends Category {
     subcategories: Subcategory[];

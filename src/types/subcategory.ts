@@ -8,5 +8,5 @@ export interface Subcategory {
 
 export interface SubcategoryPayload {
   name?: string;
-  parent?: string;
+  parent?: string | Category;
 }
