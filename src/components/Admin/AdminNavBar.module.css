@@ -1,0 +1,49 @@
+.adminNavbar {
+  background-color: #343a40;
+  padding: 15px;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  box-shadow: 0 4px 2px -2px gray;
+}
+
+.navList {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  justify-content: center;
+}
+
+.navItem {
+  margin: 0 20px;
+}
+
+.link {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 16px;
+  transition: color 0.3s ease;
+}
+
+.link:hover {
+  color: #006eff;
+}
+
+.active {
+  font-weight: bold;
+  color: #006eff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navList {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .navItem {
+    margin: 10px 0;
+  }
+}

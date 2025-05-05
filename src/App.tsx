@@ -11,6 +11,7 @@ import { ToastContainer } from "react-toastify";
 import "./App.css";
 import AdminProductCreate from "./pages/adminPages/adminProducts/AdminProductCreate";
 import AdminProductEdit from "./pages/adminPages/adminProducts/AdminProductEdit";
+import './styles/tailwind.css';
 
 function App() {
   return (

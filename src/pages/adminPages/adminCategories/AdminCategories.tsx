@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react'
 import './AdminCategories.css'
 // import Breadcrumb from '../components/Breadcrumb'
 import { Category } from '../../../types/category'
-import { useNavigate,Link } from 'react-router-dom'
-import {AdminNavBar} from '../../../components/Admin/AdminNavBar'
+import { useNavigate, Link } from 'react-router-dom'
+import { AdminNavBar } from '../../../components/Admin/AdminNavBar'
+import "./AdminCategories.css"
 
 
 const AdminCategories: React.FC = () => {
@@ -110,11 +111,11 @@ const AdminCategories: React.FC = () => {
     </div>
     <div className="back-button">
         <button onClick={() => navigate(-1)} className="button">
-            Grįžti atgal
+            Go Back
         </button>
 
         <button className="button"><Link to={`/`}  style={{ color: "white" }}>
-          Grįžti į pagrindinį meniu
+          Go to Main Menu
         </Link>
         </button>
     </div>

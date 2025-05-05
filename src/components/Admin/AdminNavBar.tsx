@@ -1,29 +1,52 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import "./AdminNavBar.css";
+import styles from "./AdminNavBar.module.css";
 
 export const AdminNavBar: React.FC = () => {
   return (
-    <nav className="admin-navbar">
-      <ul>
-        <li>
-          <NavLink to="/admin" className={({ isActive }) => (isActive ? "active" : "")}>
+    <nav className={styles.adminNavbar}>
+      <ul className={styles.navList}>
+        <li className={styles.navItem}>
+          <NavLink
+            to="/admin"
+            className={({ isActive }) =>
+              isActive ? `${styles.link} ${styles.active}` : styles.link
+            }
+          >
             Dashboard
           </NavLink>
         </li>
-        <li>
-          <NavLink to="/admin/categories" className={({ isActive }) => (isActive ? "active" : "")}>
+        <li className={styles.navItem}>
+          <NavLink
+            to="/admin/categories"
+            className={({ isActive }) =>
+              isActive ? `${styles.link} ${styles.active}` : styles.link
+            }
+          >
             Categories
           </NavLink>
         </li>
-        <li>
-          <NavLink to="/admin/subcategories" className={({ isActive }) => (isActive ? "active" : "")}>
+        <li className={styles.navItem}>
+          <NavLink
+            to="/admin/subcategories"
+            className={({ isActive }) =>
+              isActive ? `${styles.link} ${styles.active}` : styles.link
+            }
+          >
             Subcategories
           </NavLink>
         </li>
-        {/* Add more links as needed */}
+        <li className={styles.navItem}>
+          <NavLink
+            to="/admin/products"
+            className={({ isActive }) =>
+              isActive ? `${styles.link} ${styles.active}` : styles.link
+            }
+          >
+            Products
+          </NavLink>
+        </li>
       </ul>
     </nav>
   );
 };
-

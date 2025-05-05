@@ -4,6 +4,7 @@ import { getProductById, updateProduct } from "../../../services/ProductService"
 import AdminProductForm from "../../../components/Admin/AdminProductForm";
 import { Product, ProductData } from "../../../types/product";
 import { toast } from "react-toastify";
+import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
 
 const AdminProductEdit: React.FC = () => {
   const { id } = useParams();
@@ -40,28 +41,29 @@ const AdminProductEdit: React.FC = () => {
         category: formData.get("category") as string,
         subcategory: formData.get("subcategory") as string,
         stock: parseInt(formData.get("stock") as string),
-        images: [] // можно дополнить обработкой изображений
+        images: [] 
       };
 
       await updateProduct(product._id, formDataObj, []);
-      toast.success("✅ Продукт обновлён!");
-      navigate("/admin/products"); // путь на страницу списка товаров
+      toast.success("Product updated!");
+      navigate("/admin/products");
     } catch (err) {
       console.error("Error updating product:", err);
-      toast.error("❌ Не удалось обновить продукт.");
+      toast.error("Failed to update product.");
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <div className="text-center text-lg font-semibold">Loading...</div>;
+  if (error) return <div className="text-center text-lg font-semibold text-red-600">{error}</div>;
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Редактировать продукт</h2>
+    <div className="max-w-3xl mx-auto p-6">
+      <h2 className="text-2xl font-bold mb-6">Edit Product</h2>
+      <AdminNavBar/>
       {product && (
         <AdminProductForm
           initialData={product}
-          submitText="Обновить продукт"
+          submitText="Update Product"
           onSubmit={handleSubmit}
         />
       )}
@@ -70,4 +72,5 @@ const AdminProductEdit: React.FC = () => {
 };
 
 export default AdminProductEdit;
+
 

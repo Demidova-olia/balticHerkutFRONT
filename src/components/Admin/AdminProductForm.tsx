@@ -4,6 +4,7 @@ import { Category } from '../../types/category';
 import { Subcategory } from '../../types/subcategory';
 import { getCategories } from '../../services/CategoryService';
 import { getSubcategories } from '../../services/SubcategoryService';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface ProductFormProps {
   initialData?: Partial<Product>;
@@ -12,6 +13,7 @@ interface ProductFormProps {
 }
 
 const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubmit, submitText }) => {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [allSubcategories, setAllSubcategories] = useState<Subcategory[]>([]);
   const [filteredSubcategories, setFilteredSubcategories] = useState<Subcategory[]>([]);
@@ -31,7 +33,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
         const data = await getCategories();
         setCategories(data);
       } catch (err) {
-        console.error("Ошибка при получении категорий:", err);
+        console.error("Error fetching categories:", err);
       }
     };
     fetchCategories();
@@ -43,13 +45,12 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
         const data = await getSubcategories();
         setAllSubcategories(data);
       } catch (err) {
-        console.error("Ошибка при получении подкатегорий:", err);
+        console.error("Error fetching subcategories:", err);
       }
     };
     fetchSubcategories();
   }, []);
 
-  // Фильтровать подкатегории по выбранной категории
   useEffect(() => {
     if (selectedCategory) {
       const filtered = allSubcategories.filter(sub =>
@@ -64,7 +65,6 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
     }
   }, [selectedCategory, allSubcategories]);
 
-  // Если выбрана подкатегория — автоматически установить её категорию
   useEffect(() => {
     if (selectedSubcategory && !selectedCategory) {
       const sub = allSubcategories.find(sub => sub._id === selectedSubcategory);
@@ -112,78 +112,122 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <input
-        type="text"
-        name="name"
-        placeholder="Product name"
-        value={formState.name}
-        onChange={handleChange}
-        required
-        className="input"
-      />
-      <textarea
-        name="description"
-        placeholder="Description"
-        value={formState.description}
-        onChange={handleChange}
-        required
-        className="textarea"
-      />
-      <input
-        type="number"
-        name="price"
-        placeholder="Price"
-        value={formState.price}
-        onChange={handleChange}
-        required
-        className="input"
-      />
-      <input
-        type="number"
-        name="stock"
-        placeholder="Stock"
-        value={formState.stock}
-        onChange={handleChange}
-        required
-        className="input"
-      />
+    <>
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto p-4 bg-white shadow-lg rounded-lg">
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Product Name</label>
+        <input
+          id="name"
+          type="text"
+          name="name"
+          placeholder="Product name"
+          value={formState.name}
+          onChange={handleChange}
+          required
+          className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
-      <select
-        value={selectedCategory}
-        onChange={(e) => setSelectedCategory(e.target.value)}
-        required
-        className="select"
+      <div>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          placeholder="Description"
+          value={formState.description}
+          onChange={handleChange}
+          required
+          className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price</label>
+        <input
+          id="price"
+          type="number"
+          name="price"
+          placeholder="Price"
+          value={formState.price}
+          onChange={handleChange}
+          required
+          className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Stock</label>
+        <input
+          id="stock"
+          type="number"
+          name="stock"
+          placeholder="Stock"
+          value={formState.stock}
+          onChange={handleChange}
+          required
+          className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+        <select
+          id="category"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          required
+          className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Select Category</option>
+          {categories.map(cat => (
+            <option key={cat._id} value={cat._id}>{cat.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="subcategory" className="block text-sm font-medium text-gray-700">Subcategory</label>
+        <select
+          id="subcategory"
+          value={selectedSubcategory}
+          onChange={handleSubcategoryChange}
+          disabled={!filteredSubcategories.length}
+          className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Select Subcategory</option>
+          {filteredSubcategories.map(sub => (
+            <option key={sub._id} value={sub._id}>{sub.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="images" className="block text-sm font-medium text-gray-700">Product Images</label>
+        <input
+          id="images"
+          type="file"
+          multiple
+          onChange={handleImageChange}
+          className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
+      <button
+        type="submit"
+        className="mt-4 w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-        <option value="">Select Category</option>
-        {categories.map(cat => (
-          <option key={cat._id} value={cat._id}>{cat.name}</option>
-        ))}
-      </select>
-
-      <select
-        value={selectedSubcategory}
-        onChange={handleSubcategoryChange}
-        disabled={!filteredSubcategories.length}
-        className="select"
-      >
-        <option value="">Select Subcategory</option>
-        {filteredSubcategories.map(sub => (
-          <option key={sub._id} value={sub._id}>{sub.name}</option>
-        ))}
-      </select>
-
-      <input
-        type="file"
-        multiple
-        onChange={handleImageChange}
-        className="file-input"
-      />
-
-      <button type="submit" className="btn btn-primary">
         {submitText}
       </button>
     </form>
+    <div className="back-button">
+        <button onClick={() => navigate(-1)} className="button back-btn">
+          Go Back
+        </button>
+        <Link to="/" className="button main-menu-btn" style={{ marginLeft: 10 }}>
+          Main Menu
+        </Link>
+      </div>
+    </>
   );
 };
 

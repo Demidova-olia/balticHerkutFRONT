@@ -1,5 +1,10 @@
 import { Category } from "../types/category";
+import { Subcategory } from "../types/subcategory";
 import axiosInstance from "../utils/axios";
+
+export interface CategoryWithSubcategories extends Category {
+  subcategories: Subcategory[];
+}
 
 export const getCategories = async (): Promise<Category[]> => {
   try {
@@ -44,10 +49,19 @@ export const deleteCategory = async (id: string): Promise<void> => {
     throw new Error("Failed to delete category");
   }
 };
-
+export const getCategoriesWithSubcategories = async (): Promise<CategoryWithSubcategories[]> => {
+  try {
+    const response = await axiosInstance.get("/categories/with-subcategories"); // <-- убедись в правильности пути
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching categories with subcategories:", error);
+    throw new Error("Failed to fetch categories with subcategories");
+  }
+};
 export const CategoryService = {
   getCategories,
   createCategory,
   updateCategory,
-  deleteCategory
+  deleteCategory,
+  getCategoriesWithSubcategories,
 };

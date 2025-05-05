@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Product } from "../../../types/product";
 import { Link, useNavigate } from "react-router-dom";
 import * as ProductService from "../../../services/ProductService";
+import "./AdminProduct.css"; 
+import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
 
 const AdminProducts: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -10,12 +12,10 @@ const AdminProducts: React.FC = () => {
 
   const navigate = useNavigate();
 
-  // Fetch products on component mount
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Function to fetch products
   const fetchProducts = async () => {
     try {
       const data = await ProductService.getProducts();
@@ -28,7 +28,6 @@ const AdminProducts: React.FC = () => {
     }
   };
 
-  // Function to handle delete product action
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
@@ -41,26 +40,24 @@ const AdminProducts: React.FC = () => {
     }
   };
 
-  // Navigate to edit product page
   const handleEdit = (id: string) => {
     navigate(`/admin/products/edit/${id}`);
   };
 
-  // If loading, show loading state
   if (loading) return <p>Loading products...</p>;
-  // If error, show error message
   if (error) return <p>{error}</p>;
 
   return (
     <div className="admin-products">
       <h2>Manage Products</h2>
+      <AdminNavBar/>
       <button onClick={() => navigate("/admin/products/create")} className="button add-product-btn">
         Add New Product
       </button>
       <table className="product-table">
         <thead>
           <tr>
-            <th>Image</th>
+            <th>Images</th>
             <th>Name</th>
             <th>Category</th>
             <th>Subcategory</th>
@@ -75,11 +72,16 @@ const AdminProducts: React.FC = () => {
             <tr key={product._id}>
               <td>
                 {product.images && product.images.length > 0 ? (
-                  <img
-                    src={product.images[0]}
-                    alt={product.name}
-                    style={{ width: "60px", height: "60px", objectFit: "cover" }}
-                  />
+                  <div className="image-gallery">
+                    {product.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`${product.name} image ${index + 1}`}
+                        className="product-image"
+                      />
+                    ))}
+                  </div>
                 ) : (
                   "No Image"
                 )}
@@ -111,3 +113,4 @@ const AdminProducts: React.FC = () => {
 };
 
 export default AdminProducts;
+
