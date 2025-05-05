@@ -19,9 +19,9 @@ const AdminProductEdit: React.FC = () => {
         try {
           const fetchedProduct = await getProductById(id);
           setProduct(fetchedProduct);
-          setLoading(false);
         } catch {
           setError("Failed to fetch product.");
+        } finally {
           setLoading(false);
         }
       }
@@ -31,9 +31,11 @@ const AdminProductEdit: React.FC = () => {
   }, [id]);
 
   const handleSubmit = async (formData: FormData) => {
-    if (!product) return;
+    if (!product || !product._id) return;
 
     try {
+      const images = formData.getAll("images") as File[];
+
       const formDataObj: ProductData = {
         name: formData.get("name") as string,
         description: formData.get("description") as string,
@@ -41,10 +43,10 @@ const AdminProductEdit: React.FC = () => {
         category: formData.get("category") as string,
         subcategory: formData.get("subcategory") as string,
         stock: parseInt(formData.get("stock") as string),
-        images: [] 
+        images,
       };
 
-      await updateProduct(product._id, formDataObj, []);
+      await updateProduct(product._id, formDataObj);
       toast.success("Product updated!");
       navigate("/admin/products");
     } catch (err) {
@@ -57,9 +59,9 @@ const AdminProductEdit: React.FC = () => {
   if (error) return <div className="text-center text-lg font-semibold text-red-600">{error}</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6">Edit Product</h2>
-      <AdminNavBar/>
+    <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-lg">
+      <AdminNavBar />
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Product</h2>
       {product && (
         <AdminProductForm
           initialData={product}

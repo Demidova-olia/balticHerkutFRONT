@@ -9,154 +9,107 @@ interface ProductData {
   category: string;
   subcategory?: string;
   stock: number;
-  images: File[];
+  images?: File[];
 }
 
-interface ProductsResponse {
-  products: Product[];
-  totalPages: number;
-  totalProducts: number;
-}
 
 interface ErrorResponse {
   message: string;
 }
 
-export const getProducts = async (page: number = 1, limit: number = 10): Promise<ProductsResponse> => {
+function handleAxiosError(error: unknown, context: string): never {
+  const err = error as AxiosError;
+  if (err.response) {
+    const errorData = err.response.data as ErrorResponse;
+    console.error(`${context}:`, errorData.message);
+    throw new Error(`${context}. Server responded with: ${err.response.status} - ${errorData.message}`);
+  } else if (err.request) {
+    console.error(`${context}: No response from server`);
+    throw new Error(`${context}. No response from server.`);
+  } else {
+    console.error(`${context}:`, err.message);
+    throw new Error(`${context}. Error: ${err.message}`);
+  }
+}
+
+export const getProducts = async (
+  searchTerm: string = "",
+  selectedCategoryId: string = "",
+  selectedSubcategoryId: string = "",
+  page: number = 1,
+  limit: number = 10
+) => {
   try {
     const response = await axiosInstance.get("/products", {
-      params: { page, limit },
+      params: {
+        search: searchTerm,
+        category: selectedCategoryId,
+        subcategory: selectedSubcategoryId,
+        page,
+        limit,
+      },
     });
-    return response.data;
-  } catch (error: unknown) {
-    const err = error as AxiosError;
-    if (err.response) {
-      const errorData = err.response.data as ErrorResponse;
-      console.error('Error getting products:', errorData.message);
-      throw new Error(`Failed to load products. Server responded with: ${err.response.status} - ${errorData.message}`);
-    } else if (err.request) {
-      console.error('Error getting products:', err.request);
-      throw new Error('Failed to load products. No response from server.');
-    } else {
-      console.error('Error getting products:', err.message);
-      throw new Error(`Failed to load products. Error: ${err.message}`);
-    }
+
+    // Assuming response.data is structured as { products: Product[] }
+    return response.data.products || []; // Ensure products array is returned
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    throw new Error("Failed to fetch products");
   }
 };
+
 
 export const getProductById = async (id: string): Promise<Product> => {
   try {
     const response = await axiosInstance.get(`/products/${id}`);
     return response.data;
-  } catch (error: unknown) {
-    const err = error as AxiosError;
-    if (err.response) {
-      const errorData = err.response.data as ErrorResponse;
-      console.error('Error getting product:', errorData.message);
-      throw new Error(`Failed to load product with id ${id}. Server responded with: ${err.response.status} - ${errorData.message}`);
-    } else if (err.request) {
-      console.error('Error getting product:', err.request);
-      throw new Error(`Failed to load product with id ${id}. No response from server.`);
-    } else {
-      console.error('Error getting product:', err.message);
-      throw new Error(`Failed to load product with id ${id}. Error: ${err.message}`);
-    }
+  } catch (error) {
+    handleAxiosError(error, `Failed to load product with id ${id}`);
   }
 };
 
-export const createProduct = async (productData: ProductData, files: File[]): Promise<Product> => {
+export const createProduct = async (productData: ProductData): Promise<Product> => {
   try {
     const formData = new FormData();
     formData.append('name', productData.name);
     formData.append('description', productData.description);
     formData.append('price', productData.price.toString());
     formData.append('category', productData.category);
-    if (productData.subcategory) {
-      formData.append('subcategory', productData.subcategory);
-    }
+    if (productData.subcategory) formData.append('subcategory', productData.subcategory);
     formData.append('stock', productData.stock.toString());
+    productData.images?.forEach(file => formData.append('images', file));
 
-    files.forEach(file => {
-      formData.append('images', file);
-    });
-
-    const response = await axiosInstance.post("/products", formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
-    });
+    const response = await axiosInstance.post("/products", formData);
     return response.data;
-  } catch (error: unknown) {
-    const err = error as AxiosError;
-    if (err.response) {
-      const errorData = err.response.data as ErrorResponse;
-      console.error('Error creating product:', errorData.message);
-      throw new Error(`Failed to create product. Server responded with: ${err.response.status} - ${errorData.message}`);
-    } else if (err.request) {
-      console.error('Error creating product: No response from server');
-      throw new Error('Failed to create product. No response from server.');
-    } else {
-      console.error('Error creating product:', err.message);
-      throw new Error(`Failed to create product. Error: ${err.message}`);
-    }
+  } catch (error) {
+    handleAxiosError(error, "Failed to create product");
   }
 };
 
-export const updateProduct = async (id: string, productData: ProductData, files: File[]): Promise<Product> => {
+export const updateProduct = async (id: string, productData: ProductData): Promise<Product> => {
   try {
     const formData = new FormData();
     formData.append('name', productData.name);
     formData.append('description', productData.description);
     formData.append('price', productData.price.toString());
     formData.append('category', productData.category);
-    if (productData.subcategory) {
-      formData.append('subcategory', productData.subcategory);
-    }
+    if (productData.subcategory) formData.append('subcategory', productData.subcategory);
     formData.append('stock', productData.stock.toString());
+    productData.images?.forEach(file => formData.append('images', file));
 
-    files.forEach(file => {
-      formData.append('images', file);
-    });
-
-    const response = await axiosInstance.put(`/products/${id}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
-    });
+    const response = await axiosInstance.put(`/products/${id}`, formData);
     return response.data;
-  } catch (error: unknown) {
-    const err = error as AxiosError;
-    if (err.response) {
-      const errorData = err.response.data as ErrorResponse;
-      console.error('Error updating product:', errorData.message);
-      throw new Error(`Failed to update product with id ${id}. Server responded with: ${err.response.status} - ${errorData.message}`);
-    } else if (err.request) {
-      console.error('Error updating product: No response from server');
-      throw new Error(`Failed to update product with id ${id}. No response from server.`);
-    } else {
-      console.error('Error updating product:', err.message);
-      throw new Error(`Failed to update product with id ${id}. Error: ${err.message}`);
-    }
+  } catch (error) {
+    handleAxiosError(error, `Failed to update product with id ${id}`);
   }
 };
 
-export const deleteProduct = async (id: string): Promise<{ message: string, data: Product }> => {
+export const deleteProduct = async (id: string): Promise<{ message: string; data: Product }> => {
   try {
     const response = await axiosInstance.delete(`/products/${id}`);
     return response.data;
-  } catch (error: unknown) {
-    const err = error as AxiosError;
-    if (err.response) {
-      const errorData = err.response.data as ErrorResponse;
-      console.error('Error deleting product:', errorData.message);
-      throw new Error(`Failed to delete product with id ${id}. Server responded with: ${err.response.status} - ${errorData.message}`);
-    } else if (err.request) {
-      console.error('Error deleting product: No response from server');
-      throw new Error(`Failed to delete product with id ${id}. No response from server.`);
-    } else {
-      console.error('Error deleting product:', err.message);
-      throw new Error(`Failed to delete product with id ${id}. Error: ${err.message}`);
-    }
+  } catch (error) {
+    handleAxiosError(error, `Failed to delete product with id ${id}`);
   }
 };
 
@@ -164,19 +117,22 @@ export const getProductsByCategory = async (categoryName: string): Promise<Produ
   try {
     const response = await axiosInstance.get(`/products/category/${categoryName}`);
     return response.data;
-  } catch (error: unknown) {
-    const err = error as AxiosError;
-    if (err.response) {
-      const errorData = err.response.data as ErrorResponse;
-      console.error('Error getting products by category:', errorData.message);
-      throw new Error(`Failed to load products for category ${categoryName}. Server responded with: ${err.response.status} - ${errorData.message}`);
-    } else if (err.request) {
-      console.error('Error getting products by category: No response from server');
-      throw new Error(`Failed to load products for category ${categoryName}. No response from server.`);
-    } else {
-      console.error('Error getting products by category:', err.message);
-      throw new Error(`Failed to load products for category ${categoryName}. Error: ${err.message}`);
-    }
+  } catch (error) {
+    handleAxiosError(error, `Failed to load products for category ${categoryName}`);
+  }
+};
+
+export const getProductsByCategoryAndSubcategory = async (
+  categoryId: string,
+  subcategoryId: string
+): Promise<Product[]> => {
+  try {
+    const response = await axiosInstance.get(`/products`, {
+      params: { category: categoryId, subcategory: subcategoryId },
+    });
+    return response.data;
+  } catch (error) {
+    handleAxiosError(error, `Failed to load products for category ${categoryId} and subcategory ${subcategoryId}`);
   }
 };
 
@@ -186,18 +142,7 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
       params: { q: query },
     });
     return response.data;
-  } catch (error: unknown) {
-    const err = error as AxiosError;
-    if (err.response) {
-      const errorData = err.response.data as ErrorResponse;
-      console.error('Error searching products:', errorData.message);
-      throw new Error(`Failed to search products for query: ${query}. Server responded with: ${err.response.status} - ${errorData.message}`);
-    } else if (err.request) {
-      console.error('Error searching products: No response from server');
-      throw new Error(`Failed to search products for query: ${query}. No response from server.`);
-    } else {
-      console.error('Error searching products:', err.message);
-      throw new Error(`Failed to search products for query: ${query}. Error: ${err.message}`);
-    }
+  } catch (error) {
+    handleAxiosError(error, `Failed to search products for query: ${query}`);
   }
 };

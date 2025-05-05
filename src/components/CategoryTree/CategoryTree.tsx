@@ -1,56 +1,58 @@
-import React from "react";
-import { Category } from "../../types/category";
-import { Subcategory } from "../../types/subcategory";
-
-interface CategoryWithSubcategories extends Category {
-  subcategories: Subcategory[];
-}
+import { CategoryWithSubcategories } from "../../types/category";
 
 interface Props {
   categories: CategoryWithSubcategories[];
-  openCategory: string | null;
-  selectedSubcategory: string;
-  onCategoryToggle: (id: string) => void;
-  onSubcategorySelect: (name: string) => void;
+  selectedCategoryId: string | null;
+  selectedSubcategoryId: string | null;
+  onCategoryToggle: (categoryId: string) => void;
+  onSubcategorySelect: (subcategoryId: string) => void;
 }
 
 const CategoryTree: React.FC<Props> = ({
   categories,
-  openCategory,
-  selectedSubcategory,
+  selectedCategoryId,
+  selectedSubcategoryId,
   onCategoryToggle,
   onSubcategorySelect,
 }) => {
   return (
-    <div className="categories-tree">
-      <h2>Категории</h2>
-      {categories.map((category) => (
-        <div key={category._id} className="category-block">
-          <button
-            className="category-toggle"
-            onClick={() => onCategoryToggle(category._id)}
-          >
-            {category.name} {openCategory === category._id ? "−" : "+"}
-          </button>
-          {openCategory === category._id && (
-            <ul className="subcategory-list">
-              {category.subcategories.map((subcat) => (
-                <li
-                  key={subcat._id}
-                  onClick={() => onSubcategorySelect(subcat.name)}
-                  className={`subcategory-item ${
-                    selectedSubcategory === subcat.name ? "active" : ""
-                  }`}
-                >
-                  {subcat.name}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">Categories</h2>
+      <div className="flex space-x-4 overflow-x-auto">
+        {categories.map((category) => (
+          <div key={category._id} className="min-w-[150px]">
+            <button
+              onClick={() => onCategoryToggle(category._id)}
+              className={`block w-full py-2 px-4 border rounded-lg text-left ${
+                selectedCategoryId === category._id ? "bg-blue-200" : "bg-gray-200"
+              } hover:bg-gray-300`}
+            >
+              {category.name}
+            </button>
+
+            {selectedCategoryId === category._id && (
+              <ul className="mt-2 space-y-1">
+                {category.subcategories.map((subcat) => (
+                  <li
+                    key={subcat._id}
+                    onClick={() => onSubcategorySelect(subcat._id)}
+                    className={`cursor-pointer px-4 py-2 rounded-lg ${
+                      selectedSubcategoryId === subcat._id ? "bg-blue-300" : "hover:bg-gray-100"
+                    }`}
+                  >
+                    {subcat.name}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
 
 export default CategoryTree;
+
+
+

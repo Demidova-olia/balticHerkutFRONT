@@ -29,4 +29,7 @@ export interface Product {
     stock: number;
     images: File[];
   }
-  
+  export interface ProductsResponse {
+    products: Product[];
+    total: number;
+  }
