@@ -1,0 +1,30 @@
+.searchFilters {
+    display: flex;
+    justify-content: center;
+    padding: 16px;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .searchInput {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #ffffff;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    outline: none;
+    color: #333;
+  }
+  
+  .searchInput::placeholder {
+    color: #9ca3af;
+  }
+  
+  .searchInput:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+  

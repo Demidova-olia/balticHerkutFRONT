@@ -1,0 +1,95 @@
+/* Login.module.css */
+
+.container {
+    max-width: 28rem;
+    margin: 0 auto;
+    padding: 1.5rem;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.144);
+    border-radius: 0.5rem;
+  }
+  
+  .title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #333;
+  }
+  
+  .error {
+    color: #e53e3e;
+    margin-bottom: 1rem;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .inputLabel {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4a5568;
+    margin-right: 20px;
+  }
+  
+  .inputField {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    width: 85%;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    transition: all 0.3s;
+    background-color: #f7fafc;
+  }
+  
+  .inputField:focus {
+    outline: none;
+    border-color: #3182ce;
+    box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
+  }
+  
+  .submitButton {
+    padding: 0.75rem 1rem;
+    background-color: rgb(190, 190, 190);
+    color: #333;
+    font-weight: 600;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  .submitButton:hover {
+    color: rgb(42, 199, 76);
+    
+  }
+  
+  .submitButton:disabled {
+    background-color: #e2e8f0;
+    cursor: not-allowed;
+  }
+  
+  .submitButton:hover:enabled {
+    color: rgb(136, 25, 25)
+  }
+  
+  .registerLink {
+    display: block;
+    margin-top: 1rem;
+    text-align: center;
+    color: #333;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  
+  .registerLink:hover,.returnLink:hover {
+    color: rgb(42, 199, 76);
+  }
+  .returnLink{
+    text-align: center;
+    color: #333;
+  }
+  

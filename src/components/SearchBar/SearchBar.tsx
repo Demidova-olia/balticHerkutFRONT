@@ -1,5 +1,5 @@
 import React from "react";
-// import "./SearchBar.scss";
+import styles from "./SearchBar.module.css";
 
 interface Props {
   value: string;
@@ -8,16 +8,17 @@ interface Props {
 
 const SearchBar: React.FC<Props> = ({ value, onChange }) => {
   return (
-    <div className="search-filters">
+    <div className={styles.searchFilters}>
       <input
         type="text"
         placeholder="Search products..."
         value={value}
         onChange={onChange}
-        className="search-input"
+        className={styles.searchInput}
       />
     </div>
   );
 };
 
 export default SearchBar;
+

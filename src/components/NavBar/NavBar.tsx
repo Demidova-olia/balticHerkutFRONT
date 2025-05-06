@@ -1,5 +1,6 @@
 import { useAuth } from "../../hooks/useAuth";
 import { NavLink, useNavigate } from "react-router-dom";
+import styles from "./NavBar.module.css";
 
 const NavBar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -11,15 +12,13 @@ const NavBar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-gray-800 text-white p-4 shadow-md">
-      <ul className="flex flex-wrap gap-4 items-center justify-center sm:justify-start">
+    <nav className={styles.navbar}>
+      <ul className={styles.navList}>
         <li>
           <NavLink
             to="/"
             className={({ isActive }) =>
-              isActive
-                ? "text-yellow-300 font-semibold"
-                : "hover:text-yellow-400 transition-colors"
+              isActive ? `${styles.link} ${styles.active}` : styles.link
             }
           >
             Home
@@ -29,9 +28,7 @@ const NavBar: React.FC = () => {
           <NavLink
             to="/products"
             className={({ isActive }) =>
-              isActive
-                ? "text-yellow-300 font-semibold"
-                : "hover:text-yellow-400 transition-colors"
+              isActive ? `${styles.link} ${styles.active}` : styles.link
             }
           >
             Products
@@ -44,9 +41,7 @@ const NavBar: React.FC = () => {
               <NavLink
                 to="/profile"
                 className={({ isActive }) =>
-                  isActive
-                    ? "text-yellow-300 font-semibold"
-                    : "hover:text-yellow-400 transition-colors"
+                  isActive ? `${styles.link} ${styles.active}` : styles.link
                 }
               >
                 Profile
@@ -56,9 +51,7 @@ const NavBar: React.FC = () => {
               <NavLink
                 to="/profile/orders"
                 className={({ isActive }) =>
-                  isActive
-                    ? "text-yellow-300 font-semibold"
-                    : "hover:text-yellow-400 transition-colors"
+                  isActive ? `${styles.link} ${styles.active}` : styles.link
                 }
               >
                 Orders
@@ -68,35 +61,26 @@ const NavBar: React.FC = () => {
               <NavLink
                 to="/cart"
                 className={({ isActive }) =>
-                  isActive
-                    ? "text-yellow-300 font-semibold"
-                    : "hover:text-yellow-400 transition-colors"
+                  isActive ? `${styles.link} ${styles.active}` : styles.link
                 }
               >
                 Cart
               </NavLink>
             </li>
-
             {user?.role?.toUpperCase() === "ADMIN" && (
               <li>
                 <NavLink
                   to="/admin"
                   className={({ isActive }) =>
-                    isActive
-                      ? "text-yellow-300 font-semibold"
-                      : "hover:text-yellow-400 transition-colors"
+                    isActive ? `${styles.link} ${styles.active}` : styles.link
                   }
                 >
                   Admin Panel
                 </NavLink>
               </li>
             )}
-
             <li>
-              <button
-                onClick={handleLogout}
-                className="ml-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
-              >
+              <button onClick={handleLogout} className={styles.logoutButton}>
                 Logout
               </button>
             </li>
@@ -107,9 +91,7 @@ const NavBar: React.FC = () => {
               <NavLink
                 to="/login"
                 className={({ isActive }) =>
-                  isActive
-                    ? "text-yellow-300 font-semibold"
-                    : "hover:text-yellow-400 transition-colors"
+                  isActive ? `${styles.link} ${styles.active}` : styles.link
                 }
               >
                 Login
@@ -119,9 +101,7 @@ const NavBar: React.FC = () => {
               <NavLink
                 to="/register"
                 className={({ isActive }) =>
-                  isActive
-                    ? "text-yellow-300 font-semibold"
-                    : "hover:text-yellow-400 transition-colors"
+                  isActive ? `${styles.link} ${styles.active}` : styles.link
                 }
               >
                 Register

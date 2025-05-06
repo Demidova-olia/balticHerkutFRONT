@@ -9,10 +9,10 @@ import SearchBar from "../../components/SearchBar/SearchBar";
 import CategoryTree from "../../components/CategoryTree/CategoryTree";
 import Loading from "../../components/Loading/Loading";
 import ProductGrid from "../../components/ProductGrid/ProductGrid";
-
+import styles from './HomePage.module.css'; 
 const HomePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<Product[]>([]);  // Ensure it's always an array
+  const [products, setProducts] = useState<Product[]>([]); 
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(searchParams.get("category") || null);
@@ -37,7 +37,6 @@ const HomePage: React.FC = () => {
           productData = await getProducts(searchTerm, selectedCategoryId ?? undefined, selectedSubcategoryId, 1, 100);
         }
 
-        // Make sure products is always an array
         setProducts(Array.isArray(productData) ? productData : []);
         setError(null);
       } catch (err: unknown) {
@@ -48,7 +47,7 @@ const HomePage: React.FC = () => {
           setError("Unknown error occurred");
           console.error("Unknown error", err);
         }
-        setProducts([]);  // Ensure empty array on error
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -70,7 +69,7 @@ const HomePage: React.FC = () => {
   const handleCategoryToggle = (categoryId: string) => {
     const newCategoryId = categoryId === selectedCategoryId ? null : categoryId;
     setSelectedCategoryId(newCategoryId);
-    setSelectedSubcategoryId(""); // Reset subcategory when category changes
+    setSelectedSubcategoryId("");
 
     const params: Record<string, string> = { search: searchTerm };
     if (newCategoryId) params.category = newCategoryId;
@@ -95,21 +94,24 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <>
+    <div className={styles.pageContainer}>
       <NavBar />
-      <SearchBar value={searchTerm} onChange={handleSearchChange} />
-
-      <div className="welcome-message">
+      <div className={styles.welcomeMessage}>
+        <h1>Baltic Herkut</h1>
         <h2>Welcome to our store!</h2>
         <p>Browse a variety of products and services.</p>
+      </div>
+      <SearchBar value={searchTerm} onChange={handleSearchChange} />
+
+      <div className={styles.welcomeMessage}>
         <p>Select a category to start exploring!</p>
       </div>
 
-      <div className="flex justify-between items-center px-4 mb-4">
-        <h1 className="text-xl font-bold">Our Top Products</h1>
+      <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
+        <h2 className={styles.categorySelectTitle}>Our Products</h2>
         <button
           onClick={handleResetFilters}
-          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-sm rounded"
+          className={styles.ResetFilter}
         >
           Reset Filters
         </button>
@@ -117,25 +119,27 @@ const HomePage: React.FC = () => {
 
       <CategoryTree
         categories={categories}
-        selectedCategoryId={selectedCategoryId ?? null} // Handle null as undefined
+        selectedCategoryId={selectedCategoryId ?? null}
         selectedSubcategoryId={selectedSubcategoryId}
         onCategoryToggle={handleCategoryToggle}
         onSubcategorySelect={handleSubcategorySelect}
+    
       />
 
       {loading ? (
-        <Loading text="Loading products..." />
+        <Loading text="Loading products..." className={styles.loadingText} />
       ) : error ? (
-        <p className="text-red-600 text-center">{error}</p>
+        <p className={styles.errorText}>{error}</p>
       ) : (
         <ProductGrid 
-          products={products} // Make sure this is always an array
+          products={products}
           searchTerm={searchTerm}
-          selectedCategoryId={selectedCategoryId || ""} // Handle null as empty string
+          selectedCategoryId={selectedCategoryId || ""}
           selectedSubcategoryId={selectedSubcategoryId}
+          
         />
       )}
-    </>
+    </div>
   );
 };
 

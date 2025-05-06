@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
 import axiosInstance from '../../utils/axios';
 import { toast } from 'react-toastify';
+import styles from './Register.module.css'; // Import the CSS Module
 
 function Register() {
   const navigate = useNavigate();
@@ -67,11 +68,11 @@ function Register() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <h1 className="text-2xl font-bold mb-6">Register</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className={styles.container}>
+      <h1 className={styles.heading}>Register</h1>
+      <form onSubmit={handleSubmit} className={styles.formWrapper}>
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username:</label>
+          <label htmlFor="username" className={styles.label}>Username:</label>
           <input
             type="text"
             id="username"
@@ -79,11 +80,11 @@ function Register() {
             value={formData.username}
             onChange={handleChange}
             required
-            className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={styles.inputField}
           />
         </div>
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email:</label>
+          <label htmlFor="email" className={styles.label}>Email:</label>
           <input
             type="email"
             id="email"
@@ -91,11 +92,11 @@ function Register() {
             value={formData.email}
             onChange={handleChange}
             required
-            className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={styles.inputField}
           />
         </div>
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password:</label>
+          <label htmlFor="password" className={styles.label}>Password:</label>
           <input
             type="password"
             id="password"
@@ -104,11 +105,11 @@ function Register() {
             onChange={handleChange}
             required
             minLength={6}
-            className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={styles.inputField}
           />
         </div>
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password:</label>
+          <label htmlFor="confirmPassword" className={styles.label}>Confirm Password:</label>
           <input
             type="password"
             id="confirmPassword"
@@ -117,20 +118,23 @@ function Register() {
             onChange={handleChange}
             required
             minLength={6}
-            className="mt-2 w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={styles.inputField}
           />
         </div>
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-4 px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={styles.button}
         >
           {isLoading ? 'Registering...' : 'Register'}
         </button>
       </form>
-      <p className="mt-4 text-center">
-        Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Log in</Link>
+      <p className={styles.footerText}>
+        Already have an account? <Link to="/login">Log in</Link>
       </p>
+      <div className={styles.returnLinkWrapper}>
+        <Link to="/home" className={styles.returnLink}> Return to Home Page</Link>
+      </div>
     </div>
   );
 }
