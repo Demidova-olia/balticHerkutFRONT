@@ -1,4 +1,6 @@
+import React, { useState } from "react";
 import { CategoryWithSubcategories } from "../../types/category";
+import styles from './CategoryTree.module.css';
 
 interface Props {
   categories: CategoryWithSubcategories[];
@@ -15,29 +17,52 @@ const CategoryTree: React.FC<Props> = ({
   onCategoryToggle,
   onSubcategorySelect,
 }) => {
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+
+  const handleCategoryEnter = (categoryId: string) => {
+    setHoveredCategory(categoryId);
+  };
+
+  const handleCategoryLeave = () => {
+    setHoveredCategory(null); 
+  };
+
+  const handleSubcategoryEnter = (categoryId: string) => {
+    setHoveredCategory(categoryId);
+  };
+
+  const handleSubcategoryLeave = () => {
+    setHoveredCategory(null);
+  };
+
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Categories</h2>
-      <div className="flex space-x-4 overflow-x-auto">
+    <div className={styles.wrapper}>
+      <div className={styles.categoriesRow}>
         {categories.map((category) => (
-          <div key={category._id} className="min-w-[150px]">
+          <div key={category._id} className={styles.categoryBlock}>
             <button
               onClick={() => onCategoryToggle(category._id)}
-              className={`block w-full py-2 px-4 border rounded-lg text-left ${
-                selectedCategoryId === category._id ? "bg-blue-200" : "bg-gray-200"
-              } hover:bg-gray-300`}
+              onMouseEnter={() => handleCategoryEnter(category._id)}
+              onMouseLeave={handleCategoryLeave}
+              className={`${styles.categoryButton} ${
+                selectedCategoryId === category._id ? styles.activeCategory : ''
+              }`}
             >
               {category.name}
             </button>
 
-            {selectedCategoryId === category._id && (
-              <ul className="mt-2 space-y-1">
+            {(selectedCategoryId === category._id || hoveredCategory === category._id) && (
+              <ul
+                className={styles.subcategoryDropdown}
+                onMouseEnter={() => handleSubcategoryEnter(category._id)}
+                onMouseLeave={handleSubcategoryLeave}
+              >
                 {category.subcategories.map((subcat) => (
                   <li
                     key={subcat._id}
                     onClick={() => onSubcategorySelect(subcat._id)}
-                    className={`cursor-pointer px-4 py-2 rounded-lg ${
-                      selectedSubcategoryId === subcat._id ? "bg-blue-300" : "hover:bg-gray-100"
+                    className={`${styles.subcategoryItem} ${
+                      selectedSubcategoryId === subcat._id ? styles.activeSubcategory : ''
                     }`}
                   >
                     {subcat.name}
@@ -53,6 +78,3 @@ const CategoryTree: React.FC<Props> = ({
 };
 
 export default CategoryTree;
-
-
-
