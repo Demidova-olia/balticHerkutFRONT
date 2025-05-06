@@ -16,4 +16,7 @@ export interface User {
     createdAt?: string;
     updatedAt?: string;
   }
-  
+  export interface IUser {
+    _id: string;
+    name: string;
+  }

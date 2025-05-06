@@ -1,6 +1,7 @@
 import { useAuth } from "../../hooks/useAuth";
 import { NavLink, useNavigate } from "react-router-dom";
 import styles from "./NavBar.module.css";
+import Cart from "../Cart/Cart";
 
 const NavBar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -109,7 +110,11 @@ const NavBar: React.FC = () => {
             </li>
           </>
         )}
+            <li>    
+              <Cart/>
+            </li>
       </ul>
+      
     </nav>
   );
 };

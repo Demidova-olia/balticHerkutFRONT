@@ -1,3 +1,4 @@
+import { User } from "../types/user";
 import axiosInstance from "../utils/axios";
 
 interface RegisterData {
@@ -45,6 +46,10 @@ const UserService = {
 
   deleteUser: async (id: string) => {
     const response = await axiosInstance.delete(`/users/${id}`);
+    return response.data;
+  },
+  updateProfile: async (data: Partial<User>) => {
+    const response = await axiosInstance.put("/users/profile", data);
     return response.data;
   },
 

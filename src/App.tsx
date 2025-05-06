@@ -13,6 +13,9 @@ import AdminProductCreate from "./pages/adminPages/adminProducts/AdminProductCre
 import AdminProductEdit from "./pages/adminPages/adminProducts/AdminProductEdit";
 import './styles/tailwind.css';
 import ProductPage from "./pages/products/ProductPage";
+import CartPage from "./pages/cartPage/CartPage";
+import ProductsPage from "./pages/products/ProductsPage";
+import ProfilePage from "./pages/profile/ProfilePage";
 
 function App() {
   return (
@@ -24,9 +27,12 @@ function App() {
         <Route path="/home" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
+        <Route path="/products" element={<ProductsPage />} />
         <Route path="/product/:id" element={<ProductPage />} />
-    
+        <Route path="/cart" element={<CartPage />} />
+
         <Route path="/admin" element={<AdminRoute />}> 
           <Route index element={<AdminPanel />} /> 
           <Route path="products" element={<AdminProducts />} /> 

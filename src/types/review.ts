@@ -1,6 +1,8 @@
+import { IUser } from "./user";
+
 export interface Review {
     _id: string;
-    userId: string; // or IUser if populated
+    userId: IUser | string; // 
     productId: string; // or IProduct if populated
     rating: number;
     comment?: string;
