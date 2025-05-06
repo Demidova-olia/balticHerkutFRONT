@@ -108,7 +108,6 @@ const HomePage: React.FC = () => {
       </div>
 
       <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
-        <h2 className={styles.categorySelectTitle}>Our Products</h2>
         <button
           onClick={handleResetFilters}
           className={styles.ResetFilter}
@@ -125,6 +124,9 @@ const HomePage: React.FC = () => {
         onSubcategorySelect={handleSubcategorySelect}
     
       />
+      <div>
+        <h2 className={styles.categorySelectTitle}>Our Products</h2>
+      </div>
 
       {loading ? (
         <Loading text="Loading products..." className={styles.loadingText} />
