@@ -12,6 +12,7 @@ import "./App.css";
 import AdminProductCreate from "./pages/adminPages/adminProducts/AdminProductCreate";
 import AdminProductEdit from "./pages/adminPages/adminProducts/AdminProductEdit";
 import './styles/tailwind.css';
+import ProductPage from "./pages/products/ProductPage";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
+        <Route path="/product/:id" element={<ProductPage />} />
     
         <Route path="/admin" element={<AdminRoute />}> 
           <Route index element={<AdminPanel />} /> 

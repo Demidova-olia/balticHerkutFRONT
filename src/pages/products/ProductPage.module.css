@@ -1,0 +1,80 @@
+.pageContainer {
+    font-family: 'Roboto', sans-serif;
+    background-color: #fff;
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2d3748;
+    margin-bottom: 1rem;
+  }
+  
+  .description {
+    font-size: 1.1rem;
+    color: #4a5568;
+    margin-bottom: 1rem;
+  }
+  
+  .price {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #38a169;
+    margin-bottom: 1rem;
+  }
+  
+  .imageWrapper {
+    margin-bottom: 1.5rem;
+  }
+  
+  .image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stock {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+  }
+  
+  .categoryInfo {
+    font-size: 0.95rem;
+    color: #718096;
+    margin-bottom: 2rem;
+  }
+  
+  .addToCartButton {
+    background-color: #3182ce;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .addToCartButton:hover {
+    background-color: #2b6cb0;
+  }
+  
+  .centered {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 1.125rem;
+  }
+  
+  .error {
+    color: #e53e3e;
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 1.125rem;
+  }
+  
