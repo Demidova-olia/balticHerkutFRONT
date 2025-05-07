@@ -1,0 +1,30 @@
+.icon {
+    cursor: pointer;
+    font-size: 24px;
+    transition: color 0.3s ease;
+  }
+  
+  .favorite {
+    color: red;
+  }
+  
+  .notFavorite {
+    color: gray;
+  }
+  
+  .pulse {
+    animation: pulse 0.3s ease;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  

@@ -1,3 +1,4 @@
+
 export interface User {
     _id: string;
     username: string;
@@ -18,5 +19,5 @@ export interface User {
   }
   export interface IUser {
     _id: string;
-    name: string;
+    username: string;
   }

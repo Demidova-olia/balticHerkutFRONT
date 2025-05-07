@@ -2,11 +2,13 @@ import { Link, useNavigate } from "react-router-dom"
 import AdminMetrics from "./AdminMetrics"
 import WelcomePanel from "./WelcomePanel"
 import "./AdminPanel.css"
+import NavBar from "../NavBar/NavBar"
 
 const AdminPanel: React.FC = () => {
     const navigate = useNavigate()
     return (
         <div className="admin-panel">
+            <NavBar/>
             <WelcomePanel />
             <h1>Administration Page</h1>
 
