@@ -1,0 +1,136 @@
+.adminOrders {
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.ordersTable {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.ordersTable th,
+.ordersTable td {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ordersTable th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #111827;
+}
+
+.ordersTable td {
+  color: #333;
+}
+
+.selectStatus {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  font-size: 0.9rem;
+  cursor: pointer;
+  width: 90px;
+  color: #333;
+}
+
+.selectStatus:disabled {
+  background-color: #e5e7eb;
+  cursor: not-allowed;
+  
+}
+
+.selectStatus option {
+  
+  width: 80px;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .ordersTable thead {
+    display: none;
+  }
+
+  .ordersTable td {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border: none;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .ordersTable tr {
+    display: block;
+    margin-bottom: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .ordersTable td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    flex-basis: 40%;
+    text-align: left;
+  }
+
+  .ordersTable td {
+    font-size: 14px;
+  }
+}
+
+.ordersTable td ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.ordersTable td li {
+  font-size: 0.9rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background-color: #4caf50;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+.error {
+  color: #e74c3c;
+  font-size: 1rem;
+  text-align: center;
+  margin-top: 1rem;
+}

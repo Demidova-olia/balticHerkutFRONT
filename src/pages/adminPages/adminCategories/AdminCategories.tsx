@@ -1,12 +1,9 @@
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../../../services/CategoryService'
 import { useState, useEffect } from 'react'
-import './AdminCategories.css'
-// import Breadcrumb from '../components/Breadcrumb'
+import styles from './AdminCategories.module.css'
 import { Category } from '../../../types/category'
 import { useNavigate, Link } from 'react-router-dom'
 import { AdminNavBar } from '../../../components/Admin/AdminNavBar'
-import "./AdminCategories.css"
-
 
 const AdminCategories: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +14,6 @@ const AdminCategories: React.FC = () => {
   const [addingCategory, setAddingCategory] = useState(false)
 
   useEffect(() => {
-    
     const fetchCategories = async () => {
       try {
         const data = await getCategories()
@@ -80,45 +76,59 @@ const AdminCategories: React.FC = () => {
 
   return (
     <>
-      {/* <Breadcrumb /> */}
-      <div className="admin-categories">
-        <h2>Manage Categories</h2>
+      <div className={styles.adminCategories}>
+        <h2 className={styles.heading}>Manage Categories</h2>
         <AdminNavBar />
-        <div>
+        <div className={styles.inputWrapper}>
           <input
             type="text"
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
             placeholder="New category"
+            className={styles.inputField}
           />
-          <button onClick={handleAddCategory} disabled={addingCategory}>
+          <button
+            onClick={handleAddCategory}
+            disabled={addingCategory}
+            className={`${styles.button} ${styles.addButton}`}
+          >
             {addingCategory ? 'Adding...' : 'Add Category'}
           </button>
         </div>
-      <ul>
-        {categories.map((category) => (
-          <li key={category._id}>
-            <div className="category-content">
-              {category.name} ({category._id})
-            </div>
-            <div className="category-actions">
-              <button onClick={() => handleEditCategory(category._id, category.name)}>Edit</button>
-              <button onClick={() => handleDeleteCategory(category._id)}>Delete</button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-    <div className="back-button">
-        <button onClick={() => navigate(-1)} className="button">
-            Go Back
+        <ul className={styles.categoryList}>
+          {categories.map((category) => (
+            <li key={category._id} className={styles.categoryItem}>
+              <div className={styles.categoryContent}>
+                {category.name} <span className={styles.categoryId}>({category._id})</span>
+              </div>
+              <div className={styles.categoryActions}>
+                <button
+                  onClick={() => handleEditCategory(category._id, category.name)}
+                  className={`${styles.button} ${styles.editButton}`}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteCategory(category._id)}
+                  className={`${styles.button} ${styles.deleteButton}`}
+                >
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className={styles.backButton}>
+        <button onClick={() => navigate(-1)} className={`${styles.button} ${styles.backBtn}`}>
+          Go Back
         </button>
 
-        <button className="button"><Link to={`/`}  style={{ color: "white" }}>
+        <Link to="/" className={`${styles.button} ${styles.mainMenuBtn}`}>
           Go to Main Menu
         </Link>
-        </button>
-    </div>
+      </div>
     </>
   )
 }

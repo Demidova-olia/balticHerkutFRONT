@@ -1,0 +1,192 @@
+.adminSubcategories {
+    padding: 1rem;
+    background-color: #f9fafb;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1rem;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+  }
+  
+  .heading {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #1f2937;
+    text-align: center;
+  }
+  
+  .form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    justify-content: center;
+  }
+  
+  .input,
+  .select {
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    min-width: 180px;
+  }
+  
+  .button {
+    padding: 0.6rem 1rem;
+    background-color: rgba(42, 199, 76, 0.212);
+    color: #333;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .button:hover {
+    background-color: rgb(42, 199, 76);
+    color: white;
+  }
+  
+  .cancelButton {
+    background-color: #9ca3af;
+    color: white;
+  }
+  
+  .cancelButton:hover {
+    background-color: #6b7280;
+  }
+  
+  .subcategoryTable {
+    width: 100%;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+  
+  .subcategoryTable table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .subcategoryTable th,
+  .subcategoryTable td {
+    text-align: left;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: top;
+  }
+  
+  .subcategoryTable th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+  }
+  
+  .editBtn {
+    background-color: rgba(42, 199, 76, 0.308);
+    color: #333;
+  }
+  
+  .editBtn:hover {
+    background-color: rgb(42, 199, 76);
+    color: white;
+  }
+  
+  .deleteBtn {
+    background-color: #ef444457;
+    color: #333;
+  }
+  
+  .deleteBtn:hover {
+    background-color: #ef4444;
+    color: white;
+  }
+  
+  .backButtons {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  
+  .backBtn,
+  .mainMenuBtn {
+    padding: 0.6rem 1rem;
+    background-color: rgba(42, 199, 76, 0.37);
+    color: #333;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+  }
+  
+  .backBtn:hover,
+  .mainMenuBtn:hover {
+    background-color: rgb(42, 199, 76);
+    color: white;
+  }
+  
+  @media (max-width: 768px) {
+    .subcategoryTable thead {
+      display: none;
+    }
+  
+    .subcategoryTable td {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border: none;
+      border-bottom: 1px solid #ccc;
+    }
+  
+    .subcategoryTable tr {
+      display: block;
+      margin-bottom: 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+  
+    .subcategoryTable td::before {
+      content: attr(data-label);
+      font-weight: bold;
+      flex-basis: 40%;
+      text-align: left;
+    }
+  
+    .subcategoryTable td {
+      font-size: 14px;
+    }
+  }
+  
+  @media (min-width: 769px) {
+    .subcategoryTable thead {
+      display: table-header-group;
+    }
+  
+    .subcategoryTable tr {
+      display: table-row;
+    }
+  
+    .subcategoryTable td {
+      display: table-cell;
+      padding: 12px 15px;
+    }
+  
+    .subcategoryTable td::before {
+      content: none;
+    }
+  }
+  

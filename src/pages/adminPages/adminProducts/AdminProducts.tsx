@@ -92,7 +92,7 @@ const AdminProducts: React.FC = () => {
               <td data-label="Name">{product.name}</td>
               <td data-label="Category">{typeof product.category === "string" ? product.category : product.category?.name}</td>
               <td data-label="Subcategory">{typeof product.subcategory === "string" ? product.subcategory : product.subcategory?.name}</td>
-              <td data-label="Price">${product.price.toFixed(2)}</td>
+              <td data-label="Price">€{product.price.toFixed(2)}</td>
               <td data-label="Stock">{product.stock}</td>
               <td data-label="Active">{product.isActive ? "Yes" : "No"}</td>
               <td data-label="Actions">

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import axiosInstance from '../../../utils/axios';
 import { toast } from 'react-toastify';
-import './AdminOrders.css';
+import styles from './AdminOrders.module.css';
+import { AdminNavBar } from '../../../components/Admin/AdminNavBar';
 
 type Product = {
   _id: string;
@@ -67,6 +68,7 @@ const OrderRow = ({
         onChange={(e) =>
           handleStatusChange(order._id, e.target.value as Order['status'])
         }
+        className={styles.selectStatus}
         disabled={['finished', 'canceled'].includes(order.status)}
       >
         {statusOptions.map((option) => (
@@ -119,17 +121,26 @@ const AdminOrders = () => {
   };
 
   if (!user || user.role !== 'ADMIN') {
-    return <div className="admin-error">You do not have permission to view this page.</div>;
+    return <div className={styles.adminError}>You do not have permission to view this page.</div>;
   }
 
-  if (error) return <div className="error">{error} <button onClick={fetchOrders}>Retry</button></div>;
-  if (loading) return <div className="loading">Loading...</div>;
-  if (orders.length === 0) return <div className="no-orders">No orders available</div>;
+  if (error) {
+    return (
+      <div className={styles.error}>
+        {error}
+        <button onClick={fetchOrders}>Retry</button>
+      </div>
+    );
+  }
+
+  if (loading) return <div className={styles.loading}>Loading...</div>;
+  if (orders.length === 0) return <div className={styles.noOrders}>No orders available</div>;
 
   return (
-    <div className="admin-orders">
+    <div className={styles.adminOrders}>
       <h1>Order Management</h1>
-      <table className="orders-table">
+      <AdminNavBar/>
+      <table className={styles.ordersTable}>
         <thead>
           <tr>
             <th>Order ID</th>

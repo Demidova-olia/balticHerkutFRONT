@@ -46,6 +46,16 @@ export const AdminNavBar: React.FC = () => {
             Products
           </NavLink>
         </li>
+        <li className={styles.navItem}>
+          <NavLink
+            to="/admin/orders"
+            className={({ isActive }) =>
+              isActive ? `${styles.link} ${styles.active}` : styles.link
+            }
+          >
+            Orders
+          </NavLink>
+        </li>
       </ul>
     </nav>
   );

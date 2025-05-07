@@ -19,4 +19,69 @@ body {
   color: #333;
 }
 
+body, html {
+  overflow-x: hidden;
+}
 
+.adminProducts {
+  padding: 20px;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.productTable {
+  width: 100%;
+  overflow-x: auto;
+  table-layout: fixed;
+  word-wrap: break-word;
+}
+
+.productTable td,
+.productTable th {
+  word-break: break-word;
+  max-width: 150px;
+}
+
+.productImage {
+  width: 100%;
+  max-width: 100px;
+  height: auto;
+  object-fit: cover;
+}
+
+.imageGallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  .productTable {
+    display: block;
+    overflow-x: hidden;
+  }
+
+  .productTable tr {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+  }
+
+  .productTable td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    display: inline-block;
+    width: 120px;
+  }
+
+  .productTable td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+}
