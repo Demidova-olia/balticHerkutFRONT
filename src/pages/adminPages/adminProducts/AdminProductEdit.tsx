@@ -5,7 +5,7 @@ import AdminProductForm from "../../../components/Admin/AdminProductForm";
 import { Product, ProductData } from "../../../types/product";
 import { toast } from "react-toastify";
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
-import styles from "./AdminProduct.module.css"
+import styles from "./AdminProducts.module.css"
 
 const AdminProductEdit: React.FC = () => {
   const { id } = useParams();

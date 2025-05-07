@@ -47,7 +47,7 @@ function App() {
           <Route path="products/edit/:id" element={<AdminProductEdit />} /> 
           <Route path="categories" element={<AdminCategories />} />
           <Route path="subcategories" element={<AdminSubcategories />} />
-          <Route path="/admin/orders" element={<AdminOrders />} />
+          <Route path="orders" element={<AdminOrders />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/home" replace />} />

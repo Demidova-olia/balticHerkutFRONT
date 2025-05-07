@@ -3,7 +3,7 @@
   padding: 15px;
   position: sticky;
   top: 0;
-  width: 100%;
+  width: 95%;
   z-index: 1000;
   box-shadow: 0 4px 2px -2px gray;
 }
@@ -28,12 +28,12 @@
 }
 
 .link:hover {
-  color: #006eff;
+  color: rgb(42, 199, 76);
 }
 
 .active {
   font-weight: bold;
-  color: #006eff;
+  color: rgb(42, 199, 76);
 }
 
 /* Responsive Design */

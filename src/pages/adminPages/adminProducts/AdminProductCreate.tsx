@@ -5,7 +5,7 @@ import { createProduct } from "../../../services/ProductService";
 import { toast } from "react-toastify";
 import { ProductData } from "../../../types/product";
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
-import styles from "./AdminProduct.module.css"
+import styles from "./AdminProducts.module.css"
 const AdminProductCreate: React.FC = () => {
   const navigate = useNavigate();
 

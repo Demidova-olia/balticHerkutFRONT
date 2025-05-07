@@ -23,7 +23,7 @@
   .select,
   .fileInput {
     margin-top: 0.5rem;
-    width: 100%;
+    width: 90%;
     padding: 0.5rem 1rem;
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
@@ -51,7 +51,7 @@
   }
   
   .submitButton:hover {
-    background-color: #1d4ed8;
+    background-color: rgb(42, 199, 76);
   }
   
   .backButtonContainer {
@@ -71,7 +71,8 @@
   }
   
   .button:hover {
-    background-color: #4b5563;
+    background-color:rgb(42, 199, 76);
+    color: white;
   }
   
   .mainMenuBtn {

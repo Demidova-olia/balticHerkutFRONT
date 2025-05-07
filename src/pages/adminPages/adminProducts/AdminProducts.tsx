@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Product } from "../../../types/product";
 import { Link, useNavigate } from "react-router-dom";
 import * as ProductService from "../../../services/ProductService";
-import "./AdminProduct.css"; 
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
+import styles from "./AdminProducts.module.css";
 
 const AdminProducts: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -48,13 +48,16 @@ const AdminProducts: React.FC = () => {
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="admin-products">
+    <div className={styles.adminProducts}>
       <h2>Manage Products</h2>
-      <AdminNavBar/>
-      <button onClick={() => navigate("/admin/products/create")} className="button add-product-btn">
+      <AdminNavBar />
+      <button
+        onClick={() => navigate("/admin/products/create")}
+        className={styles.addProductBtn}
+      >
         Add New Product
       </button>
-      <table className="product-table">
+      <table className={styles.productTable}>
         <thead>
           <tr>
             <th>Images</th>
@@ -70,15 +73,15 @@ const AdminProducts: React.FC = () => {
         <tbody>
           {products.map((product) => (
             <tr key={product._id}>
-              <td>
+              <td data-label="Images">
                 {product.images && product.images.length > 0 ? (
-                  <div className="image-gallery">
+                  <div className={styles.imageGallery}>
                     {product.images.map((image, index) => (
                       <img
                         key={index}
                         src={image}
                         alt={`${product.name} image ${index + 1}`}
-                        className="product-image"
+                        className={styles.productImage}
                       />
                     ))}
                   </div>
@@ -86,25 +89,35 @@ const AdminProducts: React.FC = () => {
                   "No Image"
                 )}
               </td>
-              <td>{product.name}</td>
-              <td>{typeof product.category === "string" ? product.category : product.category?.name}</td>
-              <td>{typeof product.subcategory === "string" ? product.subcategory : product.subcategory?.name}</td>
-              <td>${product.price.toFixed(2)}</td>
-              <td>{product.stock}</td>
-              <td>{product.isActive ? "Yes" : "No"}</td>
-              <td>
-                <button onClick={() => handleEdit(product._id)} className="button edit-btn">Edit</button>
-                <button onClick={() => handleDelete(product._id)} className="button delete-btn">Delete</button>
+              <td data-label="Name">{product.name}</td>
+              <td data-label="Category">{typeof product.category === "string" ? product.category : product.category?.name}</td>
+              <td data-label="Subcategory">{typeof product.subcategory === "string" ? product.subcategory : product.subcategory?.name}</td>
+              <td data-label="Price">${product.price.toFixed(2)}</td>
+              <td data-label="Stock">{product.stock}</td>
+              <td data-label="Active">{product.isActive ? "Yes" : "No"}</td>
+              <td data-label="Actions">
+                <button
+                  onClick={() => handleEdit(product._id)}
+                  className={`${styles.button} ${styles.editBtn}`}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(product._id)}
+                  className={`${styles.button} ${styles.deleteBtn}`}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div className="back-button">
-        <button onClick={() => navigate(-1)} className="button back-btn">
+      <div className={styles.backButton}>
+        <button onClick={() => navigate(-1)} className={`${styles.button} ${styles.backBtn}`}>
           Go Back
         </button>
-        <Link to="/" className="button main-menu-btn" style={{ marginLeft: 10 }}>
+        <Link to="/" className={`${styles.button} ${styles.mainMenuBtn}`} style={{ marginLeft: 10 }}>
           Main Menu
         </Link>
       </div>
@@ -113,4 +126,3 @@ const AdminProducts: React.FC = () => {
 };
 
 export default AdminProducts;
-

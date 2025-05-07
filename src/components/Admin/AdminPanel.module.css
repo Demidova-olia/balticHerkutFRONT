@@ -1,0 +1,91 @@
+.adminPanel {
+  padding: 20px;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 28px;
+  margin: 20px 0;
+  color: #333;
+  text-align: center;
+}
+
+.adminButtons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.adminButtonWrapper {
+  flex: 1 1 200px;
+  max-width: 250px;
+  display: flex;
+  justify-content: center;
+}
+
+.adminButton {
+  display: inline-block;
+  text-align: center;
+  background-color: #007bff;
+  color: white;
+  padding: 15px 20px;
+  font-size: 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+.adminButton:hover {
+  background-color: rgb(42, 199, 76);
+  color: white;
+}
+
+.button {
+  display: block;
+  margin: 0 auto;
+  background-color: #17a2b8;
+  color: white;
+  padding: 12px 25px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.button:hover {
+  background-color: rgb(42, 199, 76);
+}
+
+
+@media (max-width: 768px) {
+  .adminButtons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .adminButtonWrapper {
+    max-width: 100%;
+    width: 90%;
+    max-height: 45px;
+  }
+
+  .adminButton {
+    font-size: 15px;
+    padding: 12px;
+  }
+
+  h1 {
+    font-size: 22px;
+  }
+}
+
+
+
+
+
+  
