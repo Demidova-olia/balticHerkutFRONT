@@ -1,0 +1,43 @@
+.favoriteList {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .favoriteItem {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .productDetails {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .productImageWrapper {
+    width: 50px; /* Вы можете настроить ширину */
+    height: 50px; /* И высоту изображения */
+    overflow: hidden;
+    border-radius: 5px;
+  }
+  
+  .productImage {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+  
+  .removeButton {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  
+  .removeButton:hover {
+    background-color: #d32f2f;
+  }
+  

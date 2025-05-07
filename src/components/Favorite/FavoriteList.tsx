@@ -1,53 +1,61 @@
-import React, { useEffect, useState } from 'react';
-import { Favorite } from '../../types/favorite';
+import { useEffect, useState } from 'react';
+import FavoriteService from '../../services/FavoriteService';
+import { Product } from '../../types/product';
+import { FaTrash } from 'react-icons/fa';
+import styles from './FavoriteList.module.css';
 
-interface FavoriteListProps {
-  userId: string; // ensure this is the right type of userId
-}
-
-const FavoriteList: React.FC<FavoriteListProps> = ({ userId }) => {
-  const [favorites, setFavorites] = useState<Favorite[]>([]); 
-  const [loading, setLoading] = useState<boolean>(true);
+const FavoriteList = () => {
+  const [favorites, setFavorites] = useState<Product[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
-        const response = await fetch(`/api/favorites/${userId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch favorites');
-        }
-        const data = await response.json();
-        setFavorites(data);
-      } catch (error) {
-        setError('Error fetching favorites. Please try again later.');
-        console.error('Error fetching favorites:', error);
-      } finally {
-        setLoading(false);
+        const favoritesData = await FavoriteService.getFavorites();
+        setFavorites(favoritesData);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "An unknown error occurred");
       }
     };
-
     fetchFavorites();
-  }, [userId]);
+  }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
+  const handleRemoveFromFavorites = async (productId: string) => {
+    try {
+      await FavoriteService.removeFromFavorites(productId);
+      setFavorites((prev) => prev.filter((fav) => fav._id !== productId));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
+    }
+  };
 
   return (
     <div>
-      <h2>Favorite Products</h2>
+      <h2>Your Favorite Products</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       {favorites.length === 0 ? (
         <p>No favorites available.</p>
       ) : (
-        <ul>
-          {favorites.map((item) => (
-            <li key={item._id}>
-              {typeof item.user === 'string' ? item.user : item.user.username || 'Unknown User'}
+        <ul className={styles.favoriteList}>
+          {favorites.map((product) => (
+            <li key={product._id} className={styles.favoriteItem}>
+              <div className={styles.productDetails}>
+                {/* Display product image */}
+                <div className={styles.productImageWrapper}>
+                  <img
+                    className={styles.productImage}
+                    src={product.images?.[0] ?? "/placeholder.jpg"}
+                    alt={product.name}
+                  />
+                </div>
+                <span>{product.name}</span> {/* Product name */}
+                <button
+                  className={styles.removeButton}
+                  onClick={() => handleRemoveFromFavorites(product._id)}
+                >
+                  <FaTrash /> Remove
+                </button>
+              </div>
             </li>
           ))}
         </ul>

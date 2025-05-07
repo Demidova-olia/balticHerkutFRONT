@@ -3,7 +3,7 @@ import UserService from "../../services/UserService";
 import { User } from "../../types/user";
 import { IOrder } from "../../types/order";
 import NavBar from "../../components/NavBar/NavBar";
-import FavoriteList from "../../components/Favorite/FavoriteList";  // Импортируем компонент для избранных
+import FavoriteList from "../../components/Favorite/FavoriteList";
 
 const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -62,7 +62,7 @@ const ProfilePage: React.FC = () => {
           </ul>
 
           {/* Передаем userId в компонент FavoriteList */}
-          <FavoriteList userId={user._id} />
+          <FavoriteList/>
         </div>
       ) : (
         <p className="loadingText">Loading profile...</p>
