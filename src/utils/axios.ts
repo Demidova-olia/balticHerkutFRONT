@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig, } from "axios";
 
 const axiosInstance = axios.create({
   baseURL: "http://localhost:3000/api",
@@ -7,22 +7,24 @@ const axiosInstance = axios.create({
   },
 });
 
+// Request interceptor
 axiosInstance.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem("token");
-    if (token) {
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
+  (error: AxiosError) => {
     return Promise.reject(error);
   }
 );
 
+// Response interceptor
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
+  (error: AxiosError) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       window.location.href = "/login";
@@ -32,3 +34,4 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
+

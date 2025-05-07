@@ -1,0 +1,115 @@
+.admin-orders {
+    width: 100%;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f8f8f8;
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+  }
+  
+  .admin-orders h1 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .orders-table {
+    width: 100%;
+    margin-top: 2rem;
+    border-collapse: collapse;
+    background-color: white;
+    table-layout: auto;
+  }
+  
+  .orders-table th,
+  .orders-table td {
+    padding: 1rem;
+    border: 1px solid #ddd;
+    text-align: left;
+    font-size: 1rem;
+    word-break: break-word;
+    color: #333;
+  }
+  
+  .orders-table select {
+    padding: 0.4rem;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+  }
+  
+  .orders-table ul {
+    padding-left: 1rem;
+    margin: 0;
+    list-style: disc;
+  }
+  
+  .orders-table li {
+    font-size: 0.95rem;
+    color: #444;
+  }
+  
+  @media (max-width: 790px) {
+    .orders-table {
+      display: block;
+      overflow-x: auto;
+      width: 100%;
+    }
+  
+    .orders-table thead {
+      display: none;
+    }
+  
+    .orders-table tr {
+      display: block;
+      margin-bottom: 1rem;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+  
+    .orders-table td {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border: none;
+      border-bottom: 1px solid #eee;
+      padding: 0.5rem 0;
+      font-size: 0.9rem;
+    }
+  
+    .orders-table td::before {
+      content: attr(data-label);
+      font-weight: bold;
+      color: #555;
+      margin-right: 1rem;
+      
+    }
+  
+    .orders-table td:last-child {
+      border-bottom: none;
+    }
+  
+    .orders-table select {
+      width: 100%;
+    }
+  
+    .orders-table ul {
+      padding-left: 0;
+      margin: 0;
+    }
+  
+    .orders-table li {
+      margin-bottom: 0.3rem;
+    }
+  }
+  

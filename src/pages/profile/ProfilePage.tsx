@@ -1,27 +1,31 @@
 import React, { useEffect, useState } from "react";
 import UserService from "../../services/UserService";
 import { User } from "../../types/user";
-import { IOrder } from "../../types/order";
 import NavBar from "../../components/NavBar/NavBar";
 import FavoriteList from "../../components/Favorite/FavoriteList";
+// import MyOrderList from "../../components/Orders/MyOrdersList";
 
 const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [orders, setOrders] = useState<IOrder[]>([]);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const userData = await UserService.getProfile();
         setUser(userData);
-        setOrders(userData.orders || []);
       } catch (error) {
+        setError("Error fetching profile data");
         console.error("Error fetching profile data", error);
       }
     };
 
     fetchProfile();
   }, []);
+
+  if (error) {
+    return <p>{error}</p>;
+  }
 
   return (
     <div className="profilePage">
@@ -47,22 +51,8 @@ const ProfilePage: React.FC = () => {
           <p className="userDetail">
             Joined: {new Date(user.createdAt || "").toLocaleDateString()}
           </p>
-
-          <h3 className="sectionTitle">Your Orders:</h3>
-          <ul className="orderList">
-            {orders.length > 0 ? (
-              orders.map((order, index) => (
-                <li key={index} className="orderItem">
-                  {JSON.stringify(order)}
-                </li>
-              ))
-            ) : (
-              <li className="orderItem">No orders yet.</li>
-            )}
-          </ul>
-
-          {/* Передаем userId в компонент FavoriteList */}
-          <FavoriteList/>
+          {/* <MyOrderList/> */}
+          <FavoriteList />
         </div>
       ) : (
         <p className="loadingText">Loading profile...</p>

@@ -27,7 +27,7 @@ const NavBar: React.FC = () => {
         </li>
         <li>
           <NavLink
-            to="/products"
+            to="/productsPage"
             className={({ isActive }) =>
               isActive ? `${styles.link} ${styles.active}` : styles.link
             }
@@ -46,16 +46,6 @@ const NavBar: React.FC = () => {
                 }
               >
                 Profile
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/profile/orders"
-                className={({ isActive }) =>
-                  isActive ? `${styles.link} ${styles.active}` : styles.link
-                }
-              >
-                Orders
               </NavLink>
             </li>
             <li>

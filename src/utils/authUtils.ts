@@ -4,6 +4,7 @@ interface DecodedToken {
   userId: string;
   email?: string;
   exp: number;
+  role?:string;
 }
 
 export const getDecodedToken = (): DecodedToken | null => {

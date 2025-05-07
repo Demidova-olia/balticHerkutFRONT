@@ -19,7 +19,7 @@ const AdminProducts: React.FC = () => {
   const fetchProducts = async () => {
     try {
       const data = await ProductService.getProducts();
-      setProducts(data.products);
+      setProducts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching products:", err);
       setError("Failed to load products.");

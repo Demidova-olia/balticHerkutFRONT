@@ -1,0 +1,15 @@
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1rem;
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 0.5rem;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #1f2937; /* Tailwind's gray-800 */
+}

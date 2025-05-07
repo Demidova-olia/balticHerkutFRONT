@@ -1,4 +1,5 @@
 import { Product } from "./product";
+import { IUser } from "./user";
 
 export interface OrderItem {
     productId: string | Product;
@@ -8,7 +9,7 @@ export interface OrderItem {
   
   export interface IOrder {
     _id: string;
-    user: string; // or IUser if populated
+    user: string | IUser;
     items: OrderItem[];
     status: "PENDING" | "PAID" | "SHIPPED" | "DELIVERED" | "CANCELLED";
     totalAmount: number;

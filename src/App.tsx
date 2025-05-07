@@ -16,6 +16,10 @@ import ProductPage from "./pages/products/ProductPage";
 import CartPage from "./pages/cartPage/CartPage";
 import ProductsPage from "./pages/products/ProductsPage";
 import ProfilePage from "./pages/profile/ProfilePage";
+import CheckoutPage from "./pages/CheckoutPage/CheckoutPage";
+import MyOrdersList from "./components/Orders/MyOrdersList";
+import OrderSuccessPage from "./pages/orders/OrderSuccessPage";
+import AdminOrders from "./pages/adminPages/adminOrders/AdminOrders";
 
 function App() {
   return (
@@ -28,10 +32,13 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/orders" element={<MyOrdersList />} />
 
-        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/productsPage" element={<ProductsPage />} />
         <Route path="/product/:id" element={<ProductPage />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/order-success" element={<OrderSuccessPage />} />
 
         <Route path="/admin" element={<AdminRoute />}> 
           <Route index element={<AdminPanel />} /> 
@@ -40,6 +47,7 @@ function App() {
           <Route path="products/edit/:id" element={<AdminProductEdit />} /> 
           <Route path="categories" element={<AdminCategories />} />
           <Route path="subcategories" element={<AdminSubcategories />} />
+          <Route path="/admin/orders" element={<AdminOrders />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/home" replace />} />

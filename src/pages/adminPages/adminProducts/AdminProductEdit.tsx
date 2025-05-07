@@ -5,6 +5,7 @@ import AdminProductForm from "../../../components/Admin/AdminProductForm";
 import { Product, ProductData } from "../../../types/product";
 import { toast } from "react-toastify";
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
+import styles from "./AdminProduct.module.css"
 
 const AdminProductEdit: React.FC = () => {
   const { id } = useParams();
@@ -59,9 +60,9 @@ const AdminProductEdit: React.FC = () => {
   if (error) return <div className="text-center text-lg font-semibold text-red-600">{error}</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-lg">
+    <div className={styles.container}>
       <AdminNavBar />
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Product</h2>
+      <h2 className={styles.heading}>Edit Product</h2>
       {product && (
         <AdminProductForm
           initialData={product}
