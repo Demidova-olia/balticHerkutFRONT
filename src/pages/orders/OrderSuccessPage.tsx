@@ -1,14 +1,19 @@
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom';
+import styles from './OrderSuccessPage.module.css';
+import NavBar from '../../components/NavBar/NavBar';
 
 const OrderSuccessPage = () => {
     return (
-        <div className="order-success-page">
-            <h1>Ačiū! Užsakymas gautas</h1>
-            <Link to="/" className="back-to-home-button">
-                Grįžti į pradžią
-            </Link>
-        </div>
-    )
-}
+        <>
+            <NavBar/>
+            <div className={styles.page}>
+                <h1 className={styles.heading}>Thank you! Your order has been received.</h1>
+                <Link to="/" className={styles.button}>
+                    Back to Home
+                </Link>
+            </div>
+        </>
+    );
+};
 
-export default OrderSuccessPage 
+export default OrderSuccessPage;
