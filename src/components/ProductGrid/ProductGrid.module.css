@@ -104,7 +104,6 @@
   color: rgb(42, 199, 76);
 }
 
-/* Responsive Grid Layout */
 @media (max-width: 1400px) {
   .productGrid {
     grid-template-columns: repeat(5, 1fr);

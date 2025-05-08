@@ -32,7 +32,7 @@ import {
           setToken(savedToken);
           setUser({
             id: decoded.id,
-            name: decoded.name,
+            username: decoded.username,
             email: decoded.email,
             role: decoded.role,
           });
@@ -58,7 +58,7 @@ import {
   
       const user: User = {
         id: decoded.id,
-        name: decoded.name,
+        username: decoded.username,
         email: decoded.email,
         role: decoded.role,
       };

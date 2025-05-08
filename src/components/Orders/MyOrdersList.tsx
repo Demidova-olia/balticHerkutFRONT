@@ -1,45 +1,22 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { IOrder } from "../../types/order";
 import UserService from "../../services/UserService";
-import { getDecodedToken, isAuthenticated } from "../../utils/authUtils";
+import { IOrder } from "../../types/order"; 
+import { IUser } from "../../types/user";
+import { IProduct } from "../../types/favorite";
 
 const MyOrderList: React.FC = () => {
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [openOrderId, setOpenOrderId] = useState<string | null>(null); 
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        if (!isAuthenticated()) {
-          throw new Error("You must be logged in to view your orders.");
-        }
-
-        const decoded = getDecodedToken();
-        const token = localStorage.getItem("token");
-        console.log("Token from localStorage:", token);
-
-        if (!decoded || !decoded.userId) {
-          throw new Error("User ID not found in token.");
-        }
-
         const data = await UserService.getOrders();
-        const currentUserId = decoded.userId;
-
-        const userOrders = data.filter((order: IOrder) => {
-          if (typeof order.user === "string") {
-            return order.user === currentUserId;
-          } else {
-            return order.user._id === currentUserId;
-          }
-        });
-
-        setOrders(userOrders);
+        setOrders(data);
       } catch (err: unknown) {
-        if (axios.isAxiosError(err)) {
-          setError(err.response?.data?.message || "Failed to load orders");
-        } else if (err instanceof Error) {
+        if (err instanceof Error) {
           setError(err.message);
         } else {
           setError("An unknown error occurred.");
@@ -51,6 +28,10 @@ const MyOrderList: React.FC = () => {
 
     fetchOrders();
   }, []);
+
+  const toggleOrderDetails = (orderId: string) => {
+    setOpenOrderId((prevOrderId) => (prevOrderId === orderId ? null : orderId)); 
+  };
 
   if (loading) return <p>Loading orders...</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
@@ -64,30 +45,43 @@ const MyOrderList: React.FC = () => {
         <ul className="space-y-6">
           {orders.map((order: IOrder) => (
             <li key={order._id} className="border rounded p-4 shadow-sm">
-              <p><strong>Order ID:</strong> {order._id}</p>
               <p>
-                <strong>User:</strong>{" "}
-                {typeof order.user === "string"
-                  ? order.user
-                  : `${order.user.username} (${order.user.email})`}
+                <strong>Order ID:</strong>{" "}
+                <button
+                  onClick={() => toggleOrderDetails(order._id)}
+                  className="text-blue-500 hover:underline"
+                >
+                  {order._id}
+                </button>
               </p>
-              <p><strong>Address:</strong> {order.address}</p>
-              <p><strong>Total:</strong> €{order.totalAmount.toFixed(2)}</p>
-              <p><strong>Status:</strong> {order.status}</p>
-              <p><strong>Created At:</strong> {new Date(order.createdAt).toLocaleString()}</p>
-              <div className="mt-2">
-                <p className="font-semibold">Items:</p>
-                <ul className="list-disc list-inside">
-                  {order.items.map((item, idx) => (
-                    <li key={idx}>
-                      {(typeof item.productId === "string"
-                        ? item.productId
-                        : item.productId.name) + " "}
-                      x{item.quantity} - €{item.price}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+
+              {openOrderId === order._id && (
+                <div className="mt-4">
+                  <p><strong>User:</strong>{" "}
+                    {typeof order.user === "string"
+                      ? order.user
+                      : (order.user as IUser).username}{" "} 
+                    ({typeof order.user === "string" ? "Unknown Email" : (order.user as IUser).email})
+                  </p>
+                  <p><strong>Address:</strong> {order.address}</p>
+                  <p><strong>Total:</strong> €{order.totalAmount.toFixed(2)}</p>
+                  <p><strong>Status:</strong> {order.status}</p>
+                  <p><strong>Created At:</strong> {new Date(order.createdAt).toLocaleString()}</p>
+                  <div className="mt-2">
+                    <p className="font-semibold">Items:</p>
+                    <ul className="list-disc list-inside">
+                      {order.items.map((item, idx) => (
+                        <li key={idx}>
+                          {typeof item.productId === "string"
+                            ? item.productId
+                            : (item.productId as IProduct).name}{" "}
+                          x{item.quantity} - €{item.price.toFixed(2)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
             </li>
           ))}
         </ul>
@@ -97,3 +91,4 @@ const MyOrderList: React.FC = () => {
 };
 
 export default MyOrderList;
+

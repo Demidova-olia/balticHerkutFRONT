@@ -15,11 +15,14 @@ const Cart: React.FC = () => {
 
   return (
     <div className={styles.appBarContainer}>
-    <AppBar position="static" className={styles.appBarContainer}>
+    <AppBar position="static" sx={{
+    backgroundColor: "transparent",
+    boxShadow: "none",
+  }} className={styles.appBarContainer}>
       <Toolbar className={styles.toolbar}>
         <IconButton edge="end" onClick={handleIconClick} className={styles.iconButton}>
           <Badge badgeContent={items.length} color="error" className={styles.badge}>
-            <ShoppingCartIcon />
+            <ShoppingCartIcon className={styles.whiteIcon}/>
           </Badge>
         </IconButton>
       </Toolbar>

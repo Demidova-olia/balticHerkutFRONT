@@ -3,12 +3,14 @@ import UserService from "../../services/UserService";
 import { User } from "../../types/user";
 import NavBar from "../../components/NavBar/NavBar";
 import FavoriteList from "../../components/Favorite/FavoriteList";
-// import MyOrderList from "../../components/Orders/MyOrdersList";
+import MyOrderList from "../../components/Orders/MyOrdersList";
 import styles from "./ProfilePage.module.css";
+import { useNavigate } from "react-router";
 
 const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string>("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -34,6 +36,12 @@ const ProfilePage: React.FC = () => {
       <div className={styles.profilePage}>
         
         <h1 className={styles.pageTitle}>Profile</h1>
+        <button
+          className={styles.editButton}
+          onClick={() => navigate("/edit-profile")}
+        >
+          Edit Profile
+        </button>
 
         {user ? (
           <div className={styles.userInfo}>
@@ -54,7 +62,7 @@ const ProfilePage: React.FC = () => {
             <p className={styles.userDetail}>
               Joined: {new Date(user.createdAt || "").toLocaleDateString()}
             </p>
-            {/* <MyOrderList /> */}
+            <MyOrderList />
             <FavoriteList />
           </div>
         ) : (

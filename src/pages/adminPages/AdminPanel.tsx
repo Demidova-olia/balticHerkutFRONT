@@ -7,8 +7,10 @@ import styles from "./AdminPanel.module.css"
 const AdminPanel: React.FC = () => {
     const navigate = useNavigate()
     return (
+        <>
+        <NavBar/>
         <div className={styles.adminPanel}>
-            <NavBar/>
+            
             <WelcomePanel />
             <h1>Administration Page</h1>
 
@@ -41,6 +43,7 @@ const AdminPanel: React.FC = () => {
                 Return to Homepage
             </button>
         </div>
+        </>
     )
 }
 

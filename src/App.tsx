@@ -20,6 +20,8 @@ import CheckoutPage from "./pages/CheckoutPage/CheckoutPage";
 import MyOrdersList from "./components/Orders/MyOrdersList";
 import OrderSuccessPage from "./pages/orders/OrderSuccessPage";
 import AdminOrders from "./pages/adminPages/adminOrders/AdminOrders";
+import EditProfilePage from "./pages/profile/EditProfilePage";
+
 
 function App() {
   return (
@@ -32,6 +34,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/edit-profile" element={<EditProfilePage />} />
         <Route path="/orders" element={<MyOrdersList />} />
 
         <Route path="/productsPage" element={<ProductsPage />} />

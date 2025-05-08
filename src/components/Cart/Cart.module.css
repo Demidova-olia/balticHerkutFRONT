@@ -1,23 +1,19 @@
 .appBarContainer {
     width: 100%;
-    background-color: #1f293713;
+    color: white;
     box-shadow: none;
     
   }
-  
+  .whiteIcon{
+    color: white;
+  }
   .toolbar {
     display: flex;
     justify-content: flex-end;
     padding: 0 16px;
   }
-  
-  .iconButton {
-    color: white;
-    position: relative;
-    transition: color 0.3s ease;
-  }
-  
-  .iconButton:hover {
+
+  .whiteIcon:hover {
     color: rgb(42, 199, 76);
   }
   

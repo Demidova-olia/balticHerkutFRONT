@@ -1,0 +1,76 @@
+.container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .error {
+    color: red;
+    font-size: 1rem;
+    margin-top: 20px;
+  }
+  
+  .noOrders {
+    font-size: 1.2rem;
+    color: #666;
+  }
+
+  .ordersList {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .orderItem {
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .itemsContainer {
+    margin-top: 10px;
+  }
+  
+  .itemsList {
+    list-style-type: disc;
+    margin-left: 20px;
+  }
+  
+  .item {
+    font-size: 0.95rem;
+    color: #555;
+  }
+  
+
+  .loading {
+    font-size: 1.2rem;
+    color: #007bff;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 10px;
+    }
+  
+    .title {
+      font-size: 1.5rem;
+    }
+  
+    .orderItem {
+      padding: 10px;
+    }
+  
+    .item {
+      font-size: 0.9rem;
+    }
+  }
+  

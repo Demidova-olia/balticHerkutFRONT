@@ -37,8 +37,7 @@
   color: rgb(42, 199, 76);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 630px) {
   .navList {
     flex-direction: column;
     align-items: center;

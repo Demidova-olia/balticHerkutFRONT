@@ -4,7 +4,7 @@ import { useAuth } from "../../hooks/useAuth"
 
 const WelcomePanel: React.FC = () => {
     const { user } = useAuth()
-    const username = user?.name || "Admin"
+    const username = user?.username || "Admin"
 
     return (
         <Box display="flex" justifyContent="center" mt={4}>

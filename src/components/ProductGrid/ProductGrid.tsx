@@ -90,7 +90,7 @@ const ProductGrid = ({
                 >
                   Add to cart
                 </button>
-                {isAuthenticated() && <FavoriteIcon productId={product._id} />} {/* ✅ Используй функцию */}
+                {isAuthenticated() && <FavoriteIcon productId={product._id} />}
               </div>
             </div>
           ))
