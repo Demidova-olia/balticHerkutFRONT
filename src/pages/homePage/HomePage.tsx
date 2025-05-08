@@ -94,54 +94,58 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className={styles.pageContainer}>
+    <>
       <NavBar />
-      <div className={styles.welcomeMessage}>
-        <h1>Baltic Herkut</h1>
-        <h2>Welcome to our store!</h2>
-        <p>Browse a variety of products and services.</p>
-      </div>
-      <SearchBar value={searchTerm} onChange={handleSearchChange} />
-
-      <div className={styles.welcomeMessage}>
-        <p>Select a category to start exploring!</p>
-      </div>
-
-      <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
-        <button
-          onClick={handleResetFilters}
-          className={styles.ResetFilter}
-        >
-          Reset Filters
-        </button>
-      </div>
-
-      <CategoryTree
-        categories={categories}
-        selectedCategoryId={selectedCategoryId ?? null}
-        selectedSubcategoryId={selectedSubcategoryId}
-        onCategoryToggle={handleCategoryToggle}
-        onSubcategorySelect={handleSubcategorySelect}
     
-      />
-      <div>
-        <h2 className={styles.categorySelectTitle}>Our Products</h2>
-      </div>
+      <div className={styles.pageContainer}>
+        
+        <div className={styles.welcomeMessage}>
+          <h1>Baltic Herkut</h1>
+          <h2>Welcome to our store!</h2>
+          <p>Browse a variety of products and services.</p>
+        </div>
+        <SearchBar value={searchTerm} onChange={handleSearchChange} />
 
-      {loading ? (
-        <Loading text="Loading products..." className={styles.loadingText} />
-      ) : error ? (
-        <p className={styles.errorText}>{error}</p>
-      ) : (
-        <ProductGrid 
-          products={products}
-          searchTerm={searchTerm}
-          selectedCategoryId={selectedCategoryId || ""}
+        <div className={styles.welcomeMessage}>
+          <p>Select a category to start exploring!</p>
+        </div>
+
+        <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
+          <button
+            onClick={handleResetFilters}
+            className={styles.ResetFilter}
+          >
+            Reset Filters
+          </button>
+        </div>
+
+        <CategoryTree
+          categories={categories}
+          selectedCategoryId={selectedCategoryId ?? null}
           selectedSubcategoryId={selectedSubcategoryId}
-          
+          onCategoryToggle={handleCategoryToggle}
+          onSubcategorySelect={handleSubcategorySelect}
+      
         />
-      )}
-    </div>
+        <div>
+          <h2 className={styles.categorySelectTitle}>Our Products</h2>
+        </div>
+
+        {loading ? (
+          <Loading text="Loading products..." className={styles.loadingText} />
+        ) : error ? (
+          <p className={styles.errorText}>{error}</p>
+        ) : (
+          <ProductGrid 
+            products={products}
+            searchTerm={searchTerm}
+            selectedCategoryId={selectedCategoryId || ""}
+            selectedSubcategoryId={selectedSubcategoryId}
+            
+          />
+        )}
+      </div>
+    </>
   );
 };
 

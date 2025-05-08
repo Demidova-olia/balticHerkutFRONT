@@ -99,37 +99,40 @@ const ProductsPage: React.FC = () => {
   };
 
   return (
-    <div className={styles.pageContainer}>
-      <NavBar />
-      <SearchBar value={searchTerm} onChange={handleSearchChange} />
+    <>
+        <NavBar />
+        <div className={styles.pageContainer}>
+        
+        <SearchBar value={searchTerm} onChange={handleSearchChange} />
 
-      <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
-        <button onClick={handleResetFilters} className={styles.ResetFilter}>
-          Reset Filters
-        </button>
-      </div>
+        <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
+            <button onClick={handleResetFilters} className={styles.ResetFilter}>
+            Reset Filters
+            </button>
+        </div>
 
-      <CategoryTree
-        categories={categories}
-        selectedCategoryId={selectedCategoryId ?? null}
-        selectedSubcategoryId={selectedSubcategoryId}
-        onCategoryToggle={handleCategoryToggle}
-        onSubcategorySelect={handleSubcategorySelect}
-      />
-
-      {loading ? (
-        <Loading text="Loading products..." className={styles.loadingText} />
-      ) : error ? (
-        <p className={styles.errorText}>{error}</p>
-      ) : (
-        <ProductGrid
-          products={products}
-          searchTerm={searchTerm}
-          selectedCategoryId={selectedCategoryId || ""}
-          selectedSubcategoryId={selectedSubcategoryId}
+        <CategoryTree
+            categories={categories}
+            selectedCategoryId={selectedCategoryId ?? null}
+            selectedSubcategoryId={selectedSubcategoryId}
+            onCategoryToggle={handleCategoryToggle}
+            onSubcategorySelect={handleSubcategorySelect}
         />
-      )}
-    </div>
+
+        {loading ? (
+            <Loading text="Loading products..." className={styles.loadingText} />
+        ) : error ? (
+            <p className={styles.errorText}>{error}</p>
+        ) : (
+            <ProductGrid
+            products={products}
+            searchTerm={searchTerm}
+            selectedCategoryId={selectedCategoryId || ""}
+            selectedSubcategoryId={selectedSubcategoryId}
+            />
+        )}
+        </div>
+    </>
   );
 };
 

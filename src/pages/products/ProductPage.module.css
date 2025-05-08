@@ -20,7 +20,7 @@
   }
   
   .image {
-    max-width: 100%;
+    max-width: 50%;
     height: auto;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -52,8 +52,8 @@
   }
   
   .addToCartButton {
-    background-color: #3182ce;
-    color: white;
+    background-color: rgba(9, 117, 9, 0.514);
+    color: #333;
     padding: 0.75rem 1.5rem;
     font-weight: 600;
     font-size: 1rem;
@@ -65,7 +65,8 @@
   }
   
   .addToCartButton:hover {
-    background-color: #2b6cb0;
+    background-color: green;
+    color:white;
   }
   
   .divider {
@@ -120,8 +121,8 @@
   
   .reviewForm button {
     align-self: flex-start;
-    background-color: #38a169;
-    color: white;
+    background-color: rgba(9, 117, 9, 0.514);
+    color: #333;
     padding: 0.5rem 1.25rem;
     font-size: 1rem;
     font-weight: 600;
@@ -132,6 +133,7 @@
   }
   
   .reviewForm button:hover {
-    background-color: #2f855a;
+    background-color: green;
+    color: white;
   }
   

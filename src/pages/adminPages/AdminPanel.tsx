@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom"
-import AdminMetrics from "./AdminMetrics"
-import WelcomePanel from "./WelcomePanel"
-import NavBar from "../NavBar/NavBar"
+import AdminMetrics from "../../components/Admin/AdminMetrics"
+import WelcomePanel from "../../components/Admin/WelcomePanel"
+import NavBar from "../../components/NavBar/NavBar"
 import styles from "./AdminPanel.module.css"
 
 const AdminPanel: React.FC = () => {

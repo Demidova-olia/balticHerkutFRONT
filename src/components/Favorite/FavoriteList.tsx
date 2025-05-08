@@ -40,7 +40,7 @@ const FavoriteList = () => {
           {favorites.map((product) => (
             <li key={product._id} className={styles.favoriteItem}>
               <div className={styles.productDetails}>
-                {/* Display product image */}
+               
                 <div className={styles.productImageWrapper}>
                   <img
                     className={styles.productImage}
@@ -48,7 +48,7 @@ const FavoriteList = () => {
                     alt={product.name}
                   />
                 </div>
-                <span>{product.name}</span> {/* Product name */}
+                <span className={styles.productName}>{product.name}</span> 
                 <button
                   className={styles.removeButton}
                   onClick={() => handleRemoveFromFavorites(product._id)}

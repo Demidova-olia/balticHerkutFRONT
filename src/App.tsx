@@ -3,7 +3,7 @@ import Login from "./pages/authorization/Login";
 import Register from "./pages/authorization/Register";
 import HomePage from "./pages/homePage/HomePage";
 import AdminRoute from "./components/Admin/AdminRoute";
-import AdminPanel from "./components/Admin/AdminPanel";
+import AdminPanel from "./pages/adminPages/AdminPanel";
 import AdminCategories from "./pages/adminPages/adminCategories/AdminCategories";
 import AdminSubcategories from "./pages/adminPages/adminSubcategories/AdminSubcategories";
 import AdminProducts from "./pages/adminPages/adminProducts/AdminProducts";
