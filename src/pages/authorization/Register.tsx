@@ -11,7 +11,8 @@ function Register() {
     email: '',
     password: '',
     confirmPassword: '',
-    username: ''
+    username: '',
+    phoneNumber: '' // Добавляем phoneNumber в состояние
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,7 +27,7 @@ function Register() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.password || !formData.confirmPassword || !formData.username) {
+    if (!formData.email || !formData.password || !formData.confirmPassword || !formData.username || !formData.phoneNumber) {
       toast.error('All fields are required');
       return;
     }
@@ -41,13 +42,15 @@ function Register() {
       console.log('Sending data:', {
         email: formData.email,
         password: formData.password,
-        username: formData.username
+        username: formData.username,
+        phoneNumber: formData.phoneNumber // Передаем phoneNumber
       });
 
       const response = await axiosInstance.post('/users/register', {
         email: formData.email,
         password: formData.password,
-        username: formData.username
+        username: formData.username,
+        phoneNumber: formData.phoneNumber // Добавляем phoneNumber в запрос
       });
 
       console.log('Server response:', response.data);
@@ -90,6 +93,18 @@ function Register() {
             id="email"
             name="email"
             value={formData.email}
+            onChange={handleChange}
+            required
+            className={styles.inputField}
+          />
+        </div>
+        <div>
+          <label htmlFor="phoneNumber" className={styles.label}>Phone Number:</label>
+          <input
+            type="text"
+            id="phoneNumber"
+            name="phoneNumber"
+            value={formData.phoneNumber}
             onChange={handleChange}
             required
             className={styles.inputField}
