@@ -97,7 +97,11 @@ export const updateProduct = async (id: string, productData: ProductData): Promi
     formData.append('stock', productData.stock.toString());
     productData.images?.forEach(file => formData.append('images', file));
 
-    const response = await axiosInstance.put(`/products/${id}`, formData);
+    const response = await axiosInstance.put(`/products/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   } catch (error) {
     handleAxiosError(error, `Failed to update product with id ${id}`);

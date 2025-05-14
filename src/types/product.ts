@@ -10,7 +10,7 @@ export interface Product {
     subcategory: string | Subcategory;
     stock: number;
     averageRating: number;
-    images: string[];
+    images: (string | { url: string })[];
     createdAt: string;
     updatedAt: string;
     brand?: string;
