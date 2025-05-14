@@ -105,7 +105,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
       const uploadedImageUrls: string[] = [];
   
       for (const image of images) {
-        const url = await uploadImage(image); // загрузка в Cloudinary
+        const url = await uploadImage(image);
         uploadedImageUrls.push(url);
       }
   
@@ -119,11 +119,11 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
         formData.append('subcategory', selectedSubcategory);
       }
   
-      uploadedImageUrls.forEach(url => formData.append('images', url)); // добавляем только ссылки
+      uploadedImageUrls.forEach(url => formData.append('images', url));
   
       onSubmit(formData);
     } catch (error) {
-      console.error("Ошибка при загрузке изображений:", error);
+      console.error("Error downloading images:", error);
     }
   };
 
