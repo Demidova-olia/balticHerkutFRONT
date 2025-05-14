@@ -63,7 +63,7 @@ const ProductGrid = ({
             <div key={product._id} className={styles.productItem}>
               <div
                 className={styles.productImageWrapper}
-                onClick={() => navigate(`/product/${product._id}`)}
+                onClick={() => navigate(`/product/id/${product._id}`)}
               >
                 <img
                   className={styles.productImage}
