@@ -12,5 +12,5 @@ export const uploadImage = async (file: File): Promise<string> => {
     }
   
     const data = await response.json();
-    return data.url; // Cloudinary image URL
+    return data.url; 
   };

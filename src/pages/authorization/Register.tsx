@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios, { AxiosError } from 'axios';
 import axiosInstance from '../../utils/axios';
 import { toast } from 'react-toastify';
-import styles from './Register.module.css'; // Import the CSS Module
+import styles from './Register.module.css'; 
 
 function Register() {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ function Register() {
     password: '',
     confirmPassword: '',
     username: '',
-    phoneNumber: '' // Добавляем phoneNumber в состояние
+    phoneNumber: ''
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -43,14 +43,14 @@ function Register() {
         email: formData.email,
         password: formData.password,
         username: formData.username,
-        phoneNumber: formData.phoneNumber // Передаем phoneNumber
+        phoneNumber: formData.phoneNumber
       });
 
       const response = await axiosInstance.post('/users/register', {
         email: formData.email,
         password: formData.password,
         username: formData.username,
-        phoneNumber: formData.phoneNumber // Добавляем phoneNumber в запрос
+        phoneNumber: formData.phoneNumber 
       });
 
       console.log('Server response:', response.data);
