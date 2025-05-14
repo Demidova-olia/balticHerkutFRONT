@@ -67,7 +67,11 @@ const ProductGrid = ({
               >
                 <img
                   className={styles.productImage}
-                  src={product.images?.[0] ?? "/placeholder.jpg"}
+                  src={
+                    typeof product.images?.[0] === "string"
+                      ? product.images[0]
+                      : product.images?.[0]?.url ?? "/placeholder.jpg"
+                  }
                   alt={product.name}
                 />
               </div>
@@ -84,7 +88,10 @@ const ProductGrid = ({
                       name: product.name,
                       price: product.price,
                       quantity: 1,
-                      image: product.images?.[0] ?? "/placeholder.jpg",
+                      image:
+                      typeof product.images?.[0] === "string"
+                        ? product.images[0]
+                        : product.images?.[0]?.url ?? "/placeholder.jpg",
                     });
                   }}
                 >
