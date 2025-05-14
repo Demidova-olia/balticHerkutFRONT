@@ -70,7 +70,10 @@ const ProductPage: React.FC = () => {
       name: product.name,
       price: product.price,
       quantity: 1,
-      image: product.images?.[0] ?? "/placeholder.jpg",
+      image:
+    typeof product.images?.[0] === "string"
+      ? product.images[0]
+      : product.images?.[0]?.url ?? "/placeholder.jpg",
       stock: product.stock,
     });
   };
@@ -136,7 +139,11 @@ const ProductPage: React.FC = () => {
         <h1 className={styles.title}>{product.name}</h1>
         <div className={styles.imageWrapper}>
             {product.images?.[0] && (
-            <img src={product.images[0]} alt={product.name} className={styles.image} />
+            <img
+            src={typeof product.images[0] === "string" ? product.images[0] : product.images[0]?.url}
+            alt={product.name}
+          />
+          
             )}
         </div>
         <p className={styles.description}>{product.description}</p>
