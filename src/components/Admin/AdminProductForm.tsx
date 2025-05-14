@@ -6,6 +6,7 @@ import { getCategories } from '../../services/CategoryService';
 import { getSubcategories } from '../../services/SubcategoryService';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './AdminProductForm.module.css';
+import { uploadImage } from '../../utils/uploadImage';
 
 interface ProductFormProps {
   initialData?: Partial<Product>;
@@ -97,19 +98,33 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append('name', formState.name);
-    formData.append('description', formState.description);
-    formData.append('price', formState.price.toString());
-    formData.append('stock', formState.stock.toString());
-    formData.append('category', selectedCategory);
-    if (selectedSubcategory) {
-      formData.append('subcategory', selectedSubcategory);
+  
+    try {
+      const uploadedImageUrls: string[] = [];
+  
+      for (const image of images) {
+        const url = await uploadImage(image); // загрузка в Cloudinary
+        uploadedImageUrls.push(url);
+      }
+  
+      const formData = new FormData();
+      formData.append('name', formState.name);
+      formData.append('description', formState.description);
+      formData.append('price', formState.price.toString());
+      formData.append('stock', formState.stock.toString());
+      formData.append('category', selectedCategory);
+      if (selectedSubcategory) {
+        formData.append('subcategory', selectedSubcategory);
+      }
+  
+      uploadedImageUrls.forEach(url => formData.append('images', url)); // добавляем только ссылки
+  
+      onSubmit(formData);
+    } catch (error) {
+      console.error("Ошибка при загрузке изображений:", error);
     }
-    images.forEach(file => formData.append('images', file));
-    onSubmit(formData);
   };
 
   return (

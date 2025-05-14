@@ -70,7 +70,7 @@ const ProductGrid = ({
                   src={
                     typeof product.images?.[0] === "string"
                       ? product.images[0]
-                      : product.images?.[0]?.url ?? "/placeholder.jpg"
+                      : (product.images?.[0] as { url: string })?.url ?? "/placeholder.jpg"
                   }
                   alt={product.name}
                 />
