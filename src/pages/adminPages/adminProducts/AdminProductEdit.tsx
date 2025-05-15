@@ -59,7 +59,6 @@ const AdminProductEdit: React.FC = () => {
         File | { url: string; public_id: string }
       )[];
 
-      // Гарантируем наличие поля `images`, даже если массив пустой
       const formDataObj: ProductData = {
         name,
         description,
