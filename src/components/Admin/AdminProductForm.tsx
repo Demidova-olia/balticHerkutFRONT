@@ -14,45 +14,52 @@ interface ProductFormProps {
   submitText: string;
 }
 
-const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubmit, submitText }) => {
+const AdminProductForm: React.FC<ProductFormProps> = ({
+  initialData = {},
+  onSubmit,
+  submitText,
+}) => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [allSubcategories, setAllSubcategories] = useState<Subcategory[]>([]);
   const [filteredSubcategories, setFilteredSubcategories] = useState<Subcategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>(typeof initialData.category === 'string' ? initialData.category : initialData.category?._id || '');
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(typeof initialData.subcategory === 'string' ? initialData.subcategory : initialData.subcategory?._id || '');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const [images, setImages] = useState<File[]>([]);
   const [formState, setFormState] = useState({
-    name: initialData.name || '',
-    description: initialData.description || '',
-    price: initialData.price || 0,
-    stock: initialData.stock || 0,
+    name: '',
+    description: '',
+    price: 0,
+    stock: 0,
   });
 
+  // Загрузка категорий
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const data = await getCategories();
         setCategories(data);
       } catch (err) {
-        console.error("Error fetching categories:", err);
+        console.error('Error fetching categories:', err);
       }
     };
     fetchCategories();
   }, []);
 
+  // Загрузка подкатегорий
   useEffect(() => {
     const fetchSubcategories = async () => {
       try {
         const data = await getSubcategories();
         setAllSubcategories(data);
       } catch (err) {
-        console.error("Error fetching subcategories:", err);
+        console.error('Error fetching subcategories:', err);
       }
     };
     fetchSubcategories();
   }, []);
 
+  // Обновление отфильтрованных подкатегорий при изменении категории
   useEffect(() => {
     if (selectedCategory) {
       const filtered = allSubcategories.filter(sub =>
@@ -67,6 +74,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
     }
   }, [selectedCategory, allSubcategories]);
 
+  // Автоустановка родительской категории при выбранной подкатегории
   useEffect(() => {
     if (selectedSubcategory && !selectedCategory) {
       const sub = allSubcategories.find(sub => sub._id === selectedSubcategory);
@@ -76,6 +84,31 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
       }
     }
   }, [selectedSubcategory, allSubcategories, selectedCategory]);
+
+  // Заполнение формы при наличии initialData
+  useEffect(() => {
+    if (initialData) {
+      setFormState({
+        name: initialData.name || '',
+        description: initialData.description || '',
+        price: initialData.price || 0,
+        stock: initialData.stock || 0,
+      });
+
+      const categoryId =
+        typeof initialData.category === 'string'
+          ? initialData.category
+          : initialData.category?._id || '';
+
+      const subcategoryId =
+        typeof initialData.subcategory === 'string'
+          ? initialData.subcategory
+          : initialData.subcategory?._id || '';
+
+      setSelectedCategory(categoryId);
+      setSelectedSubcategory(subcategoryId);
+    }
+  }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -100,15 +133,15 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+
     try {
       const uploadedImageUrls: string[] = [];
-  
+
       for (const image of images) {
         const url = await uploadImage(image);
         uploadedImageUrls.push(url);
       }
-  
+
       const formData = new FormData();
       formData.append('name', formState.name);
       formData.append('description', formState.description);
@@ -118,12 +151,11 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
       if (selectedSubcategory) {
         formData.append('subcategory', selectedSubcategory);
       }
-  
+
       uploadedImageUrls.forEach(url => formData.append('images', url));
-  
       onSubmit(formData);
     } catch (error) {
-      console.error("Error downloading images:", error);
+      console.error('Error uploading images:', error);
     }
   };
 
@@ -186,7 +218,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({ initialData = {}, onSubm
           <select
             id="category"
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={e => setSelectedCategory(e.target.value)}
             required
             className={styles.select}
           >
