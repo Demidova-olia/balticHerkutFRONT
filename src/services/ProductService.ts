@@ -1,4 +1,4 @@
-import { Product } from '../types/product';
+import { Product, ProductsListResponse } from '../types/product';
 import axiosInstance from '../utils/axios';
 import { AxiosError } from 'axios';
 
@@ -21,10 +21,6 @@ interface ApiResponse<T> {
   data: T;
 }
 
-interface ProductsListResponse {
-  products: Product[];
-  total: number;
-}
 
 function handleAxiosError(error: unknown, context: string): never {
   const err = error as AxiosError;
@@ -40,16 +36,15 @@ function handleAxiosError(error: unknown, context: string): never {
     throw new Error(`${context}. Error: ${err.message}`);
   }
 }
-
 export const getProducts = async (
-  searchTerm = "",
-  selectedCategoryId = "",
-  selectedSubcategoryId = "",
+  searchTerm = '',
+  selectedCategoryId = '',
+  selectedSubcategoryId = '',
   page = 1,
   limit = 10
-): Promise<Product[]> => {
+): Promise<ProductsListResponse> => {
   try {
-    const response = await axiosInstance.get<ProductsListResponse>("/products", {
+    const response = await axiosInstance.get<ProductsListResponse>('/products', {
       params: {
         search: searchTerm,
         category: selectedCategoryId,
@@ -59,9 +54,10 @@ export const getProducts = async (
       },
     });
 
-    return response.data.products;
+    return response.data;
   } catch (error) {
-    handleAxiosError(error, "Failed to fetch products");
+    handleAxiosError(error, 'Failed to fetch products');
+    throw error;
   }
 };
 
@@ -83,12 +79,15 @@ export const createProduct = async (productData: ProductData): Promise<Product> 
     formData.append('category', productData.category);
     if (productData.subcategory) formData.append('subcategory', productData.subcategory);
     formData.append('stock', productData.stock.toString());
-    productData.images?.forEach(file => formData.append('images', file));
+    productData.images?.forEach((file) => formData.append('images', file));
 
-    const response = await axiosInstance.post<ApiResponse<Product>>("/products", formData);
+    const response = await axiosInstance.post<ApiResponse<Product>>('/products', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
     return response.data.data;
   } catch (error) {
-    handleAxiosError(error, "Failed to create product");
+    handleAxiosError(error, 'Failed to create product');
   }
 };
 
@@ -101,12 +100,10 @@ export const updateProduct = async (id: string, productData: ProductData): Promi
     formData.append('category', productData.category);
     if (productData.subcategory) formData.append('subcategory', productData.subcategory);
     formData.append('stock', productData.stock.toString());
-    productData.images?.forEach(file => formData.append('images', file));
+    productData.images?.forEach((file) => formData.append('images', file));
 
     const response = await axiosInstance.put<ApiResponse<Product>>(`/products/${id}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
 
     return response.data.data;
@@ -115,10 +112,10 @@ export const updateProduct = async (id: string, productData: ProductData): Promi
   }
 };
 
-export const deleteProduct = async (id: string): Promise<{ message: string; data: Product }> => {
+export const deleteProduct = async (id: string): Promise<Product> => {
   try {
     const response = await axiosInstance.delete<ApiResponse<Product>>(`/products/${id}`);
-    return response.data;
+    return response.data.data;
   } catch (error) {
     handleAxiosError(error, `Failed to delete product with id ${id}`);
   }
@@ -138,7 +135,7 @@ export const getProductsByCategoryAndSubcategory = async (
   subcategoryId: string
 ): Promise<Product[]> => {
   try {
-    const response = await axiosInstance.get<ProductsListResponse>(`/products`, {
+    const response = await axiosInstance.get<ProductsListResponse>('/products', {
       params: { category: categoryId, subcategory: subcategoryId },
     });
     return response.data.products;
@@ -149,7 +146,7 @@ export const getProductsByCategoryAndSubcategory = async (
 
 export const searchProducts = async (query: string): Promise<Product[]> => {
   try {
-    const response = await axiosInstance.get<ApiResponse<Product[]>>("/products/search", {
+    const response = await axiosInstance.get<ApiResponse<Product[]>>('/products/search', {
       params: { q: query },
     });
     return response.data.data;
