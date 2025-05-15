@@ -26,15 +26,15 @@ export interface Product {
   isActive?: boolean;
 }
 
-  export interface ProductData {
-    name: string;
-    description: string;
-    price: number;
-    category: string;
-    subcategory?: string;
-    stock: number;
-    images: File[];
-  }
+export interface ProductData {
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  subcategory: string;
+  stock: number;
+  images: (File | { url: string; public_id: string })[];
+}
   export interface ProductsResponse {
     products: Product[];
     total: number;

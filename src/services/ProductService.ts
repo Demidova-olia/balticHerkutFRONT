@@ -1,16 +1,7 @@
-import { Product, ProductsListResponse } from '../types/product';
+import { Product, ProductData, ProductsListResponse } from '../types/product';
 import axiosInstance from '../utils/axios';
 import { AxiosError } from 'axios';
 
-interface ProductData {
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  subcategory?: string;
-  stock: number;
-  images?: File[];
-}
 
 interface ErrorResponse {
   message: string;
@@ -77,9 +68,15 @@ export const createProduct = async (productData: ProductData): Promise<Product> 
     formData.append('description', productData.description);
     formData.append('price', productData.price.toString());
     formData.append('category', productData.category);
-    if (productData.subcategory) formData.append('subcategory', productData.subcategory);
+    if (productData.subcategory) {
+      formData.append('subcategory', productData.subcategory);
+    }
     formData.append('stock', productData.stock.toString());
-    productData.images?.forEach((file) => formData.append('images', file));
+
+    const newImages = productData.images?.filter(
+      (img): img is File => img instanceof File
+    );
+    newImages?.forEach((file) => formData.append('images', file));
 
     const response = await axiosInstance.post<ApiResponse<Product>>('/products', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -88,29 +85,55 @@ export const createProduct = async (productData: ProductData): Promise<Product> 
     return response.data.data;
   } catch (error) {
     handleAxiosError(error, 'Failed to create product');
+    throw error;
   }
 };
 
 export const updateProduct = async (id: string, productData: ProductData): Promise<Product> => {
   try {
     const formData = new FormData();
-    formData.append('name', productData.name);
-    formData.append('description', productData.description);
-    formData.append('price', productData.price.toString());
-    formData.append('category', productData.category);
-    if (productData.subcategory) formData.append('subcategory', productData.subcategory);
-    formData.append('stock', productData.stock.toString());
-    productData.images?.forEach((file) => formData.append('images', file));
 
-    const response = await axiosInstance.put<ApiResponse<Product>>(`/products/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    formData.append("name", productData.name);
+    formData.append("description", productData.description);
+    formData.append("price", productData.price.toString());
+    formData.append("category", productData.category);
+    if (productData.subcategory) {
+      formData.append("subcategory", productData.subcategory);
+    }
+    formData.append("stock", productData.stock.toString());
+
+    const existingImages = productData.images?.filter(
+      (img): img is { url: string; public_id: string } =>
+        typeof img === "object" &&
+        !(img instanceof File) &&
+        "url" in img &&
+        "public_id" in img
+    );
+    if (existingImages?.length) {
+      formData.append("existingImages", JSON.stringify(existingImages));
+    }
+
+    
+    const newImages = productData.images?.filter(
+      (img): img is File => img instanceof File
+    );
+    newImages?.forEach(file => formData.append("images", file));
+
+    const response = await axiosInstance.put<ApiResponse<Product>>(
+      `/products/${id}`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
 
     return response.data.data;
   } catch (error) {
     handleAxiosError(error, `Failed to update product with id ${id}`);
+    throw error;
   }
 };
+
 
 export const deleteProduct = async (id: string): Promise<Product> => {
   try {
