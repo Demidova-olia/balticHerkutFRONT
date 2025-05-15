@@ -17,31 +17,39 @@ interface ErrorResponse {
 }
 
 interface ApiResponse<T> {
-  data: T;
   message: string;
+  data: T;
+}
+
+interface ProductsListResponse {
+  products: Product[];
+  total: number;
 }
 
 function handleAxiosError(error: unknown, context: string): never {
-  const err = error as AxiosError<ErrorResponse>;
+  const err = error as AxiosError;
   if (err.response) {
-    const errorData = err.response.data;
+    const errorData = err.response.data as ErrorResponse;
+    console.error(`${context}:`, errorData.message);
     throw new Error(`${context}. Server responded with: ${err.response.status} - ${errorData.message}`);
   } else if (err.request) {
+    console.error(`${context}: No response from server`);
     throw new Error(`${context}. No response from server.`);
   } else {
+    console.error(`${context}:`, err.message);
     throw new Error(`${context}. Error: ${err.message}`);
   }
 }
 
 export const getProducts = async (
-  searchTerm: string = "",
-  selectedCategoryId: string = "",
-  selectedSubcategoryId: string = "",
-  page: number = 1,
-  limit: number = 10
+  searchTerm = "",
+  selectedCategoryId = "",
+  selectedSubcategoryId = "",
+  page = 1,
+  limit = 10
 ): Promise<Product[]> => {
   try {
-    const response = await axiosInstance.get<ApiResponse<Product[]>>("/products", {
+    const response = await axiosInstance.get<ProductsListResponse>("/products", {
       params: {
         search: searchTerm,
         category: selectedCategoryId,
@@ -50,7 +58,8 @@ export const getProducts = async (
         limit,
       },
     });
-    return response.data.data || [];
+
+    return response.data.products;
   } catch (error) {
     handleAxiosError(error, "Failed to fetch products");
   }
@@ -74,12 +83,9 @@ export const createProduct = async (productData: ProductData): Promise<Product> 
     formData.append('category', productData.category);
     if (productData.subcategory) formData.append('subcategory', productData.subcategory);
     formData.append('stock', productData.stock.toString());
-    productData.images?.forEach(file => formData.append('images[]', file));
+    productData.images?.forEach(file => formData.append('images', file));
 
-    const response = await axiosInstance.post<ApiResponse<Product>>("/products", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
+    const response = await axiosInstance.post<ApiResponse<Product>>("/products", formData);
     return response.data.data;
   } catch (error) {
     handleAxiosError(error, "Failed to create product");
@@ -95,7 +101,7 @@ export const updateProduct = async (id: string, productData: ProductData): Promi
     formData.append('category', productData.category);
     if (productData.subcategory) formData.append('subcategory', productData.subcategory);
     formData.append('stock', productData.stock.toString());
-    productData.images?.forEach(file => formData.append('images[]', file));
+    productData.images?.forEach(file => formData.append('images', file));
 
     const response = await axiosInstance.put<ApiResponse<Product>>(`/products/${id}`, formData, {
       headers: {
@@ -112,14 +118,12 @@ export const updateProduct = async (id: string, productData: ProductData): Promi
 export const deleteProduct = async (id: string): Promise<{ message: string; data: Product }> => {
   try {
     const response = await axiosInstance.delete<ApiResponse<Product>>(`/products/${id}`);
-    return {
-      message: response.data.message,
-      data: response.data.data,
-    };
+    return response.data;
   } catch (error) {
     handleAxiosError(error, `Failed to delete product with id ${id}`);
   }
 };
+
 export const getProductsByCategory = async (categoryName: string): Promise<Product[]> => {
   try {
     const response = await axiosInstance.get<ApiResponse<Product[]>>(`/products/category/${categoryName}`);
@@ -134,10 +138,10 @@ export const getProductsByCategoryAndSubcategory = async (
   subcategoryId: string
 ): Promise<Product[]> => {
   try {
-    const response = await axiosInstance.get<ApiResponse<Product[]>>(`/products`, {
+    const response = await axiosInstance.get<ProductsListResponse>(`/products`, {
       params: { category: categoryId, subcategory: subcategoryId },
     });
-    return response.data.data;
+    return response.data.products;
   } catch (error) {
     handleAxiosError(error, `Failed to load products for category ${categoryId} and subcategory ${subcategoryId}`);
   }
