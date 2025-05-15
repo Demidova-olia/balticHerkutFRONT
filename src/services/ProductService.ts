@@ -54,8 +54,8 @@ export const getProducts = async (
 
 export const getProductById = async (id: string): Promise<Product> => {
   try {
-    const response = await axiosInstance.get<ApiResponse<Product>>(`/products/${id}`);
-    return response.data.data;
+    const response = await axiosInstance.get<Product>(`/products/id/${id}`);
+    return response.data;
   } catch (error) {
     handleAxiosError(error, `Failed to load product with id ${id}`);
   }
@@ -137,19 +137,19 @@ export const updateProduct = async (id: string, productData: ProductData): Promi
 
 export const deleteProduct = async (id: string): Promise<Product> => {
   try {
-    const response = await axiosInstance.delete<ApiResponse<Product>>(`/products/${id}`);
-    return response.data.data;
+    const response = await axiosInstance.delete<Product>(`/products/${id}`);
+    return response.data;
   } catch (error) {
     handleAxiosError(error, `Failed to delete product with id ${id}`);
   }
 };
 
-export const getProductsByCategory = async (categoryName: string): Promise<Product[]> => {
+export const getProductsByCategory = async (categoryId: string): Promise<Product[]> => {
   try {
-    const response = await axiosInstance.get<ApiResponse<Product[]>>(`/products/category/${categoryName}`);
-    return response.data.data;
+    const response = await axiosInstance.get<Product[]>(`/products/${categoryId}`);
+    return response.data;
   } catch (error) {
-    handleAxiosError(error, `Failed to load products for category ${categoryName}`);
+    handleAxiosError(error, `Failed to load products for category ${categoryId}`);
   }
 };
 
@@ -169,10 +169,10 @@ export const getProductsByCategoryAndSubcategory = async (
 
 export const searchProducts = async (query: string): Promise<Product[]> => {
   try {
-    const response = await axiosInstance.get<ApiResponse<Product[]>>('/products/search', {
+    const response = await axiosInstance.get<Product[]>(`/products/search`, {
       params: { q: query },
     });
-    return response.data.data;
+    return response.data;
   } catch (error) {
     handleAxiosError(error, `Failed to search products for query: ${query}`);
   }
