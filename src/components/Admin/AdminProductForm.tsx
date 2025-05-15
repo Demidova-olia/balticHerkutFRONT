@@ -33,7 +33,6 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     stock: 0,
   });
 
-  // Загрузка категорий
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -46,7 +45,6 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     fetchCategories();
   }, []);
 
-  // Загрузка подкатегорий
   useEffect(() => {
     const fetchSubcategories = async () => {
       try {
@@ -59,7 +57,6 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     fetchSubcategories();
   }, []);
 
-  // Обновление отфильтрованных подкатегорий при изменении категории
   useEffect(() => {
     if (selectedCategory) {
       const filtered = allSubcategories.filter(sub =>
@@ -74,7 +71,6 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     }
   }, [selectedCategory, allSubcategories]);
 
-  // Автоустановка родительской категории при выбранной подкатегории
   useEffect(() => {
     if (selectedSubcategory && !selectedCategory) {
       const sub = allSubcategories.find(sub => sub._id === selectedSubcategory);
@@ -85,14 +81,18 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     }
   }, [selectedSubcategory, allSubcategories, selectedCategory]);
 
-  // Заполнение формы при наличии initialData
   useEffect(() => {
-    if (initialData) {
+    if (
+      initialData &&
+      initialData.name &&
+      initialData.price !== undefined &&
+      initialData.stock !== undefined
+    ) {
       setFormState({
-        name: initialData.name || '',
+        name: initialData.name,
         description: initialData.description || '',
-        price: initialData.price || 0,
-        stock: initialData.stock || 0,
+        price: initialData.price,
+        stock: initialData.stock,
       });
 
       const categoryId =
