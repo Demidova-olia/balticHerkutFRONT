@@ -152,7 +152,14 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
         formData.append('subcategory', selectedSubcategory);
       }
 
-      uploadedImageUrls.forEach(url => formData.append('images', url));
+      // Сначала добавляем старые изображения из initialData
+      const existingImages = Array.isArray(initialData.images)
+        ? initialData.images.map(img => (typeof img === 'string' ? img : img.url))
+        : [];
+
+      const allImages = [...existingImages, ...uploadedImageUrls];
+      allImages.forEach(url => formData.append('images', url));
+
       onSubmit(formData);
     } catch (error) {
       console.error('Error uploading images:', error);
@@ -183,6 +190,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
             value={formState.description}
             onChange={handleChange}
             required
+            placeholder="Enter product description..."
             className={styles.textarea}
           />
         </div>
@@ -246,7 +254,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
         </div>
 
         <div className={styles.formField}>
-          <label htmlFor="images" className={styles.label}>Product Images</label>
+          <label htmlFor="images" className={styles.label}>Upload New Images</label>
           <input
             id="images"
             type="file"
@@ -255,6 +263,22 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
             className={styles.fileInput}
           />
         </div>
+
+        {initialData.images && initialData.images.length > 0 && (
+          <div className={styles.imagePreview}>
+            <label className={styles.label}>Current Images:</label>
+            <div className={styles.imageGrid}>
+              {initialData.images.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={typeof img === 'string' ? img : img.url}
+                  alt={`Product image ${idx + 1}`}
+                  className={styles.previewImage}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         <button type="submit" className={styles.submitButton}>
           {submitText}
