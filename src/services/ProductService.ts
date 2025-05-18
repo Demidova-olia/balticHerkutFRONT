@@ -43,7 +43,7 @@ export const getProducts = async (
         limit,
       },
     });
-
+    console.log("API response:", response.data);
     return response.data.data;
   } catch (error) {
     handleAxiosError(error, 'Failed to fetch products');
