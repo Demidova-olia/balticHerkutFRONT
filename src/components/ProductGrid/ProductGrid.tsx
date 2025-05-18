@@ -48,6 +48,7 @@ const ProductGrid = ({
 };
 
     fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, selectedCategoryId, selectedSubcategoryId]);
 
   if (loading) return <div>Loading products...</div>;
