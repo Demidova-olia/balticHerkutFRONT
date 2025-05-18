@@ -2,7 +2,6 @@ import { Product, ProductData, ProductsListResponse } from '../types/product';
 import axiosInstance from '../utils/axios';
 import { AxiosError } from 'axios';
 
-
 interface ErrorResponse {
   message: string;
 }
@@ -11,7 +10,6 @@ interface ApiResponse<T> {
   message: string;
   data: T;
 }
-
 
 function handleAxiosError(error: unknown, context: string): never {
   const err = error as AxiosError;
@@ -27,13 +25,14 @@ function handleAxiosError(error: unknown, context: string): never {
     throw new Error(`${context}. Error: ${err.message}`);
   }
 }
+
 export const getProducts = async (
   searchTerm = '',
   selectedCategoryId = '',
   selectedSubcategoryId = '',
   page = 1,
   limit = 10
-): Promise<ProductsListResponse> => {
+): Promise<ProductsListResponse['data']> => {
   try {
     const response = await axiosInstance.get<ProductsListResponse>('/products', {
       params: {
@@ -45,7 +44,7 @@ export const getProducts = async (
       },
     });
 
-    return response.data;
+    return response.data.data;
   } catch (error) {
     handleAxiosError(error, 'Failed to fetch products');
     throw error;
@@ -54,8 +53,8 @@ export const getProducts = async (
 
 export const getProductById = async (id: string): Promise<Product> => {
   try {
-    const response = await axiosInstance.get<Product>(`/products/id/${id}`);
-    return response.data;
+    const response = await axiosInstance.get<ApiResponse<Product>>(`/products/id/${id}`);
+    return response.data.data;
   } catch (error) {
     handleAxiosError(error, `Failed to load product with id ${id}`);
   }
@@ -113,7 +112,6 @@ export const updateProduct = async (id: string, productData: ProductData): Promi
       formData.append("existingImages", JSON.stringify(existingImages));
     }
 
-    
     const newImages = productData.images?.filter(
       (img): img is File => img instanceof File
     );
@@ -134,11 +132,10 @@ export const updateProduct = async (id: string, productData: ProductData): Promi
   }
 };
 
-
 export const deleteProduct = async (id: string): Promise<Product> => {
   try {
-    const response = await axiosInstance.delete<Product>(`/products/${id}`);
-    return response.data;
+    const response = await axiosInstance.delete<ApiResponse<Product>>(`/products/${id}`);
+    return response.data.data;
   } catch (error) {
     handleAxiosError(error, `Failed to delete product with id ${id}`);
   }
@@ -146,8 +143,8 @@ export const deleteProduct = async (id: string): Promise<Product> => {
 
 export const getProductsByCategory = async (categoryId: string): Promise<Product[]> => {
   try {
-    const response = await axiosInstance.get<Product[]>(`/products/${categoryId}`);
-    return response.data;
+    const response = await axiosInstance.get<ApiResponse<Product[]>>(`/products/${categoryId}`);
+    return response.data.data;
   } catch (error) {
     handleAxiosError(error, `Failed to load products for category ${categoryId}`);
   }
@@ -161,7 +158,7 @@ export const getProductsByCategoryAndSubcategory = async (
     const response = await axiosInstance.get<ProductsListResponse>('/products', {
       params: { category: categoryId, subcategory: subcategoryId },
     });
-    return response.data.products;
+    return response.data.data.products;
   } catch (error) {
     handleAxiosError(error, `Failed to load products for category ${categoryId} and subcategory ${subcategoryId}`);
   }
@@ -169,10 +166,10 @@ export const getProductsByCategoryAndSubcategory = async (
 
 export const searchProducts = async (query: string): Promise<Product[]> => {
   try {
-    const response = await axiosInstance.get<Product[]>(`/products/search`, {
+    const response = await axiosInstance.get<ApiResponse<Product[]>>(`/products/search`, {
       params: { q: query },
     });
-    return response.data;
+    return response.data.data;
   } catch (error) {
     handleAxiosError(error, `Failed to search products for query: ${query}`);
   }

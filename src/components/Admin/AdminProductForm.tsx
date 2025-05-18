@@ -152,7 +152,6 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
         formData.append('subcategory', selectedSubcategory);
       }
 
-      // Сначала добавляем старые изображения из initialData
       const existingImages = Array.isArray(initialData.images)
         ? initialData.images.map(img => (typeof img === 'string' ? img : img.url))
         : [];

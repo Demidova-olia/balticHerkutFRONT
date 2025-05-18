@@ -29,7 +29,7 @@ const ProductGrid = ({
   setLoading(true);
   setError(null);
   try {
-    const response: ProductsListResponse = await getProducts(
+    const response: ProductsListResponse['data'] = await getProducts(
       searchTerm,
       selectedCategoryId ?? "",
       selectedSubcategoryId ?? "",

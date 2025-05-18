@@ -39,7 +39,11 @@ export interface ProductData {
     products: Product[];
     total: number;
   }
-  export interface ProductsListResponse {
-  products: Product[];
-  total: number;
+export interface ProductsListResponse {
+	message: string;
+	data: {
+		products: Product[];
+		totalPages: number;
+		totalProducts: number;
+	};
 }
