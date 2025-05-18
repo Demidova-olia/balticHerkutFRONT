@@ -44,6 +44,7 @@ const ProductGrid = ({
   } finally {
     setLoading(false);
   }
+    console.log("🚀 ~ fetchProducts ~ products:", products)
 };
 
     fetchProducts();

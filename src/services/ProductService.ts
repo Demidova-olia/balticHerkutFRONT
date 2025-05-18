@@ -36,9 +36,9 @@ export const getProducts = async (
   try {
     const response = await axiosInstance.get<ProductsListResponse>('/products', {
       params: {
-        search: searchTerm,
-        category: selectedCategoryId,
-        subcategory: selectedSubcategoryId,
+        ...(searchTerm && { search: searchTerm }),
+        ...(selectedCategoryId && { category: selectedCategoryId }),
+        ...(selectedSubcategoryId && { subcategory: selectedSubcategoryId }),
         page,
         limit,
       },
