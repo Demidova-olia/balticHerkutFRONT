@@ -14,11 +14,11 @@ export const getProducts = async (
       category: categoryId,
       subcategory: subcategoryId,
       page,
-      limit
-    }
+      limit,
+    },
   });
 
-  return response.data;
+  return response.data; // содержит { message, data: { products, totalPages, totalProducts } }
 };
 
 export const getProductById = async (id: string): Promise<Product> => {
