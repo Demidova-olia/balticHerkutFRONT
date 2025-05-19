@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getProducts } from "../../services/ProductService";
-import { Product} from "../../types/product";
+import { Product } from "../../types/product";
 import styles from "./ProductGrid.module.css";
 import { useNavigate } from "react-router";
 import { useCart } from "../../hooks/useCart";
@@ -26,29 +26,27 @@ const ProductGrid = ({
 
   useEffect(() => {
     const fetchProducts = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const response = await getProducts(
-      searchTerm,
-      selectedCategoryId ?? "",
-      selectedSubcategoryId ?? "",
-      1,
-      10
-    );
-    setProducts(response.products);
-  } catch (err: unknown) {
-    console.error("Error fetching products:", err);
-    setError("An error occurred while fetching products.");
-    setProducts([]);
-  } finally {
-    setLoading(false);
-  }
-    console.log("🚀 ~ fetchProducts ~ products:", products)
-};
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await getProducts(
+          searchTerm,
+          selectedCategoryId ?? "",
+          selectedSubcategoryId ?? "",
+          1,
+          10
+        );
+        setProducts(response.products);
+      } catch (err: unknown) {
+        console.error("Error fetching products:", err);
+        setError("An error occurred while fetching products.");
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, selectedCategoryId, selectedSubcategoryId]);
 
   if (loading) return <div>Loading products...</div>;
@@ -79,7 +77,7 @@ const ProductGrid = ({
                   />
                 </div>
                 <h3 className={styles.productName}>{product.name}</h3>
-                <p className={styles.productDics}>{product.description}</p>
+                <p className={styles.productDesc}>{product.description}</p>
                 <p className={styles.productPrice}>Price: €{product.price}</p>
                 <div className={styles.CartBtnAndFav}>
                   <button
