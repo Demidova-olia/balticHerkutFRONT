@@ -40,10 +40,10 @@ export interface ProductData {
     total: number;
   }
 export interface ProductsListResponse {
-	message: string;
-	data: {
-		products: Product[];
-		totalPages: number;
-		totalProducts: number;
-	};
+  data: {
+    products: Product[];
+    total: number;
+    page: number;
+    limit: number;
+  };
 }

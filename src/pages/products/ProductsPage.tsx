@@ -26,66 +26,47 @@ const ProductsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-useEffect(() => {
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      console.log("Fetching categories...");
-      const categoriesData = await CategoryService.getCategoriesWithSubcategories();
-      setCategories(categoriesData);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const categoriesData = await CategoryService.getCategoriesWithSubcategories();
+        setCategories(categoriesData);
 
-      let productData: Product[] = [];
+        let productData: Product[] = [];
 
-      if (selectedCategoryId && selectedSubcategoryId) {
-        console.log("Fetching by category and subcategory...");
-        productData = await getProductsByCategoryAndSubcategory(
-          selectedCategoryId,
-          selectedSubcategoryId
-        );
-      } else if (selectedCategoryId) {
-        console.log("Fetching by category only...");
-        productData = await getProductsByCategory(selectedCategoryId);
-      } else if (searchTerm) {
-        console.log("Searching products...");
-        productData = await searchProducts(searchTerm);
-      } else {
-        console.log("Fetching all products...");
-        const response = await getProducts(
-          searchTerm,
-          "",
-          "",
-          1,
-          100
-        );
-
-        console.log("Raw getProducts response:", response);
-
-        if (
-          response &&
-          response.data &&
-          Array.isArray(response.data.products)
-        ) {
-          productData = response.data.products;
+        if (selectedCategoryId && selectedSubcategoryId) {
+          productData = await getProductsByCategoryAndSubcategory(selectedCategoryId, selectedSubcategoryId);
+        } else if (selectedCategoryId) {
+          productData = await getProductsByCategory(selectedCategoryId);
+        } else if (searchTerm) {
+          productData = await searchProducts(searchTerm);
         } else {
-          throw new Error("Unexpected response from getProducts");
+          const response = await getProducts("", "", "", 1, 100);
+          if (
+            response &&
+            response.data &&
+            Array.isArray(response.data.products)
+          ) {
+            productData = response.data.products;
+          } else {
+            throw new Error("Unexpected response format");
+          }
         }
+
+        setProducts(productData);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError("An error occurred while loading products.");
+        setProducts([]);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      console.log("Fetched products:", productData);
-      setProducts(productData);
-      setError(null);
-    } catch (err: unknown) {
-      console.error("Error fetching products:", err);
-      setError("An error occurred while loading products.");
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchData();
-}, [searchTerm, selectedCategoryId, selectedSubcategoryId]);
-
+    fetchData();
+  }, [searchTerm, selectedCategoryId, selectedSubcategoryId]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

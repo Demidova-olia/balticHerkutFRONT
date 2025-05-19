@@ -149,3 +149,25 @@ export const updateProductImage = async (
 
   return response.data;
 };
+
+export const uploadImage = async (file: File): Promise<{ url: string; public_id: string }> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "your_upload_preset"); // замените, если используете Cloudinary или другое хранилище
+
+  const response = await fetch("https://api.cloudinary.com/v1_1/your_cloud_name/image/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Image upload failed");
+  }
+
+  const data = await response.json();
+
+  return {
+    url: data.secure_url,
+    public_id: data.public_id,
+  };
+};

@@ -21,11 +21,9 @@ const ProductGrid = ({ products }: Props) => {
     <div className={styles.productGridContainer}>
       <div className={styles.productGrid}>
         {products.map((product) => {
-          const image =
-            product?.images?.[0]?.url ||
-            (typeof product?.images?.[0] === "string"
-              ? product.images[0]
-              : "/placeholder.jpg");
+          const image = typeof product.images?.[0] === "string"
+            ? product.images[0]
+            : product.images?.[0]?.url || "/placeholder.jpg";
 
           const priceText =
             typeof product.price === "number"
