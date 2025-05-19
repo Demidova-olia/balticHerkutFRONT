@@ -29,19 +29,23 @@ const ProductsPage: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        console.log("Fetching categories...");
         const categoriesData = await CategoryService.getCategoriesWithSubcategories();
         setCategories(categoriesData);
 
         let productData: Product[] = [];
 
         if (selectedCategoryId && selectedSubcategoryId) {
+          console.log("Fetching by category and subcategory...");
           productData = await getProductsByCategoryAndSubcategory(
             selectedCategoryId,
             selectedSubcategoryId
           );
         } else if (searchTerm) {
+          console.log("Searching products...");
           productData = await searchProducts(searchTerm);
         } else {
+          console.log("Fetching all products...");
           const response = await getProducts(
             searchTerm,
             selectedCategoryId ?? "",
@@ -49,9 +53,19 @@ const ProductsPage: React.FC = () => {
             1,
             100
           );
-          productData = response.products;
+
+          // 🛠 Исправлено здесь:
+          // Если getProducts возвращает массив:
+          if (Array.isArray(response)) {
+            productData = response;
+          } else if ('products' in response) {
+            productData = response.products;
+          } else {
+            throw new Error("Unexpected response from getProducts");
+          }
         }
 
+        console.log("Fetched products:", productData);
         setProducts(productData);
         setError(null);
       } catch (err: unknown) {
