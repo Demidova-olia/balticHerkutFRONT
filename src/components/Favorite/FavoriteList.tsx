@@ -40,15 +40,14 @@ const FavoriteList = () => {
           {favorites.map((product) => (
             <li key={product._id} className={styles.favoriteItem}>
               <div className={styles.productDetails}>
-               
                 <div className={styles.productImageWrapper}>
                   <img
                     className={styles.productImage}
-                    src={product.images?.[0] ?? "/placeholder.jpg"}
+                    src={product.images?.[0]?.url ?? "/placeholder.jpg"} // ✅ fix: use .url
                     alt={product.name}
                   />
                 </div>
-                <span className={styles.productName}>{product.name}</span> 
+                <span className={styles.productName}>{product.name}</span>
                 <button
                   className={styles.removeButton}
                   onClick={() => handleRemoveFromFavorites(product._id)}
