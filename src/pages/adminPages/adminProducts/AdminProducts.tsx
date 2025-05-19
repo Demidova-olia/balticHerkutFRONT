@@ -16,17 +16,19 @@ const AdminProducts: React.FC = () => {
     fetchProducts();
   }, []);
 
-  const fetchProducts = async () => {
-    try {
-      const data = await ProductService.getProducts();
-      setProducts(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Error fetching products:", err);
-      setError("Failed to load products.");
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchProducts = async () => {
+  try {
+    const response = await ProductService.getProducts("", "", "", 1, 100);
+    const data = response?.data?.products || [];
+    console.log("Fetched products:", data);
+    setProducts(data);
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    setError("Failed to load products.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
