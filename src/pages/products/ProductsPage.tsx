@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
-import { Product } from "../../types/product";
 import { useSearchParams } from "react-router";
 import { CategoryWithSubcategories } from "../../types/category";
 import { CategoryService } from "../../services/CategoryService";
-import {
-  getProducts,
-  getProductsByCategoryAndSubcategory,
-  searchProducts,
-} from "../../services/ProductService";
 import NavBar from "../../components/NavBar/NavBar";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import CategoryTree from "../../components/CategoryTree/CategoryTree";
@@ -17,7 +11,6 @@ import styles from "../homePage/HomePage.module.css";
 
 const ProductsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(searchParams.get("category") || null);
@@ -26,23 +19,11 @@ const ProductsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCategories = async () => {
       setLoading(true);
       try {
         const categoriesData = await CategoryService.getCategoriesWithSubcategories();
         setCategories(categoriesData);
-
-        let productData: Product[] = [];
-
-        if (selectedCategoryId && selectedSubcategoryId) {
-          productData = await getProductsByCategoryAndSubcategory(selectedCategoryId, selectedSubcategoryId);
-        } else if (searchTerm) {
-          productData = await searchProducts(searchTerm);
-        } else {
-          productData = await getProducts(searchTerm, selectedCategoryId ?? undefined, selectedSubcategoryId, 1, 100);
-        }
-
-        setProducts(Array.isArray(productData) ? productData : []);
         setError(null);
       } catch (err: unknown) {
         if (err instanceof Error) {
@@ -52,14 +33,13 @@ const ProductsPage: React.FC = () => {
           setError("Unknown error occurred");
           console.error("Unknown error", err);
         }
-        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [searchTerm, selectedCategoryId, selectedSubcategoryId]);
+    fetchCategories();
+  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -100,38 +80,36 @@ const ProductsPage: React.FC = () => {
 
   return (
     <>
-        <NavBar />
-        <div className={styles.pageContainer}>
-        
+      <NavBar />
+      <div className={styles.pageContainer}>
         <SearchBar value={searchTerm} onChange={handleSearchChange} />
 
         <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
-            <button onClick={handleResetFilters} className={styles.ResetFilter}>
+          <button onClick={handleResetFilters} className={styles.ResetFilter}>
             Reset Filters
-            </button>
+          </button>
         </div>
 
         <CategoryTree
-            categories={categories}
-            selectedCategoryId={selectedCategoryId ?? null}
-            selectedSubcategoryId={selectedSubcategoryId}
-            onCategoryToggle={handleCategoryToggle}
-            onSubcategorySelect={handleSubcategorySelect}
+          categories={categories}
+          selectedCategoryId={selectedCategoryId ?? null}
+          selectedSubcategoryId={selectedSubcategoryId}
+          onCategoryToggle={handleCategoryToggle}
+          onSubcategorySelect={handleSubcategorySelect}
         />
 
         {loading ? (
-            <Loading text="Loading products..." className={styles.loadingText} />
+          <Loading text="Loading categories..." className={styles.loadingText} />
         ) : error ? (
-            <p className={styles.errorText}>{error}</p>
+          <p className={styles.errorText}>{error}</p>
         ) : (
-            <ProductGrid
-            products={products}
+          <ProductGrid
             searchTerm={searchTerm}
-            selectedCategoryId={selectedCategoryId || ""}
+            selectedCategoryId={selectedCategoryId}
             selectedSubcategoryId={selectedSubcategoryId}
-            />
+          />
         )}
-        </div>
+      </div>
     </>
   );
 };
