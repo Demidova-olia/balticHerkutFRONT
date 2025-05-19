@@ -43,7 +43,7 @@ const ProductsPage: React.FC = () => {
       productData = await searchProducts(searchTerm);
     } else {
       const response = await getProducts("", "", "", 1, 100);
-      productData = response.data.products;
+      productData = response.products;
     }
 
     console.log("Loaded products:", productData);

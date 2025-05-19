@@ -12,7 +12,7 @@ export const getProducts = async (
   subcategoryId: string,
   page: number,
   limit: number
-): Promise<ProductsListResponse> => {
+): Promise<ProductsListResponse["data"]> => {
   const response = await axiosInstance.get<ProductsListResponse>('/products', {
     params: {
       search: searchTerm || undefined,
@@ -23,7 +23,7 @@ export const getProducts = async (
     },
   });
 
-  return response.data;
+  return response.data.data;
 };
 
 export const getProductById = async (id: string): Promise<Product> => {
