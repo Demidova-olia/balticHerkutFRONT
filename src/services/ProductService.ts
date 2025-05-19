@@ -5,7 +5,7 @@ import {
   ProductData,
 } from '../types/product';
 
-// Получить список продуктов
+
 export const getProducts = async (
   searchTerm: string,
   categoryId: string,
@@ -26,13 +26,11 @@ export const getProducts = async (
   return response.data;
 };
 
-// Получить продукт по ID
 export const getProductById = async (id: string): Promise<Product> => {
   const response = await axiosInstance.get(`/products/id/${id}`);
   return response.data.data;
 };
 
-// Создание продукта
 export const createProduct = async (data: ProductData): Promise<Product> => {
   const formData = new FormData();
   formData.append('name', data.name);
@@ -57,7 +55,6 @@ export const createProduct = async (data: ProductData): Promise<Product> => {
   return response.data.data;
 };
 
-// Обновление продукта
 export const updateProduct = async (
   id: string,
   data: ProductData,
@@ -89,13 +86,12 @@ export const updateProduct = async (
   return response.data.data;
 };
 
-// Удаление продукта
 export const deleteProduct = async (id: string): Promise<Product> => {
   const response = await axiosInstance.delete(`/products/${id}`);
   return response.data.data;
 };
 
-// Поиск продуктов
+
 export const searchProducts = async (query: string): Promise<Product[]> => {
   const response = await axiosInstance.get('/products/search', {
     params: { q: query },
@@ -103,7 +99,7 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
   return response.data.data;
 };
 
-// Получение по категории
+
 export const getProductsByCategory = async (
   categoryId: string
 ): Promise<Product[]> => {
@@ -111,7 +107,6 @@ export const getProductsByCategory = async (
   return response.data.data;
 };
 
-// Получение по категории и подкатегории
 export const getProductsByCategoryAndSubcategory = async (
   categoryId: string,
   subcategoryId: string
@@ -122,7 +117,7 @@ export const getProductsByCategoryAndSubcategory = async (
   return response.data;
 };
 
-// Удаление изображения продукта
+
 export const deleteProductImage = async (
   productId: string,
   publicId: string
@@ -133,7 +128,7 @@ export const deleteProductImage = async (
   return response.data;
 };
 
-// Обновление изображения продукта
+
 export const updateProductImage = async (
   productId: string,
   publicId: string,

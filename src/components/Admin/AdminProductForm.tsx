@@ -178,7 +178,6 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
 
       onSubmit(formData);
 
-      // Очистка формы, если создается новый продукт
       if (!initialData._id) {
         setFormState({ name: '', description: '', price: 0, stock: 0 });
         setSelectedCategory('');
