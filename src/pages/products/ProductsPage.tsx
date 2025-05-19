@@ -37,10 +37,14 @@ const ProductsPage: React.FC = () => {
 
     if (selectedCategoryId && selectedSubcategoryId) {
       productData = await getProductsByCategoryAndSubcategory(selectedCategoryId, selectedSubcategoryId);
+      console.log("🚀 ~ fetchData ~ selectedSubcategoryId:", selectedSubcategoryId)
+      console.log("🚀 ~ fetchData ~ selectedCategoryId:", selectedCategoryId)
     } else if (selectedCategoryId) {
       productData = await getProductsByCategory(selectedCategoryId);
+      console.log("🚀 ~ fetchData ~ selectedCategoryId:", selectedCategoryId)
     } else if (searchTerm) {
       productData = await searchProducts(searchTerm);
+      console.log("🚀 ~ fetchData ~ searchTerm:", searchTerm)
     } else {
       const response = await getProducts("", "", "", 1, 100);
       productData = response.products;
@@ -48,6 +52,7 @@ const ProductsPage: React.FC = () => {
 
     console.log("Loaded products:", productData);
     setProducts(productData);
+    console.log("Final productData:", productData);
     setError(null);
   } catch (err) {
     console.error("Error fetching products:", err);
