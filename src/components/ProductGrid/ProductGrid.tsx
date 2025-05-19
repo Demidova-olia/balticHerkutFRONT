@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { getProducts } from "../../services/ProductService";
+// ProductGrid.tsx
 import { Product } from "../../types/product";
 import styles from "./ProductGrid.module.css";
 import { useNavigate } from "react-router";
@@ -8,49 +7,12 @@ import FavoriteIcon from "../Favorite/FavoriteIcon";
 import { isAuthenticated } from "../../utils/authUtils";
 
 interface Props {
-  searchTerm: string;
-  selectedCategoryId: string | null;
-  selectedSubcategoryId: string | null;
+  products: Product[];
 }
 
-const ProductGrid = ({
-  searchTerm,
-  selectedCategoryId,
-  selectedSubcategoryId,
-}: Props) => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const ProductGrid = ({ products }: Props) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await getProducts(
-          searchTerm,
-          selectedCategoryId ?? "",
-          selectedSubcategoryId ?? "",
-          1,
-          10
-        );
-        setProducts(response.products);
-      } catch (err: unknown) {
-        console.error("Error fetching products:", err);
-        setError("An error occurred while fetching products.");
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, [searchTerm, selectedCategoryId, selectedSubcategoryId]);
-
-  if (loading) return <div>Loading products...</div>;
-  if (error) return <div>{error}</div>;
 
   return (
     <div className={styles.productGridContainer}>
@@ -77,7 +39,7 @@ const ProductGrid = ({
                   />
                 </div>
                 <h3 className={styles.productName}>{product.name}</h3>
-                <p className={styles.productDesc}>{product.description}</p>
+                <p className={styles.productDics}>{product.description}</p>
                 <p className={styles.productPrice}>Price: €{product.price}</p>
                 <div className={styles.CartBtnAndFav}>
                   <button

@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
+import { Product } from "../../types/product";
 import { useSearchParams } from "react-router";
 import { CategoryWithSubcategories } from "../../types/category";
 import { CategoryService } from "../../services/CategoryService";
+import {
+  getProducts,
+  getProductsByCategoryAndSubcategory,
+  searchProducts,
+} from "../../services/ProductService";
 import NavBar from "../../components/NavBar/NavBar";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import CategoryTree from "../../components/CategoryTree/CategoryTree";
@@ -11,6 +17,7 @@ import styles from "../homePage/HomePage.module.css";
 
 const ProductsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(searchParams.get("category") || null);
@@ -19,27 +26,45 @@ const ProductsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
         const categoriesData = await CategoryService.getCategoriesWithSubcategories();
         setCategories(categoriesData);
+
+        let productData: Product[] = [];
+
+        if (selectedCategoryId && selectedSubcategoryId) {
+          productData = await getProductsByCategoryAndSubcategory(
+            selectedCategoryId,
+            selectedSubcategoryId
+          );
+        } else if (searchTerm) {
+          productData = await searchProducts(searchTerm);
+        } else {
+          const response = await getProducts(
+            searchTerm,
+            selectedCategoryId ?? "",
+            selectedSubcategoryId,
+            1,
+            100
+          );
+          productData = response.products;
+        }
+
+        setProducts(productData);
         setError(null);
       } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-          console.error(err);
-        } else {
-          setError("Unknown error occurred");
-          console.error("Unknown error", err);
-        }
+        console.error("Error fetching products:", err);
+        setError("An error occurred while loading products.");
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCategories();
-  }, []);
+    fetchData();
+  }, [searchTerm, selectedCategoryId, selectedSubcategoryId]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -99,15 +124,11 @@ const ProductsPage: React.FC = () => {
         />
 
         {loading ? (
-          <Loading text="Loading categories..." className={styles.loadingText} />
+          <Loading text="Loading products..." className={styles.loadingText} />
         ) : error ? (
           <p className={styles.errorText}>{error}</p>
         ) : (
-          <ProductGrid
-            searchTerm={searchTerm}
-            selectedCategoryId={selectedCategoryId}
-            selectedSubcategoryId={selectedSubcategoryId}
-          />
+          <ProductGrid products={products} />
         )}
       </div>
     </>
