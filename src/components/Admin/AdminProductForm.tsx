@@ -117,7 +117,19 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setImages(Array.from(e.target.files));
+      const validImages: File[] = [];
+      Array.from(e.target.files).forEach(file => {
+        if (!file.type.startsWith('image/')) {
+          alert(`File ${file.name} is not a valid image.`);
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`File ${file.name} exceeds 5MB size limit.`);
+          return;
+        }
+        validImages.push(file);
+      });
+      setImages(validImages);
     }
   };
 
@@ -133,6 +145,11 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!selectedCategory) {
+      alert('Please select a category.');
+      return;
+    }
 
     try {
       const uploadedImageUrls: string[] = [];
@@ -160,6 +177,14 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       allImages.forEach(url => formData.append('images', url));
 
       onSubmit(formData);
+
+      // Очистка формы, если создается новый продукт
+      if (!initialData._id) {
+        setFormState({ name: '', description: '', price: 0, stock: 0 });
+        setSelectedCategory('');
+        setSelectedSubcategory('');
+        setImages([]);
+      }
     } catch (error) {
       console.error('Error uploading images:', error);
     }
@@ -262,6 +287,22 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
             className={styles.fileInput}
           />
         </div>
+
+        {images.length > 0 && (
+          <div className={styles.imagePreview}>
+            <label className={styles.label}>New Images Preview:</label>
+            <div className={styles.imageGrid}>
+              {images.map((image, idx) => (
+                <img
+                  key={idx}
+                  src={URL.createObjectURL(image)}
+                  alt={`Preview ${idx + 1}`}
+                  className={styles.previewImage}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {initialData.images && initialData.images.length > 0 && (
           <div className={styles.imagePreview}>
