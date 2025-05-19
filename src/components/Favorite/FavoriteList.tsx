@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import FavoriteService from '../../services/FavoriteService';
-import { Product } from '../../types/product';
-import { FaTrash } from 'react-icons/fa';
-import styles from './FavoriteList.module.css';
+import { useEffect, useState } from "react";
+import FavoriteService from "../../services/FavoriteService";
+import { Product } from "../../types/product";
+import { FaTrash } from "react-icons/fa";
+import styles from "./FavoriteList.module.css";
 
 const FavoriteList = () => {
   const [favorites, setFavorites] = useState<Product[]>([]);
@@ -32,7 +32,7 @@ const FavoriteList = () => {
   return (
     <div>
       <h2>Your Favorite Products</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
       {favorites.length === 0 ? (
         <p>No favorites available.</p>
       ) : (
@@ -43,7 +43,7 @@ const FavoriteList = () => {
                 <div className={styles.productImageWrapper}>
                   <img
                     className={styles.productImage}
-                    src={product.images?.[0]?.url ?? "/placeholder.jpg"} // ✅ fix: use .url
+                    src={product.images?.[0]?.url ?? "/placeholder.jpg"}
                     alt={product.name}
                   />
                 </div>
