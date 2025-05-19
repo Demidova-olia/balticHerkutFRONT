@@ -27,7 +27,7 @@ export const getProducts = async (
 };
 
 export const getProductById = async (id: string): Promise<Product> => {
-  const response = await axiosInstance.get(`/products/id/${id}`);
+  const response = await axiosInstance.get(`/products/${id}`);
   return response.data.data;
 };
 
