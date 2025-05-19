@@ -22,7 +22,7 @@ const ProductsPage: React.FC = () => {
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(searchParams.get("category") || null);
-  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string>(searchParams.get("subcategory") || "");
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string | null>(searchParams.get("subcategory") || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

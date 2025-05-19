@@ -114,7 +114,7 @@ export const getProductsByCategoryAndSubcategory = async (
   const response = await axiosInstance.get(
     `/products/${categoryId}/${subcategoryId}`
   );
-  return response.data;
+  return response.data.data;
 };
 
 
