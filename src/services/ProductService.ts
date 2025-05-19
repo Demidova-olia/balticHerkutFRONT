@@ -12,10 +12,12 @@ export const getProducts = async (
     const response = await axiosInstance.get('/products', {
       params: { search, category, subcategory, page, limit },
     });
-     console.log("✅ [getProducts] response.data:", response.data);
+
+    console.log("✅ [getProducts] response.data:", response.data);
+
     return response.data.data;
   } catch (error) {
-    console.error('Failed to get products', error);
+    console.error('❌ Failed to get products', error);
     throw error;
   }
 };
