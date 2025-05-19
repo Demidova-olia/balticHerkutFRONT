@@ -13,7 +13,7 @@ const ProductGrid = ({ products }: Props) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
 
-  if (products.length === 0) {
+  if (!products || products.length === 0) {
     return <p>No products found.</p>;
   }
 
@@ -22,12 +22,15 @@ const ProductGrid = ({ products }: Props) => {
       <div className={styles.productGrid}>
         {products.map((product) => {
           const image =
-            product.images?.[0]?.url ??
-            (typeof product.images?.[0] === "string"
+            product?.images?.[0]?.url ||
+            (typeof product?.images?.[0] === "string"
               ? product.images[0]
               : "/placeholder.jpg");
 
-          console.log("Rendering product:", product._id, product.name, image);
+          const priceText =
+            typeof product.price === "number"
+              ? product.price.toFixed(2)
+              : "N/A";
 
           return (
             <div
@@ -39,12 +42,16 @@ const ProductGrid = ({ products }: Props) => {
                 <img
                   className={styles.productImage}
                   src={image}
-                  alt={product.name}
+                  alt={product.name || "Product"}
                 />
               </div>
-              <h3 className={styles.productName}>{product.name}</h3>
-              <p className={styles.productDics}>{product.description}</p>
-              <p className={styles.productPrice}>Price: €{product.price}</p>
+              <h3 className={styles.productName}>
+                {product.name || "No Name"}
+              </h3>
+              <p className={styles.productDics}>
+                {product.description || "No description available."}
+              </p>
+              <p className={styles.productPrice}>Price: €{priceText}</p>
               <div className={styles.CartBtnAndFav}>
                 <button
                   className={styles.addToCartBtn}
@@ -53,7 +60,7 @@ const ProductGrid = ({ products }: Props) => {
                     addToCart({
                       id: product._id,
                       name: product.name,
-                      price: product.price,
+                      price: product.price || 0,
                       quantity: 1,
                       image,
                     });
