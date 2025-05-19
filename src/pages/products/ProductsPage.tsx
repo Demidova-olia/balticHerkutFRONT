@@ -46,7 +46,6 @@ const ProductsPage: React.FC = () => {
           productData = await searchProducts(searchTerm);
         } else {
           console.log("Fetching all products...");
-          // Получаем объект с products, totalPages, totalProducts
           const response = await getProducts(
             searchTerm,
             selectedCategoryId ?? "",
@@ -54,10 +53,12 @@ const ProductsPage: React.FC = () => {
             1,
             100
           );
+
           console.log("Raw getProducts response:", response);
-          // response должен быть типа { products: Product[], totalPages, totalProducts }
-          if (response && "products" in response) {
-            productData = response.products;
+
+          // ✅ Обработка вложенной структуры "data.products"
+          if (response && "data" in response && Array.isArray(response.data.products)) {
+            productData = response.data.products;
           } else {
             throw new Error("Unexpected response from getProducts");
           }

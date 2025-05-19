@@ -1,25 +1,24 @@
 import axiosInstance from '../utils/axios';
-import { Product, ProductData } from '../types/product';
+import { ProductsListResponse, Product, ProductData, } from '../types/product';
 
 export const getProducts = async (
-  search = '',
-  category = '',
-  subcategory = '',
-  page = 1,
-  limit = 10
-): Promise<{ products: Product[]; totalPages: number; totalProducts: number }> => {
-  try {
-    const response = await axiosInstance.get('/products', {
-      params: { search, category, subcategory, page, limit },
-    });
+  searchTerm: string,
+  categoryId: string,
+  subcategoryId: string,
+  page: number,
+  limit: number
+): Promise<ProductsListResponse> => {
+  const response = await axiosInstance.get<ProductsListResponse>('/products', {
+    params: {
+      search: searchTerm,
+      category: categoryId,
+      subcategory: subcategoryId,
+      page,
+      limit
+    }
+  });
 
-    console.log("✅ [getProducts] response.data:", response.data);
-
-    return response.data.data;
-  } catch (error) {
-    console.error('❌ Failed to get products', error);
-    throw error;
-  }
+  return response.data;
 };
 
 export const getProductById = async (id: string): Promise<Product> => {
