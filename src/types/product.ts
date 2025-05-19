@@ -42,8 +42,8 @@ export interface ProductData {
 export interface ProductsListResponse {
   data: {
     products: Product[];
-    total: number;
-    page: number;
-    limit: number;
+    totalPages: number;
+    totalProducts: number;
   };
+  message: string;
 }
