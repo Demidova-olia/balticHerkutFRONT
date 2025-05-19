@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getProducts } from "../../services/ProductService";
-import { Product, ProductsListResponse } from "../../types/product";
+import { Product} from "../../types/product";
 import styles from "./ProductGrid.module.css";
 import { useNavigate } from "react-router";
 import { useCart } from "../../hooks/useCart";
@@ -29,7 +29,7 @@ const ProductGrid = ({
   setLoading(true);
   setError(null);
   try {
-    const response: ProductsListResponse['data'] = await getProducts(
+    const response = await getProducts(
       searchTerm,
       selectedCategoryId ?? "",
       selectedSubcategoryId ?? "",
