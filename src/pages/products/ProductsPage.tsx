@@ -28,42 +28,36 @@ const ProductsPage: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
-      try {
-        const categoriesData = await CategoryService.getCategoriesWithSubcategories();
-        setCategories(categoriesData);
+  setLoading(true);
+  try {
+    const categoriesData = await CategoryService.getCategoriesWithSubcategories();
+    setCategories(categoriesData);
 
-        let productData: Product[] = [];
+    let productData: Product[] = [];
 
-        if (selectedCategoryId && selectedSubcategoryId) {
-          productData = await getProductsByCategoryAndSubcategory(selectedCategoryId, selectedSubcategoryId);
-        } else if (selectedCategoryId) {
-          productData = await getProductsByCategory(selectedCategoryId);
-        } else if (searchTerm) {
-          productData = await searchProducts(searchTerm);
-        } else {
-          const response = await getProducts("", "", "", 1, 100);
-          if (
-            response &&
-            response.data &&
-            Array.isArray(response.data.products)
-          ) {
-            productData = response.data.products;
-          } else {
-            throw new Error("Unexpected response format");
-          }
-        }
+    if (selectedCategoryId && selectedSubcategoryId) {
+      productData = await getProductsByCategoryAndSubcategory(selectedCategoryId, selectedSubcategoryId);
+    } else if (selectedCategoryId) {
+      productData = await getProductsByCategory(selectedCategoryId);
+    } else if (searchTerm) {
+      productData = await searchProducts(searchTerm);
+    } else {
+      const response = await getProducts("", "", "", 1, 100);
+      productData = response.data.products;
+    }
 
-        setProducts(productData);
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching products:", err);
-        setError("An error occurred while loading products.");
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+    console.log("Loaded products:", productData);
+    setProducts(productData);
+    setError(null);
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    setError("An error occurred while loading products.");
+    setProducts([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
     fetchData();
   }, [searchTerm, selectedCategoryId, selectedSubcategoryId]);
