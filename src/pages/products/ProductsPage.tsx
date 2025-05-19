@@ -54,8 +54,6 @@ const ProductsPage: React.FC = () => {
             100
           );
 
-          // 🛠 Исправлено здесь:
-          // Если getProducts возвращает массив:
           if (Array.isArray(response)) {
             productData = response;
           } else if ('products' in response) {
