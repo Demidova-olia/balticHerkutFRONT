@@ -54,7 +54,7 @@ const ProductsPage: React.FC = () => {
             1,
             100
           );
-
+          console.log("Raw getProducts response:", response);
           // response должен быть типа { products: Product[], totalPages, totalProducts }
           if (response && "products" in response) {
             productData = response.products;
