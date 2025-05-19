@@ -28,41 +28,34 @@ const ProductsPage: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-  setLoading(true);
-  try {
-    const categoriesData = await CategoryService.getCategoriesWithSubcategories();
-    setCategories(categoriesData);
+      setLoading(true);
+      try {
+        const categoriesData = await CategoryService.getCategoriesWithSubcategories();
+        setCategories(categoriesData);
 
-    let productData: Product[] = [];
+        let productData: Product[] = [];
 
-    if (selectedCategoryId && selectedSubcategoryId) {
-      productData = await getProductsByCategoryAndSubcategory(selectedCategoryId, selectedSubcategoryId);
-      console.log("🚀 ~ fetchData ~ selectedSubcategoryId:", selectedSubcategoryId)
-      console.log("🚀 ~ fetchData ~ selectedCategoryId:", selectedCategoryId)
-    } else if (selectedCategoryId) {
-      productData = await getProductsByCategory(selectedCategoryId);
-      console.log("🚀 ~ fetchData ~ selectedCategoryId:", selectedCategoryId)
-    } else if (searchTerm) {
-      productData = await searchProducts(searchTerm);
-      console.log("🚀 ~ fetchData ~ searchTerm:", searchTerm)
-    } else {
-      const response = await getProducts("", "", "", 1, 100);
-      productData = response.products;
-    }
+        if (selectedCategoryId && selectedSubcategoryId) {
+          productData = await getProductsByCategoryAndSubcategory(selectedCategoryId, selectedSubcategoryId);
+        } else if (selectedCategoryId) {
+          productData = await getProductsByCategory(selectedCategoryId);
+        } else if (searchTerm) {
+          productData = await searchProducts(searchTerm);
+        } else {
+          const productListData = await getProducts("", "", "", 1, 100);
+          productData = productListData.products; 
+        }
 
-    console.log("Loaded products:", productData);
-    setProducts(productData);
-    console.log("Final productData:", productData);
-    setError(null);
-  } catch (err) {
-    console.error("Error fetching products:", err);
-    setError("An error occurred while loading products.");
-    setProducts([]);
-  } finally {
-    setLoading(false);
-  }
-};
-
+        setProducts(productData);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError("An error occurred while loading products.");
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchData();
   }, [searchTerm, selectedCategoryId, selectedSubcategoryId]);
@@ -128,6 +121,8 @@ const ProductsPage: React.FC = () => {
           <Loading text="Loading products..." className={styles.loadingText} />
         ) : error ? (
           <p className={styles.errorText}>{error}</p>
+        ) : products.length === 0 ? (
+          <p className={styles.errorText}>No products found.</p>
         ) : (
           <ProductGrid products={products} />
         )}

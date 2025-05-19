@@ -27,7 +27,8 @@ export const getProducts = async (
 };
 
 export const getProductById = async (id: string): Promise<Product> => {
-  const response = await axiosInstance.get(`/products/${id}`);
+  const response = await axiosInstance.get(`/products/id/${id}`);
+  console.log("getProductById response:", response.data);
   return response.data.data;
 };
 
@@ -153,8 +154,7 @@ export const updateProductImage = async (
 export const uploadImage = async (file: File): Promise<{ url: string; public_id: string }> => {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("upload_preset", "your_upload_preset"); // замените, если используете Cloudinary или другое хранилище
-
+  formData.append("upload_preset", "your_upload_preset"); 
   const response = await fetch("https://api.cloudinary.com/v1_1/your_cloud_name/image/upload", {
     method: "POST",
     body: formData,

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import UserService from "../../services/UserService";
 import { IOrder } from "../../types/order"; 
 import { IUser } from "../../types/user";
-import { IProduct } from "../../types/favorite";
 
 const MyOrderList: React.FC = () => {
   const [orders, setOrders] = useState<IOrder[]>([]);
@@ -57,7 +56,8 @@ const MyOrderList: React.FC = () => {
 
               {openOrderId === order._id && (
                 <div className="mt-4">
-                  <p><strong>User:</strong>{" "}
+                  <p>
+                    <strong>User:</strong>{" "}
                     {typeof order.user === "string"
                       ? order.user
                       : (order.user as IUser).username}{" "} 
@@ -70,14 +70,18 @@ const MyOrderList: React.FC = () => {
                   <div className="mt-2">
                     <p className="font-semibold">Items:</p>
                     <ul className="list-disc list-inside">
-                      {order.items.map((item, idx) => (
+                      {order.items.map((item, idx) => {
+                      const productName =
+                        typeof item.productId === "string"
+                          ? item.productId
+                          : (item.productId as { name: string }).name; 
+
+                      return (
                         <li key={idx}>
-                          {typeof item.productId === "string"
-                            ? item.productId
-                            : (item.productId as IProduct).name}{" "}
-                          x{item.quantity} - €{item.price.toFixed(2)}
+                          {productName} x{item.quantity} - €{item.price.toFixed(2)}
                         </li>
-                      ))}
+                      );
+                    })}
                     </ul>
                   </div>
                 </div>
@@ -91,4 +95,3 @@ const MyOrderList: React.FC = () => {
 };
 
 export default MyOrderList;
-

@@ -1,8 +1,7 @@
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "https://balticherkutback.onrender.com/api",
-  // baseURL: "http://localhost:3000/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://balticherkutback.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -25,7 +24,6 @@ axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-   
       if (typeof window !== "undefined") {
         localStorage.removeItem("token");
         window.location.href = "/login"; 
@@ -36,4 +34,5 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
+
 

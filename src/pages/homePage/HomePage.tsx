@@ -9,10 +9,29 @@ import SearchBar from "../../components/SearchBar/SearchBar";
 import CategoryTree from "../../components/CategoryTree/CategoryTree";
 import Loading from "../../components/Loading/Loading";
 import ProductGrid from "../../components/ProductGrid/ProductGrid";
-import styles from './HomePage.module.css'; 
+import styles from './HomePage.module.css';
+
+interface ProductResponse {
+  products: Product[];
+  totalPages: number;
+  totalProducts: number;
+}
+
+function isProductResponse(obj: unknown): obj is ProductResponse {
+  if (
+    typeof obj === "object" &&
+    obj !== null &&
+    "products" in obj
+  ) {
+    const maybeProducts = (obj as { products?: unknown }).products;
+    return Array.isArray(maybeProducts);
+  }
+  return false;
+}
+
 const HomePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<Product[]>([]); 
+  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(searchParams.get("category") || null);
@@ -27,25 +46,36 @@ const HomePage: React.FC = () => {
         const categoriesData = await CategoryService.getCategoriesWithSubcategories();
         setCategories(categoriesData);
 
-        let productData: Product[] = [];
+        let productResponse: unknown;
 
         if (selectedCategoryId && selectedSubcategoryId) {
-          productData = await getProductsByCategoryAndSubcategory(selectedCategoryId, selectedSubcategoryId);
+          productResponse = await getProductsByCategoryAndSubcategory(selectedCategoryId, selectedSubcategoryId);
         } else if (searchTerm) {
-          productData = await searchProducts(searchTerm);
+          productResponse = await searchProducts(searchTerm);
         } else {
-          productData = await getProducts(searchTerm, selectedCategoryId ?? undefined, selectedSubcategoryId, 1, 100);
+          productResponse = await getProducts(
+            searchTerm,
+            selectedCategoryId ?? "",
+            selectedSubcategoryId ?? "",
+            1,
+            100
+          );
         }
 
-        setProducts(Array.isArray(productData) ? productData : []);
+        if (Array.isArray(productResponse)) {
+          setProducts(productResponse);
+        } else if (isProductResponse(productResponse)) {
+          setProducts(productResponse.products);
+        } else {
+          setProducts([]);
+        }
+
         setError(null);
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
-          console.error(err);
         } else {
-          setError("Unknown error occurred");
-          console.error("Unknown error", err);
+          setError("Unknown error");
         }
         setProducts([]);
       } finally {
@@ -125,8 +155,8 @@ const HomePage: React.FC = () => {
           selectedSubcategoryId={selectedSubcategoryId}
           onCategoryToggle={handleCategoryToggle}
           onSubcategorySelect={handleSubcategorySelect}
-      
         />
+
         <div>
           <h2 className={styles.categorySelectTitle}>Our Products</h2>
         </div>
@@ -138,10 +168,6 @@ const HomePage: React.FC = () => {
         ) : (
           <ProductGrid 
             products={products}
-            searchTerm={searchTerm}
-            selectedCategoryId={selectedCategoryId || ""}
-            selectedSubcategoryId={selectedSubcategoryId}
-            
           />
         )}
       </div>

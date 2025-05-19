@@ -35,10 +35,11 @@ export interface ProductData {
   stock: number;
   images: (File | { url: string; public_id: string })[];
 }
-  export interface ProductsResponse {
-    products: Product[];
-    total: number;
-  }
+export interface ProductResponse {
+  products: Product[];
+  totalPages: number;
+  totalProducts: number;
+}
 export interface ProductsListResponse {
   data: {
     products: Product[];

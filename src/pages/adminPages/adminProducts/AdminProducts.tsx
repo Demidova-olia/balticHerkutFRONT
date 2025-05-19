@@ -19,7 +19,7 @@ const AdminProducts: React.FC = () => {
  const fetchProducts = async () => {
   try {
     const response = await ProductService.getProducts("", "", "", 1, 100);
-    const data = response?.data?.products || [];
+    const data = response?.products || [];
     console.log("Fetched products:", data);
     setProducts(data);
   } catch (err) {
