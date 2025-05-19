@@ -5,8 +5,8 @@ import { CategoryWithSubcategories } from "../../types/category";
 import { CategoryService } from "../../services/CategoryService";
 import {
   getProducts,
-  getProductsByCategoryAndSubcategory,
-  searchProducts,
+  // getProductsByCategoryAndSubcategory,
+  // searchProducts,
 } from "../../services/ProductService";
 import NavBar from "../../components/NavBar/NavBar";
 import SearchBar from "../../components/SearchBar/SearchBar";
@@ -25,58 +25,42 @@ const ProductsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        console.log("Fetching categories...");
-        const categoriesData = await CategoryService.getCategoriesWithSubcategories();
-        setCategories(categoriesData);
+useEffect(() => {
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      console.log("Fetching categories...");
+      const categoriesData = await CategoryService.getCategoriesWithSubcategories();
+      setCategories(categoriesData);
+      console.log("Categories loaded:", categoriesData);
 
-        let productData: Product[] = [];
+      // Для отладки — отключаем фильтры и загружаем все продукты
+      const productData = await getProducts("", "", "", 1, 100);
 
-        if (selectedCategoryId && selectedSubcategoryId) {
-          console.log("Fetching by category and subcategory...");
-          productData = await getProductsByCategoryAndSubcategory(
-            selectedCategoryId,
-            selectedSubcategoryId
-          );
-        } else if (searchTerm) {
-          console.log("Searching products...");
-          productData = await searchProducts(searchTerm);
-        } else {
-          console.log("Fetching all products...");
-          const response = await getProducts(
-            searchTerm,
-            selectedCategoryId ?? "",
-            selectedSubcategoryId,
-            1,
-            100
-          );
+      console.log("All products fetched:", productData);
 
-          if (Array.isArray(response)) {
-            productData = response;
-          } else if ('products' in response) {
-            productData = response.products;
-          } else {
-            throw new Error("Unexpected response from getProducts");
-          }
-        }
-
-        console.log("Fetched products:", productData);
+      // Обработка возможных вариантов ответа
+      if (Array.isArray(productData)) {
         setProducts(productData);
-        setError(null);
-      } catch (err: unknown) {
-        console.error("Error fetching products:", err);
-        setError("An error occurred while loading products.");
-        setProducts([]);
-      } finally {
-        setLoading(false);
+      } else if ('products' in productData) {
+        setProducts(productData.products);
+      } else {
+        throw new Error("Unexpected response from getProducts");
       }
-    };
 
-    fetchData();
-  }, [searchTerm, selectedCategoryId, selectedSubcategoryId]);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+      setError("An error occurred while loading products.");
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []); // пустой массив зависимостей — загрузка только при монтировании
+
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
