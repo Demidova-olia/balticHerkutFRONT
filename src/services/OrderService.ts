@@ -1,8 +1,7 @@
-import axios from "axios"; // ✅ Добавлено для isAxiosError
+import axios from "axios"; 
 import axiosInstance from "../utils/axios";
 import { IOrder, OrderItem } from "../types/order";
 
-// Create order service
 export const createOrder = async (items: OrderItem[], address: string): Promise<IOrder> => {
   try {
     const response = await axiosInstance.post("/orders", { items, address });
@@ -13,7 +12,6 @@ export const createOrder = async (items: OrderItem[], address: string): Promise<
   }
 };
 
-// Get all orders service (admin access)
 export const getOrders = async (): Promise<IOrder[]> => {
   try {
     const response = await axiosInstance.get("/orders");
@@ -24,7 +22,6 @@ export const getOrders = async (): Promise<IOrder[]> => {
   }
 };
 
-// Get order by ID service
 export const getOrderById = async (orderId: string): Promise<IOrder> => {
   try {
     const response = await axiosInstance.get(`/orders/${orderId}`);
@@ -35,7 +32,6 @@ export const getOrderById = async (orderId: string): Promise<IOrder> => {
   }
 };
 
-// Get orders by user ID service
 export const getUserOrders = async (userId: string): Promise<IOrder[]> => {
   try {
     const response = await axiosInstance.get(`/orders/user/${userId}`);
@@ -46,7 +42,6 @@ export const getUserOrders = async (userId: string): Promise<IOrder[]> => {
   }
 };
 
-// Update order service (admin access)
 export const updateOrder = async (orderId: string, status: string): Promise<IOrder> => {
   try {
     const response = await axiosInstance.put(`/orders/${orderId}`, { status });
@@ -57,7 +52,6 @@ export const updateOrder = async (orderId: string, status: string): Promise<IOrd
   }
 };
 
-// Delete order service (admin access)
 export const deleteOrder = async (orderId: string): Promise<{ message: string }> => {
   try {
     const response = await axiosInstance.delete(`/orders/${orderId}`);
@@ -68,7 +62,6 @@ export const deleteOrder = async (orderId: string): Promise<{ message: string }>
   }
 };
 
-// Checkout service (user access)
 export const checkout = async (cart: OrderItem[], address: string, totalAmount: number): Promise<{ message: string }> => {
   try {
     const response = await axiosInstance.post("/orders/checkout", { cart, address, totalAmount });
@@ -79,7 +72,6 @@ export const checkout = async (cart: OrderItem[], address: string, totalAmount: 
   }
 };
 
-// Helper: handle axios errors
 const handleAxiosError = (error: unknown): void => {
   if (axios.isAxiosError(error)) {
     throw error.response?.data || new Error("An unexpected Axios error occurred.");
@@ -88,7 +80,6 @@ const handleAxiosError = (error: unknown): void => {
   }
 };
 
-// Helper: fallback IOrder object
 const getFallbackOrder = (): IOrder => ({
   _id: "",
   user: "",
