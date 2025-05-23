@@ -9,6 +9,7 @@ import { useCart } from "../../hooks/useCart";
 import { useAuth } from "../../hooks/useAuth";
 import { AxiosError } from "axios";
 import NavBar from "../../components/NavBar/NavBar";
+import FavoriteIcon from "../../components/Favorite/FavoriteIcon";
 
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -142,7 +143,9 @@ const ProductPage: React.FC = () => {
     <>
       <NavBar />
       <div className={styles.pageContainer}>
-        <h1 className={styles.title}>{product.name}</h1>
+        <h1 className={styles.title}>
+          {product.name}
+        </h1>
         <div className={styles.imageWrapper}>
           <img src={productImage} alt={product.name} />
         </div>
@@ -153,9 +156,14 @@ const ProductPage: React.FC = () => {
           Category: {typeof product.category === "object" ? product.category.name : "N/A"} <br />
           Subcategory: {typeof product.subcategory === "object" ? product.subcategory.name : "None"}
         </p>
-        <button className={styles.addToCartButton} onClick={handleAddToCart}>
-          Add to cart
-        </button>
+        <div className={styles.actionRow}>
+          <button className={styles.addToCartButton} onClick={handleAddToCart}>
+            Add to cart
+          </button>
+          <span className={styles.favoriteIconWrapper}>
+            <FavoriteIcon productId={product._id} />
+          </span>
+        </div>
 
         <hr className={styles.divider} />
 

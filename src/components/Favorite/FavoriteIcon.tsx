@@ -1,16 +1,19 @@
-import { useEffect, useState } from 'react';
-import FavoriteService from '../../services/FavoriteService';
-import { Product } from '../../types/product';
-import { FaHeart } from 'react-icons/fa';
-import styles from './FavoriteIcon.module.css';
+import { useEffect, useState } from "react";
+import FavoriteService from "../../services/FavoriteService";
+import { Product } from "../../types/product";
+import { FaHeart } from "react-icons/fa";
+import styles from "./FavoriteIcon.module.css";
+import { useAuth } from "../../hooks/useAuth";
 
 const FavoriteIcon = ({ productId }: { productId: string }) => {
   const [favorites, setFavorites] = useState<Product[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isPulsing, setIsPulsing] = useState<boolean>(false);
+  const { isAuthenticated, token } = useAuth();
 
   useEffect(() => {
     const fetchFavorites = async () => {
+      if (!isAuthenticated) return;
       try {
         const favoritesData = await FavoriteService.getFavorites();
         setFavorites(favoritesData);
@@ -19,9 +22,14 @@ const FavoriteIcon = ({ productId }: { productId: string }) => {
       }
     };
     fetchFavorites();
-  }, []);
+  }, [isAuthenticated]);
 
   const handleToggleFavorite = async () => {
+    if (!isAuthenticated || !token) {
+      window.location.href = "/login";
+      return;
+    }
+
     setIsPulsing(true);
     setTimeout(() => setIsPulsing(false), 300);
 
@@ -45,7 +53,7 @@ const FavoriteIcon = ({ productId }: { productId: string }) => {
   const iconClass = `
     ${styles.icon}
     ${isFavorite ? styles.favorite : styles.notFavorite}
-    ${isPulsing ? styles.pulse : ''}
+    ${isPulsing ? styles.pulse : ""}
   `.trim();
 
   return (
@@ -53,9 +61,9 @@ const FavoriteIcon = ({ productId }: { productId: string }) => {
       <FaHeart
         onClick={handleToggleFavorite}
         className={iconClass}
-        title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        title={isFavorite ? "Remove from favorites" : "Add to favorites"}
       />
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import FavoriteService from "../../services/FavoriteService";
 import { Product } from "../../types/product";
 import { FaTrash } from "react-icons/fa";
@@ -7,6 +8,7 @@ import styles from "./FavoriteList.module.css";
 const FavoriteList = () => {
   const [favorites, setFavorites] = useState<Product[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -29,6 +31,10 @@ const FavoriteList = () => {
     }
   };
 
+  const handleImageClick = (productId: string) => {
+    navigate(`/product/id/${productId}`);
+  };
+
   return (
     <div>
       <h2>Your Favorite Products</h2>
@@ -40,7 +46,11 @@ const FavoriteList = () => {
           {favorites.map((product) => (
             <li key={product._id} className={styles.favoriteItem}>
               <div className={styles.productDetails}>
-                <div className={styles.productImageWrapper}>
+                <div
+                  className={styles.productImageWrapper}
+                  onClick={() => handleImageClick(product._id)}
+                  style={{ cursor: "pointer" }}
+                >
                   <img
                     className={styles.productImage}
                     src={product.images?.[0]?.url ?? "/placeholder.jpg"}
