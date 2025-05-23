@@ -3,6 +3,7 @@ import { useCart } from "../../hooks/useCart";
 import styles from "./CartPage.module.css";
 import NavBar from "../../components/NavBar/NavBar";
 import { useNavigate } from "react-router-dom";
+import FavoriteList from "../../components/Favorite/FavoriteList";
 
 const CartPage: React.FC = () => {
   const { items, removeFromCart, updateQuantity, getTotal } = useCart();
@@ -69,7 +70,9 @@ const CartPage: React.FC = () => {
         >
             Proceed to Checkout
         </button>
+        <FavoriteList />
         </div>
+        
     </>
   );
 };
