@@ -14,7 +14,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState<number>(1);
 
-  const imageUrl = images?.[0]?.url ?? "/images/no-image.png";
+  const imageUrl =
+    typeof images?.[0] === "string"
+      ? images[0]
+      : images?.[0]?.url ?? "/images/no-image.png";
 
   const handleAddToCart = () => {
     if (onAddToCart) {
@@ -23,7 +26,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
       addToCart({
         id: _id,
         name,
-        price,
+        price: price ?? 0, 
         quantity,
         image: imageUrl,
       });
@@ -47,7 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
           }}
         />
         <h4>{name}</h4>
-        <p>{price.toFixed(2)} €</p>
+        <p>{(price ?? 0).toFixed(2)} €</p>
       </Link>
       <div className="quantity-selector">
         <label htmlFor={`quantity-${_id}`}>Quantity:</label>

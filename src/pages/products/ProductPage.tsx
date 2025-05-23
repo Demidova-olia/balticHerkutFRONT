@@ -15,6 +15,7 @@ const ProductPage: React.FC = () => {
   const navigate = useNavigate();
 
   const { isAuthenticated, token, user } = useAuth(); 
+  const { addToCart } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,8 +26,6 @@ const ProductPage: React.FC = () => {
   const [comment, setComment] = useState<string>("");
   const [editing, setEditing] = useState(false);
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
-
-  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -58,22 +57,25 @@ const ProductPage: React.FC = () => {
       console.error("Failed to load reviews", error);
     }
   }, [id]);
-  
+
   useEffect(() => {
     loadReviews();
   }, [loadReviews]);
 
   const handleAddToCart = () => {
     if (!product) return;
+
+    const imageUrl =
+      typeof product.images?.[0] === "string"
+        ? product.images[0]
+        : product.images?.[0]?.url ?? "/placeholder.jpg";
+
     addToCart({
       id: product._id,
       name: product.name,
-      price: product.price,
+      price: product.price ?? 0,
       quantity: 1,
-      image:
-    typeof product.images?.[0] === "string"
-      ? product.images[0]
-      : product.images?.[0]?.url ?? "/placeholder.jpg",
+      image: imageUrl,
       stock: product.stock,
     });
   };
@@ -131,129 +133,122 @@ const ProductPage: React.FC = () => {
   if (error) return <p className={styles.error}>{error}</p>;
   if (!product) return <p className={styles.centered}>Product not found.</p>;
 
+  const productImage =
+    typeof product.images?.[0] === "string"
+      ? product.images[0]
+      : product.images?.[0]?.url ?? "/placeholder.jpg";
+
   return (
     <>
-        <NavBar/>
-        <div className={styles.pageContainer}>
-            
+      <NavBar />
+      <div className={styles.pageContainer}>
         <h1 className={styles.title}>{product.name}</h1>
         <div className={styles.imageWrapper}>
-            {product.images?.[0] && (
-            <img
-            src={typeof product.images[0] === "string" ? product.images[0] : product.images[0]?.url}
-            alt={product.name}
-          />
-          
-            )}
+          <img src={productImage} alt={product.name} />
         </div>
         <p className={styles.description}>{product.description}</p>
-        <p className={styles.price}>€{product.price}</p>
+        <p className={styles.price}>€{(product.price ?? 0).toFixed(2)}</p>
         <p className={styles.stock}>Stock: {product.stock}</p>
         <p className={styles.categoryInfo}>
-            Category: {typeof product.category === "object" ? product.category.name : "N/A"} <br />
-            Subcategory: {typeof product.subcategory === "object" ? product.subcategory.name : "None"}
+          Category: {typeof product.category === "object" ? product.category.name : "N/A"} <br />
+          Subcategory: {typeof product.subcategory === "object" ? product.subcategory.name : "None"}
         </p>
         <button className={styles.addToCartButton} onClick={handleAddToCart}>
-            Add to cart
+          Add to cart
         </button>
 
         <hr className={styles.divider} />
 
         <section className={styles.reviewsSection}>
-            <h2>Reviews</h2>
-            {reviews.length === 0 ? (
+          <h2>Reviews</h2>
+          {reviews.length === 0 ? (
             <p>No reviews yet.</p>
-            ) : (
+          ) : (
             reviews.map((review) => (
-                <div key={review._id} className={styles.reviewItem}>
+              <div key={review._id} className={styles.reviewItem}>
                 <strong>Rating:</strong> {review.rating}/5
                 {review.comment && <p>{review.comment}</p>}
                 <small>{new Date(review.createdAt).toLocaleDateString()}</small>
-
                 {isAuthenticated &&
-                    (typeof review.userId === "object" ? review.userId._id : review.userId) === user?.id && (
+                  (typeof review.userId === "object" ? review.userId._id : review.userId) === user?.id && (
                     <div className={styles.reviewActions}>
-                        <button
+                      <button
                         onClick={() => {
-                            setEditing(true);
-                            setEditingReviewId(review._id);
-                            setRating(review.rating);
-                            setComment(review.comment || "");
+                          setEditing(true);
+                          setEditingReviewId(review._id);
+                          setRating(review.rating);
+                          setComment(review.comment || "");
                         }}
-                        >
+                      >
                         Edit
-                        </button>
-                        <button onClick={() => handleDeleteReview(review._id)}>Delete</button>
+                      </button>
+                      <button onClick={() => handleDeleteReview(review._id)}>Delete</button>
                     </div>
-                    )}
-                </div>
+                  )}
+              </div>
             ))
-            )}
+          )}
 
-            {isAuthenticated && !editing && !userReview && (
+          {isAuthenticated && !editing && !userReview && (
             <form className={styles.reviewForm} onSubmit={handleReviewSubmit}>
-                <h3>Leave a Review</h3>
-                <label>
+              <h3>Leave a Review</h3>
+              <label>
                 Rating:
                 <select value={rating} onChange={(e) => setRating(+e.target.value)}>
-                    {[5, 4, 3, 2, 1].map((r) => (
+                  {[5, 4, 3, 2, 1].map((r) => (
                     <option key={r} value={r}>
-                        {r}
+                      {r}
                     </option>
-                    ))}
+                  ))}
                 </select>
-                </label>
-                <textarea
+              </label>
+              <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Write your comment..."
                 required
-                />
-                <button type="submit">Submit</button>
+              />
+              <button type="submit">Submit</button>
             </form>
-            )}
+          )}
 
-            {isAuthenticated && editing && (
+          {isAuthenticated && editing && (
             <form className={styles.reviewForm} onSubmit={handleReviewSubmit}>
-                <h3>Edit Your Review</h3>
-                <label>
+              <h3>Edit Your Review</h3>
+              <label>
                 Rating:
                 <select value={rating} onChange={(e) => setRating(+e.target.value)}>
-                    {[5, 4, 3, 2, 1].map((r) => (
+                  {[5, 4, 3, 2, 1].map((r) => (
                     <option key={r} value={r}>
-                        {r}
+                      {r}
                     </option>
-                    ))}
+                  ))}
                 </select>
-                </label>
-                <textarea
+              </label>
+              <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Update your comment..."
                 required
-                />
-                <button type="submit">Update</button>
-                <button
+              />
+              <button type="submit">Update</button>
+              <button
                 type="button"
                 onClick={() => {
-                    setEditing(false);
-                    setEditingReviewId(null);
-                    setRating(5);
-                    setComment("");
+                  setEditing(false);
+                  setEditingReviewId(null);
+                  setRating(5);
+                  setComment("");
                 }}
-                >
+              >
                 Cancel
-                </button>
+              </button>
             </form>
-            )}
+          )}
 
-            {!isAuthenticated && (
-            <p>
-                <a href="/login">Log in</a> to leave a review.
-            </p>
-            )}
+          {!isAuthenticated && <p><a href="/login">Log in</a> to leave a review.</p>}
         </section>
-        </div>
+      </div>
     </>
   );
 };
