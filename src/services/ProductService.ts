@@ -32,24 +32,25 @@ export const getProductById = async (id: string): Promise<Product> => {
   return response.data.data;
 };
 
+
 export const createProduct = async (data: ProductData): Promise<Product> => {
   const formData = new FormData();
-  formData.append('name', data.name);
-  formData.append('description', data.description);
-  formData.append('price', data.price.toString());
-  formData.append('category', data.category);
-  if (data.subcategory) formData.append('subcategory', data.subcategory);
-  formData.append('stock', data.stock.toString());
+
+  formData.append("name", data.name);
+  formData.append("description", data.description);
+  formData.append("price", String(data.price));
+  formData.append("category", data.category);
+  formData.append("subcategory", data.subcategory);
+  formData.append("stock", String(data.stock));
+
 
   data.images.forEach((file) => {
-    if (file instanceof File) {
-      formData.append('images', file);
-    }
+    formData.append("images", file);
   });
 
-  const response = await axiosInstance.post('/products', formData, {
+  const response = await axiosInstance.post("/products", formData, {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      "Content-Type": "multipart/form-data",
     },
   });
 

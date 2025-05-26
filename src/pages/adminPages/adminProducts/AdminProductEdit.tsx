@@ -55,9 +55,7 @@ const AdminProductEdit: React.FC = () => {
       }
 
       const files = formData.getAll("images");
-      const images = files.filter(file => typeof file !== "string") as (
-        File | { url: string; public_id: string }
-      )[];
+      const images = files.filter(file => file instanceof File) as File[];
 
       const formDataObj: ProductData = {
         name,

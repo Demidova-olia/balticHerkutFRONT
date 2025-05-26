@@ -5,51 +5,33 @@ import { createProduct } from "../../../services/ProductService";
 import { toast } from "react-toastify";
 import { ProductData } from "../../../types/product";
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
-import styles from "./AdminProducts.module.css"
+import styles from "./AdminProducts.module.css";
+
 const AdminProductCreate: React.FC = () => {
   const navigate = useNavigate();
 
-const handleSubmit = async (formData: FormData) => {
-  try {
-    const rawImages = formData.getAll("images");
+  const handleSubmit = async (formData: FormData) => {
+    try {
+      const files = formData.getAll("images") as File[];
 
-    const extractPublicIdFromUrl = (url: string): string => {
-      const parts = url.split("/");
-      const filename = parts[parts.length - 1];
-      return filename.split(".")[0]; // e.g. abc123.jpg → abc123
-    };
+      const productData: ProductData = {
+        name: formData.get("name") as string,
+        description: formData.get("description") as string,
+        price: parseFloat(formData.get("price") as string),
+        category: formData.get("category") as string,
+        subcategory: formData.get("subcategory") as string,
+        stock: parseInt(formData.get("stock") as string),
+        images: files,
+      };
 
-    const images = rawImages.map((item) => {
-      if (item instanceof File) {
-        return item; // keep File as-is
-      } else if (typeof item === "string") {
-        return {
-          url: item,
-          public_id: extractPublicIdFromUrl(item),
-        };
-      }
-      throw new Error("Unsupported image format");
-    });
-
-    const productData: ProductData = {
-      name: formData.get("name") as string,
-      description: formData.get("description") as string,
-      price: parseFloat(formData.get("price") as string),
-      category: formData.get("category") as string,
-      subcategory: formData.get("subcategory") as string,
-      stock: parseInt(formData.get("stock") as string),
-      images: images as (File | { url: string; public_id: string })[],
-    };
-
-    await createProduct(productData);
-    toast.success("Product created!");
-    navigate("/admin/products");
-  } catch (err) {
-    console.error("Error creating product:", err);
-    toast.error("Failed to create product.");
-  }
-};
-
+      await createProduct(productData);
+      toast.success("Product created!");
+      navigate("/admin/products");
+    } catch (err) {
+      console.error("Error creating product:", err);
+      toast.error("Failed to create product.");
+    }
+  };
 
   return (
     <div className={styles.container}>

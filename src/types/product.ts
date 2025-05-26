@@ -1,10 +1,12 @@
 import { Category } from "./category";
 import { Subcategory } from "./subcategory";
 
-interface ImageObject {
+export interface ImageObject {
   url: string;
   public_id: string;
 }
+
+export type ProductImage = File | string | ImageObject;
 
 export interface Product {
   _id: string;
@@ -33,13 +35,15 @@ export interface ProductData {
   category: string;
   subcategory: string;
   stock: number;
-  images: (File | { url: string; public_id: string })[];
+  images: File[]; // 🔥 Только File[], исключаем строки/объекты при отправке
 }
+
 export interface ProductResponse {
   products: Product[];
   totalPages: number;
   totalProducts: number;
 }
+
 export interface ProductsListResponse {
   data: {
     products: Product[];

@@ -76,20 +76,24 @@ const AdminProducts: React.FC = () => {
           {products.map((product) => (
             <tr key={product._id}>
               <td data-label="Images">
-              {product.images && product.images.length > 0 ? (
-              <div className={styles.imageGallery}>
-                {product.images.map((image, index) => (
-                  <img
-                    key={index}
-                    src={typeof image === "string" ? image : image.url}
-                    alt={`${product.name} image ${index + 1}`}
-                    className={styles.productImage}
-                  />
-                ))}
-              </div>
-            ) : (
-              "No Image"
-            )}
+                {product.images && product.images.length > 0 ? (
+                  <div className={styles.imageGallery}>
+                    {product.images.map((image, index) => {
+                      const imgUrl = typeof image === "string" ? image : image.url;
+                      console.log("Image URL:", imgUrl); // DEBUG
+                      return (
+                        <img
+                          key={index}
+                          src={imgUrl}
+                          alt={`${product.name} image ${index + 1}`}
+                          className={styles.productImage}
+                        />
+                      );
+                    })}
+                  </div>
+                ) : (
+                  "No Image"
+                )}
               </td>
               <td data-label="Name">{product.name}</td>
               <td data-label="Category">{typeof product.category === "string" ? product.category : product.category?.name}</td>

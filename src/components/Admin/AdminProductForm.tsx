@@ -6,7 +6,6 @@ import { getCategories } from '../../services/CategoryService';
 import { getSubcategories } from '../../services/SubcategoryService';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './AdminProductForm.module.css';
-import { uploadImage } from '../../utils/uploadImage';
 
 interface ProductFormProps {
   initialData?: Partial<Product>;
@@ -23,14 +22,16 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [allSubcategories, setAllSubcategories] = useState<Subcategory[]>([]);
   const [filteredSubcategories, setFilteredSubcategories] = useState<Subcategory[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [images, setImages] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formState, setFormState] = useState({
     name: '',
     description: '',
-    price: 0,
-    stock: 0,
+    price: '',
+    stock: '',
   });
 
   useEffect(() => {
@@ -72,27 +73,12 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
   }, [selectedCategory, allSubcategories]);
 
   useEffect(() => {
-    if (selectedSubcategory && !selectedCategory) {
-      const sub = allSubcategories.find(sub => sub._id === selectedSubcategory);
-      if (sub) {
-        const parentId = typeof sub.parent === 'string' ? sub.parent : sub.parent._id;
-        setSelectedCategory(parentId);
-      }
-    }
-  }, [selectedSubcategory, allSubcategories, selectedCategory]);
-
-  useEffect(() => {
-    if (
-      initialData &&
-      initialData.name &&
-      initialData.price !== undefined &&
-      initialData.stock !== undefined
-    ) {
+    if (initialData && initialData.name) {
       setFormState({
         name: initialData.name,
         description: initialData.description || '',
-        price: initialData.price,
-        stock: initialData.stock,
+        price: initialData.price?.toString() || '',
+        stock: initialData.stock?.toString() || '',
       });
 
       const categoryId =
@@ -144,50 +130,51 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!selectedCategory) {
-      alert('Please select a category.');
-      return;
+  if (!selectedCategory) {
+    alert('Please select a category.');
+    return;
+  }
+
+  if (!initialData._id && images.length === 0) {
+    alert('Please upload at least one image.');
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+
+    const formData = new FormData();
+    formData.append('name', formState.name);
+    formData.append('description', formState.description);
+    formData.append('price', parseFloat(formState.price).toString());
+    formData.append('stock', parseInt(formState.stock).toString());
+    formData.append('category', selectedCategory);
+
+    if (selectedSubcategory) {
+      formData.append('subcategory', selectedSubcategory);
     }
 
-    try {
-      const uploadedImageUrls: string[] = [];
+    images.forEach(file => {
+      formData.append('images', file);
+    });
 
-      for (const image of images) {
-        const url = await uploadImage(image);
-        uploadedImageUrls.push(url);
-      }
+    onSubmit(formData);
 
-      const formData = new FormData();
-      formData.append('name', formState.name);
-      formData.append('description', formState.description);
-      formData.append('price', formState.price.toString());
-      formData.append('stock', formState.stock.toString());
-      formData.append('category', selectedCategory);
-      if (selectedSubcategory) {
-        formData.append('subcategory', selectedSubcategory);
-      }
-
-      const existingImages = Array.isArray(initialData.images)
-        ? initialData.images.map(img => (typeof img === 'string' ? img : img.url))
-        : [];
-
-      const allImages = [...existingImages, ...uploadedImageUrls];
-      allImages.forEach(url => formData.append('images', url));
-
-      onSubmit(formData);
-
-      if (!initialData._id) {
-        setFormState({ name: '', description: '', price: 0, stock: 0 });
-        setSelectedCategory('');
-        setSelectedSubcategory('');
-        setImages([]);
-      }
-    } catch (error) {
-      console.error('Error uploading images:', error);
+    if (!initialData._id) {
+      setFormState({ name: '', description: '', price: '', stock: '' });
+      setSelectedCategory('');
+      setSelectedSubcategory('');
+      setImages([]);
     }
-  };
+  } catch (error) {
+    console.error('Error submitting form:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <>
@@ -213,7 +200,6 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
             value={formState.description}
             onChange={handleChange}
             required
-            placeholder="Enter product description..."
             className={styles.textarea}
           />
         </div>
@@ -319,8 +305,12 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
           </div>
         )}
 
-        <button type="submit" className={styles.submitButton}>
-          {submitText}
+        <button
+          type="submit"
+          className={styles.submitButton}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Submitting...' : submitText}
         </button>
       </form>
 
