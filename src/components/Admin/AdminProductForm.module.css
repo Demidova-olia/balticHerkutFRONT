@@ -78,4 +78,10 @@
   .mainMenuBtn {
     margin-left: 0.5rem;
   }
+  .previewImage {
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 5px;
+}
   
