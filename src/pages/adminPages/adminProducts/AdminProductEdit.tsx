@@ -47,8 +47,7 @@ const AdminProductEdit: React.FC = () => {
         typeof description !== "string" ||
         typeof price !== "string" ||
         typeof stock !== "string" ||
-        typeof category !== "string" ||
-        typeof subcategory !== "string"
+        typeof category !== "string"
       ) {
         toast.error("Invalid form data.");
         return;
@@ -57,17 +56,22 @@ const AdminProductEdit: React.FC = () => {
       const files = formData.getAll("images");
       const images = files.filter(file => file instanceof File) as File[];
 
+      const removeAllImages = formData.get("removeAllImages") === "true";
+
+      const existingImages: { url: string; public_id: string }[] =
+        product.images?.filter(img => typeof img !== "string" && img.public_id && img.url) ?? [];
+
       const formDataObj: ProductData = {
         name,
         description,
         price: parseFloat(price),
         stock: parseInt(stock),
         category,
-        subcategory,
+        subcategory: typeof subcategory === "string" ? subcategory : "",
         images,
       };
 
-      await updateProduct(product._id, formDataObj);
+      await updateProduct(product._id, formDataObj, existingImages, removeAllImages);
       toast.success("Product updated!");
       navigate("/admin/products");
     } catch (err) {

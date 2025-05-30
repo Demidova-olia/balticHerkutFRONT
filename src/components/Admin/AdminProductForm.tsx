@@ -26,6 +26,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [removeAllImages, setRemoveAllImages] = useState(false);
 
   const [formState, setFormState] = useState({
     name: '',
@@ -130,51 +131,53 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!selectedCategory) {
-    alert('Please select a category.');
-    return;
-  }
-
-  if (!initialData._id && images.length === 0) {
-    alert('Please upload at least one image.');
-    return;
-  }
-
-  try {
-    setIsSubmitting(true);
-
-    const formData = new FormData();
-    formData.append('name', formState.name);
-    formData.append('description', formState.description);
-    formData.append('price', parseFloat(formState.price).toString());
-    formData.append('stock', parseInt(formState.stock).toString());
-    formData.append('category', selectedCategory);
-
-    if (selectedSubcategory) {
-      formData.append('subcategory', selectedSubcategory);
+    if (!selectedCategory) {
+      alert('Please select a category.');
+      return;
     }
 
-    images.forEach(file => {
-      formData.append('images', file);
-    });
-
-    onSubmit(formData);
-
-    if (!initialData._id) {
-      setFormState({ name: '', description: '', price: '', stock: '' });
-      setSelectedCategory('');
-      setSelectedSubcategory('');
-      setImages([]);
+    if (!initialData._id && images.length === 0) {
+      alert('Please upload at least one image.');
+      return;
     }
-  } catch (error) {
-    console.error('Error submitting form:', error);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
 
+    try {
+      setIsSubmitting(true);
+
+      const formData = new FormData();
+      formData.append('name', formState.name);
+      formData.append('description', formState.description);
+      formData.append('price', parseFloat(formState.price).toString());
+      formData.append('stock', parseInt(formState.stock).toString());
+      formData.append('category', selectedCategory);
+
+      if (selectedSubcategory) {
+        formData.append('subcategory', selectedSubcategory);
+      }
+
+      images.forEach(file => {
+        formData.append('images', file);
+      });
+
+      formData.append('removeAllImages', removeAllImages.toString());
+
+      onSubmit(formData);
+
+      if (!initialData._id) {
+        setFormState({ name: '', description: '', price: '', stock: '' });
+        setSelectedCategory('');
+        setSelectedSubcategory('');
+        setImages([]);
+        setRemoveAllImages(false);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -302,6 +305,19 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
                 />
               ))}
             </div>
+          </div>
+        )}
+
+        {initialData.images && initialData.images.length > 0 && (
+          <div className={styles.formField}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={removeAllImages}
+                onChange={e => setRemoveAllImages(e.target.checked)}
+              />
+              Remove all current images
+            </label>
           </div>
         )}
 
