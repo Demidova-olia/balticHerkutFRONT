@@ -33,11 +33,15 @@ export interface ProductData {
   description: string;
   price: number;
   category: string;
-  subcategory: string;
+  subcategory?: string;
   stock: number;
-  images: File[]; // 🔥 Только File[], исключаем строки/объекты при отправке
+  images: (File | ExistingImage)[];
 }
 
+export interface ExistingImage {
+  url: string;
+  public_id: string;
+}
 export interface ProductResponse {
   products: Product[];
   totalPages: number;
