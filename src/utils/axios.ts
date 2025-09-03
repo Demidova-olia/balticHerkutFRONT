@@ -1,37 +1,52 @@
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
 const getBaseURL = () => {
-  // В браузере с Vite import.meta.env доступен, но Jest / Node - нет
-  if (typeof import.meta !== "undefined" && typeof import.meta.env !== "undefined" && import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+  // Vite env в браузере
+  if (
+    typeof import.meta !== "undefined" &&
+    typeof import.meta.env !== "undefined" &&
+    (import.meta as any).env?.VITE_API_URL
+  ) {
+    return (import.meta as any).env.VITE_API_URL as string;
   }
 
-  // В Node.js (включая Jest) используем process.env
+  // Node/Jest
   if (process.env.VITE_API_URL) {
     return process.env.VITE_API_URL;
   }
 
-  // Фолбек
+  // Фолбек на Render
   return "https://balticherkutback.onrender.com/api";
 };
 
 const axiosInstance = axios.create({
   baseURL: getBaseURL(),
+  // не задаём Content-Type по умолчанию — пусть axios сам решает (JSON vs FormData)
 });
 
+// request interceptor: добавить Bearer и не мешать FormData
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // auth
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token");
       if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
+        (config.headers as any).Authorization = `Bearer ${token}`;
       }
     }
+
+    // если отправляем FormData — убираем вручную выставленный Content-Type (если где-то был)
+    const isFormData = typeof FormData !== "undefined" && config.data instanceof FormData;
+    if (isFormData && config.headers) {
+      delete (config.headers as any)["Content-Type"];
+    }
+
     return config;
   },
   (error: AxiosError) => Promise.reject(error)
 );
 
+// response interceptor: 401 → logout
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {

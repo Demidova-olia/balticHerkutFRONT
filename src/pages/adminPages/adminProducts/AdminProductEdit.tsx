@@ -31,74 +31,76 @@ const AdminProductEdit: React.FC = () => {
     fetchProduct();
   }, [id]);
 
-const handleSubmit = async (formData: FormData) => {
-  if (!product || !product._id) return;
+  const handleSubmit = async (formData: FormData) => {
+    if (!product || !product._id) return;
 
-  try {
-    const name = formData.get("name");
-    const description = formData.get("description");
-    const price = formData.get("price");
-    const stock = formData.get("stock");
-    const category = formData.get("category");
-    const subcategory = formData.get("subcategory");
-    const removeAllImages = formData.get("removeAllImages") === "true";
+    try {
+      const name = formData.get("name");
+      const description = formData.get("description");
+      const price = formData.get("price");
+      const stock = formData.get("stock");
+      const category = formData.get("category");
+      const subcategory = formData.get("subcategory");
+      const removeAllImages = formData.get("removeAllImages") === "true";
 
-    if (
-      typeof name !== "string" ||
-      typeof description !== "string" ||
-      typeof price !== "string" ||
-      typeof stock !== "string" ||
-      typeof category !== "string"
-    ) {
-      toast.error("Invalid form data.");
-      return;
+      if (
+        typeof name !== "string" ||
+        typeof description !== "string" ||
+        typeof price !== "string" ||
+        typeof stock !== "string" ||
+        typeof category !== "string"
+      ) {
+        toast.error("Invalid form data.");
+        return;
+      }
+
+      const files = formData.getAll("images");
+      const images = files.filter((file) => file instanceof File) as File[];
+
+      const formDataObj: ProductData = {
+        name,
+        description,
+        price: parseFloat(price),
+        stock: parseInt(stock, 10),
+        category,
+        // если подкатегория не выбрана — передадим пустую строку; сервис сам НЕ добавит поле в FormData
+        subcategory: typeof subcategory === "string" ? subcategory : "",
+        images,
+      };
+
+      const existingImages = (product.images || []).filter(
+        (img): img is { url: string; public_id: string } => typeof img !== "string"
+      );
+
+      await updateProduct(product._id, formDataObj, existingImages, removeAllImages);
+      toast.success("Product updated!");
+      navigate("/admin/products");
+    } catch (err) {
+      console.error("Error updating product:", err);
+      toast.error("Failed to update product.");
     }
+  };
 
-    const files = formData.getAll("images");
-    const images = files.filter(file => file instanceof File) as File[];
-
-    const formDataObj: ProductData = {
-      name,
-      description,
-      price: parseFloat(price),
-      stock: parseInt(stock),
-      category,
-      subcategory: typeof subcategory === "string" ? subcategory : "",
-      images,
-    };
-
-    const existingImages = (product.images || []).filter(
-      (img): img is { url: string; public_id: string } => typeof img !== "string"
-    );
-
-    await updateProduct(product._id, formDataObj, existingImages, removeAllImages);
-    toast.success("Product updated!");
-    navigate("/admin/products");
-  } catch (err) {
-    console.error("Error updating product:", err);
-    toast.error("Failed to update product.");
-  }
-};
- const handleImageDelete = async (publicId: string) => {
-  if (!product || !product._id) return;
-  try {
-    await deleteProductImage(product._id, publicId);
-    setProduct(prev =>
-      prev
-        ? {
-            ...prev,
-            images: prev.images?.filter(
-              img => typeof img !== "string" && img.public_id !== publicId
-            ),
-          }
-        : prev
-    );
-    toast.success("Image deleted");
-  } catch (err) {
-    console.error("Error deleting image:", err);
-    toast.error("Failed to delete image");
-  }
-};
+  const handleImageDelete = async (publicId: string) => {
+    if (!product || !product._id) return;
+    try {
+      await deleteProductImage(product._id, publicId);
+      setProduct((prev) =>
+        prev
+          ? {
+              ...prev,
+              images: prev.images?.filter(
+                (img) => typeof img !== "string" && img.public_id !== publicId
+              ),
+            }
+          : prev
+      );
+      toast.success("Image deleted");
+    } catch (err) {
+      console.error("Error deleting image:", err);
+      toast.error("Failed to delete image");
+    }
+  };
 
   if (loading) {
     return <div className="text-center text-lg font-semibold">Loading...</div>;

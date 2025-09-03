@@ -46,6 +46,7 @@ export const getProductById = async (id: string): Promise<Product> => {
     throw error;
   }
 };
+
 export const createProduct = async (data: ProductData): Promise<Product> => {
   const formData = new FormData();
 
@@ -53,7 +54,10 @@ export const createProduct = async (data: ProductData): Promise<Product> => {
   formData.append('description', data.description);
   formData.append('price', String(data.price));
   formData.append('category', data.category);
-  if (data.subcategory) formData.append('subcategory', data.subcategory);
+  // не отправляем пустую подкатегорию
+  if (data.subcategory && data.subcategory !== 'undefined' && data.subcategory !== 'null') {
+    formData.append('subcategory', data.subcategory);
+  }
   formData.append('stock', String(data.stock));
 
   data.images.forEach((file) => {
@@ -63,9 +67,9 @@ export const createProduct = async (data: ProductData): Promise<Product> => {
   });
 
   const response = await axiosInstance.post('/products', formData);
-
   return response.data.data;
 };
+
 export const updateProduct = async (
   id: string,
   data: ProductData,
@@ -79,9 +83,14 @@ export const updateProduct = async (
   formData.append('price', String(data.price));
   formData.append('stock', String(data.stock));
   formData.append('category', data.category);
-  formData.append('subcategory', data.subcategory || '');
-  formData.append('removeAllImages', removeAllImages.toString());
-  formData.append('existingImages', JSON.stringify(existingImages));
+
+  // не отправляем пустую строку — просто не добавляем поле
+  if (data.subcategory && data.subcategory !== 'undefined' && data.subcategory !== 'null') {
+    formData.append('subcategory', data.subcategory);
+  }
+
+  formData.append('removeAllImages', String(!!removeAllImages));
+  formData.append('existingImages', JSON.stringify(existingImages || []));
 
   data.images.forEach((file) => {
     if (file instanceof File) {
@@ -105,10 +114,11 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
   return response.data.data;
 };
 
+// ⚠️ Приводим маршруты к тем, что реально есть на бэке
 export const getProductsByCategory = async (
   categoryId: string
 ): Promise<Product[]> => {
-  const response = await axiosInstance.get(`/products/category/${categoryId}`);
+  const response = await axiosInstance.get(`/products/${categoryId}`);
   return response.data.data;
 };
 
@@ -116,9 +126,7 @@ export const getProductsByCategoryAndSubcategory = async (
   categoryId: string,
   subcategoryId: string
 ): Promise<Product[]> => {
-  const response = await axiosInstance.get(
-    `/products/category/${categoryId}/subcategory/${subcategoryId}`
-  );
+  const response = await axiosInstance.get(`/products/${categoryId}/${subcategoryId}`);
   return response.data.data;
 };
 
@@ -141,8 +149,9 @@ export const updateProductImage = async (
   const formData = new FormData();
   formData.append('image', image);
 
+  const encodedId = encodeURIComponent(publicId);
   const response = await axiosInstance.put(
-    `/products/${productId}/images/${publicId}`,
+    `/products/${productId}/images/${encodedId}`,
     formData
   );
 
@@ -156,6 +165,7 @@ export const uploadImage = async (
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', 'your_upload_preset'); // Replace with real preset
+
   const response = await fetch('https://api.cloudinary.com/v1_1/your_cloud_name/image/upload', {
     method: 'POST',
     body: formData,
