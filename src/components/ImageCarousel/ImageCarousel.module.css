@@ -1,0 +1,61 @@
+.carouselContainer {
+  position: relative;
+  width: 100%;
+  height: 380px;              /* компактнее → меньше перерисовки */
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.14);
+  background: #f4f4f4;
+}
+
+@media (max-width: 1024px) {
+  .carouselContainer { height: 300px; }
+}
+@media (max-width: 640px) {
+  .carouselContainer { height: 220px; }
+}
+
+.carouselImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: opacity;
+  transform: translateZ(0);    /* подсказка GPU */
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.fadeIn {
+  opacity: 1;
+  animation: fadeInAnim var(--fadeDur, 400ms) ease-in-out;
+}
+@keyframes fadeInAnim {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 8px;
+  z-index: 2;
+}
+
+.dot {
+  width: 10px; height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.6);
+  border: 1px solid rgba(255,255,255,.9);
+  cursor: pointer;
+  transition: background .25s ease;
+}
+.dotActive { background: #fff; }
+
+/* уважение prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .fadeIn { animation: none; }
+}

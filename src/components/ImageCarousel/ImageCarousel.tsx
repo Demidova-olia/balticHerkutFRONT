@@ -1,46 +1,100 @@
-import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
+import styles from "./ImageCarousel.module.css";
 
-const images = [
-  "/assets/optimized_Baltic_Herkut_2050_x_1350_mm_C_(6)_1.jpg",
-  "/assets/optimized_Baltic_Herkut_2050_x_1350_mm_D_(2)_1.jpg",
+const IMAGES = [
+  "/assets/optimized_Baltic_Herkut_2.jpg",
+  "/assets/optimized_Baltic_Herkut_1.jpg",
 ];
 
-const ImageCarousel: React.FC = () => {
+const INTERVAL_MS = 8000;      
+const FADE_MS = 400;          
+
+const usePrefersReducedMotion = () => {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const m = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onChange = () => setReduced(m.matches);
+    onChange();
+    m.addEventListener?.("change", onChange);
+    return () => m.removeEventListener?.("change", onChange);
+  }, []);
+  return reduced;
+};
+
+export const ImageCarousel: React.FC = () => {
   const [index, setIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+  const timerRef = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const reduced = usePrefersReducedMotion();
 
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % images.length);
-    }, 4000);
-    return () => clearInterval(interval);
+    const next = () => setIndex((i) => (i + 1) % IMAGES.length);
+    const start = () => {
+      stop();
+      timerRef.current = window.setInterval(next, INTERVAL_MS);
+    };
+    const stop = () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+
+    if (isVisible) start();
+    return stop;
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const el = containerRef.current;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        setIsVisible(entry.isIntersecting);
+      },
+      { root: null, threshold: 0.2 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
-  return (
-    <div className="relative w-full h-[500px] overflow-hidden rounded-2xl shadow-lg">
-      <AnimatePresence>
-        <motion.img
-          key={images[index]}
-          src={images[index]}
-          alt={`Slide ${index}`}
-          className="absolute w-full h-full object-cover"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1 }}
-        />
-      </AnimatePresence>
 
+  useEffect(() => {
+    const nextIdx = (index + 1) % IMAGES.length;
+    const img = new Image();
+    img.decoding = "async";
+    img.src = IMAGES[nextIdx];
+  }, [index]);
+
+  const goTo = (i: number) => setIndex(i);
+
+  return (
+    <div
+      ref={containerRef}
+      className={styles.carouselContainer}
+      aria-roledescription="carousel"
+    >
     
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-        {images.map((_, i) => (
+      <img
+        key={`img-${index}`}
+        src={IMAGES[index]}
+        alt={`Slide ${index + 1}`}
+        className={`${styles.carouselImage} ${styles.fadeIn}`}
+        style={{ transitionDuration: reduced ? "0ms" : `${FADE_MS}ms` }}
+        decoding="async"
+        loading="eager"
+        draggable={false}
+      />
+
+      <div className={styles.dots}>
+        {IMAGES.map((_, i) => (
           <button
             key={i}
-            onClick={() => setIndex(i)}
-            className={`w-3 h-3 rounded-full transition ${
-              i === index ? "bg-white" : "bg-gray-400"
-            }`}
+            aria-label={`Go to slide ${i + 1}`}
+            className={`${styles.dot} ${i === index ? styles.dotActive : ""}`}
+            onClick={() => goTo(i)}
           />
         ))}
       </div>
