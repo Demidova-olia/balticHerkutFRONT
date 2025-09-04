@@ -3,17 +3,17 @@ import axiosInstance from "../utils/axios";
 
 const ReviewService = {
   getProductReviews: async (productId: string): Promise<Review[]> => {
-    const res = await axiosInstance.get(`/product/${productId}/reviews`);
+    const res = await axiosInstance.get(`/reviews/${productId}/reviews`);
     return res.data;
   },
 
   getOneReview: async (reviewId: string): Promise<Review> => {
-    const res = await axiosInstance.get(`/product/reviews/${reviewId}`);
+    const res = await axiosInstance.get(`/reviews/reviews/${reviewId}`);
     return res.data;
   },
 
   createReview: async (productId: string, data: { rating: number; comment?: string }): Promise<Review> => {
-    const res = await axiosInstance.post(`/product/${productId}/reviews`, data);
+    const res = await axiosInstance.post(`/reviews/${productId}/reviews`, data);
     return res.data;
   },
 
@@ -21,12 +21,12 @@ const ReviewService = {
     reviewId: string,
     data: { rating?: number; comment?: string }
   ): Promise<{ message: string; review: Review }> => {
-    const res = await axiosInstance.put(`/product/reviews/${reviewId}`, data);
+    const res = await axiosInstance.put(`/reviews/reviews/${reviewId}`, data);
     return res.data;
   },
 
   deleteReview: async (reviewId: string): Promise<{ message: string; review: Review }> => {
-    const res = await axiosInstance.delete(`/product/reviews/${reviewId}`);
+    const res = await axiosInstance.delete(`/reviews/reviews/${reviewId}`);
     return res.data;
   },
 };

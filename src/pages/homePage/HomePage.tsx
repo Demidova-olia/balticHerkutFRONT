@@ -10,6 +10,7 @@ import CategoryTree from "../../components/CategoryTree/CategoryTree";
 import Loading from "../../components/Loading/Loading";
 import ProductGrid from "../../components/ProductGrid/ProductGrid";
 import styles from './HomePage.module.css';
+import ImageCarousel from "../../components/ImageCarousel/ImageCarousel";
 
 interface ProductResponse {
   products: Product[];
@@ -132,6 +133,7 @@ const HomePage: React.FC = () => {
         <div className={styles.welcomeMessage}>
           <h1>Baltic Herkut</h1>
           <h2>Welcome to our store!</h2>
+          <ImageCarousel/>
           <p>Browse a variety of products and services.</p>
         </div>
         <SearchBar value={searchTerm} onChange={handleSearchChange} />
