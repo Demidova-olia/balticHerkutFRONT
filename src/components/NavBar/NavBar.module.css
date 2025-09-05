@@ -27,11 +27,11 @@
 }
 
 .link:hover {
-  color: rgb(42, 199, 76);
+  color: rgb(71, 116, 253);
 }
 
 .active {
-  color: rgb(42, 199, 76);
+  color: rgb(71, 116, 253);
   font-weight: 600;
 }
 

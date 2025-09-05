@@ -1,15 +1,22 @@
 import { useEffect, useState } from "react";
-import { Product } from "../../types/product";
 import { useSearchParams } from "react-router";
-import { CategoryWithSubcategories } from "../../types/category";
-import { CategoryService } from "../../services/CategoryService";
-import { getProducts, getProductsByCategoryAndSubcategory, searchProducts } from "../../services/ProductService";
 import NavBar from "../../components/NavBar/NavBar";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import CategoryTree from "../../components/CategoryTree/CategoryTree";
 import Loading from "../../components/Loading/Loading";
 import ProductGrid from "../../components/ProductGrid/ProductGrid";
-import styles from './HomePage.module.css';
+import ImageCarousel from "../../components/ImageCarousel/ImageCarousel";
+
+import { Product } from "../../types/product";
+import { CategoryWithSubcategories } from "../../types/category";
+import { CategoryService } from "../../services/CategoryService";
+import {
+  getProducts,
+  getProductsByCategoryAndSubcategory,
+  searchProducts,
+} from "../../services/ProductService";
+
+import styles from "./HomePage.module.css";
 
 interface ProductResponse {
   products: Product[];
@@ -18,15 +25,7 @@ interface ProductResponse {
 }
 
 function isProductResponse(obj: unknown): obj is ProductResponse {
-  if (
-    typeof obj === "object" &&
-    obj !== null &&
-    "products" in obj
-  ) {
-    const maybeProducts = (obj as { products?: unknown }).products;
-    return Array.isArray(maybeProducts);
-  }
-  return false;
+  return !!obj && typeof obj === "object" && Array.isArray((obj as any).products);
 }
 
 const HomePage: React.FC = () => {
@@ -34,8 +33,12 @@ const HomePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(searchParams.get("category") || null);
-  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string>(searchParams.get("subcategory") || "");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    searchParams.get("category") || null
+  );
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string>(
+    searchParams.get("subcategory") || ""
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +52,10 @@ const HomePage: React.FC = () => {
         let productResponse: unknown;
 
         if (selectedCategoryId && selectedSubcategoryId) {
-          productResponse = await getProductsByCategoryAndSubcategory(selectedCategoryId, selectedSubcategoryId);
+          productResponse = await getProductsByCategoryAndSubcategory(
+            selectedCategoryId,
+            selectedSubcategoryId
+          );
         } else if (searchTerm) {
           productResponse = await searchProducts(searchTerm);
         } else {
@@ -69,14 +75,9 @@ const HomePage: React.FC = () => {
         } else {
           setProducts([]);
         }
-
         setError(null);
       } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Unknown error");
-        }
+        setError(err instanceof Error ? err.message : "Unknown error");
         setProducts([]);
       } finally {
         setLoading(false);
@@ -107,7 +108,8 @@ const HomePage: React.FC = () => {
   };
 
   const handleSubcategorySelect = (subcategoryId: string) => {
-    const newSubcategoryId = subcategoryId === selectedSubcategoryId ? "" : subcategoryId;
+    const newSubcategoryId =
+      subcategoryId === selectedSubcategoryId ? "" : subcategoryId;
     setSelectedSubcategoryId(newSubcategoryId);
 
     const params: Record<string, string> = { search: searchTerm };
@@ -126,29 +128,48 @@ const HomePage: React.FC = () => {
   return (
     <>
       <NavBar />
-    
       <div className={styles.pageContainer}>
-        
+        {/* HERO с баннером-логотипом */}
         <div className={styles.welcomeMessage}>
-          <h1>Baltic Herkut</h1>
+          <div className={styles.logoWrap}>
+            {/* Положи файл сюда: /public/assets/Logo.jpg  (Vite: абсолютный путь /assets/...) */}
+            <img
+              src="/assets/Logo.jpg"
+              alt="Baltic Herkut"
+              className={styles.logoImage}
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+
           <h2>Welcome to our store!</h2>
+
+          {/* Карусель */}
+          <div className={styles.carouselSpacer}>
+            <ImageCarousel />
+          </div>
+
           <p>Browse a variety of products and services.</p>
         </div>
-        <SearchBar value={searchTerm} onChange={handleSearchChange} />
 
+        {/* Поиск */}
+        <div className={styles.searchBarContainer}>
+          <SearchBar value={searchTerm} onChange={handleSearchChange} />
+        </div>
+
+        {/* Подзаголовок */}
         <div className={styles.welcomeMessage}>
           <p>Select a category to start exploring!</p>
         </div>
 
+        {/* Панель Reset */}
         <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
-          <button
-            onClick={handleResetFilters}
-            className={styles.ResetFilter}
-          >
+          <button onClick={handleResetFilters} className={styles.ResetFilter}>
             Reset Filters
           </button>
         </div>
 
+        {/* Категории */}
         <CategoryTree
           categories={categories}
           selectedCategoryId={selectedCategoryId ?? null}
@@ -157,18 +178,17 @@ const HomePage: React.FC = () => {
           onSubcategorySelect={handleSubcategorySelect}
         />
 
-        <div>
-          <h2 className={styles.categorySelectTitle}>Our Products</h2>
-        </div>
+        <h2 className={styles.categorySelectTitle}>Our Products</h2>
 
+        {/* Продукты */}
         {loading ? (
           <Loading text="Loading products..." className={styles.loadingText} />
         ) : error ? (
           <p className={styles.errorText}>{error}</p>
         ) : (
-          <ProductGrid 
-            products={products}
-          />
+          <div className={styles.productGridWrapper}>
+            <ProductGrid products={products} />
+          </div>
         )}
       </div>
     </>

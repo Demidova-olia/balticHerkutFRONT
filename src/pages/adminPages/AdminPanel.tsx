@@ -10,9 +10,9 @@ const AdminPanel: React.FC = () => {
         <>
         <NavBar/>
         <div className={styles.adminPanel}>
-            
-            <WelcomePanel />
             <h1>Administration Page</h1>
+
+            <WelcomePanel />
 
             <AdminMetrics />
 
