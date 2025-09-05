@@ -21,6 +21,7 @@ import MyOrdersList from "./components/Orders/MyOrdersList";
 import OrderSuccessPage from "./pages/orders/OrderSuccessPage";
 import AdminOrders from "./pages/adminPages/adminOrders/AdminOrders";
 import EditProfilePage from "./pages/profile/EditProfilePage";
+import AboutUs from "./pages/aboutUs/AboutUs";
 
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/edit-profile" element={<EditProfilePage />} />
         <Route path="/orders" element={<MyOrdersList />} />
+        <Route path="/aboutUs" element={<AboutUs />} />
 
         <Route path="/productsPage" element={<ProductsPage />} />
         <Route path="/product/id/:id" element={<ProductPage />} />

@@ -1,18 +1,35 @@
+/* Лого */
+.logoImage {
+  width: 100%;
+  max-width: 280px;   /* увеличим, чтобы не терялся */
+  height: auto;
+  margin: 0 auto 20px;
+  display: block;
+  object-fit: contain;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.logoImage:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25));
+}
+
+/* адаптивность */
+@media (max-width: 768px) {
+  .logoImage {
+    max-width: 200px;   /* чуть меньше на мобильных */
+  }
+}
+
+/* Карусель (оставляем твой код, но подправим) */
 .carouselContainer {
   position: relative;
   width: 100%;
-  height: 380px;              /* компактнее → меньше перерисовки */
+  height: 400px;              /* одинаковая высота */
   overflow: hidden;
   border-radius: 16px;
   box-shadow: 0 8px 20px rgba(0,0,0,.14);
   background: #f4f4f4;
-}
-
-@media (max-width: 1024px) {
-  .carouselContainer { height: 300px; }
-}
-@media (max-width: 640px) {
-  .carouselContainer { height: 220px; }
 }
 
 .carouselImage {
@@ -20,12 +37,9 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  will-change: opacity;
-  transform: translateZ(0);    /* подсказка GPU */
-  backface-visibility: hidden;
-  -webkit-font-smoothing: antialiased;
+  object-fit: cover;          /* всё обрезаем одинаково */
 }
+
 
 .fadeIn {
   opacity: 1;
