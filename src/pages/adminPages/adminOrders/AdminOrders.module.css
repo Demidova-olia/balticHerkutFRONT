@@ -113,13 +113,13 @@ button {
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 600;
-  background-color: #4caf50;
+  background-color: rgb(71, 116, 253);
   color: white;
   transition: background-color 0.2s ease;
 }
 
 button:hover {
-  background-color: #45a049;
+  background-color: rgb(71, 116, 253);
 }
 
 button:disabled {

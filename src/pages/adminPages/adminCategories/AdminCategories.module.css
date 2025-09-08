@@ -80,22 +80,22 @@
 
 .addButton {
   margin-top: 10px;
-  background-color: rgba(42, 199, 76, 0.2);
+  background-color: rgba(71, 117, 253, 0.438);
   color: #333;
 }
 
 .addButton:hover {
-  background-color: rgb(42, 199, 76);
+  background-color: rgb(71, 116, 253);
   color: white;
 }
 
 .editButton {
-  background-color: rgba(42, 199, 76, 0.3);
+  background-color: rgba(71, 117, 253, 0.438);
   color: #333;
 }
 
 .editButton:hover {
-  background-color: rgb(42, 199, 76);
+  background-color: rgb(71, 116, 253);
   color: white;
 }
 
@@ -118,21 +118,21 @@
 }
 
 .backBtn {
-  background-color: rgba(42, 199, 76, 0.3);
+  background-color: rgba(71, 117, 253, 0.438);
 }
 
 .backBtn:hover {
-  background-color: rgb(42, 199, 76);
+  background-color: rgb(71, 116, 253);
   color: white;
 }
 
 .mainMenuBtn {
-  background-color: rgba(42, 199, 76, 0.3);
+  background-color: rgba(71, 117, 253, 0.438);
   color: white;
 }
 
 .mainMenuBtn:hover {
-  background-color: rgb(42, 199, 76);
+  background-color: rgb(71, 116, 253);
   color: white;
 }
 

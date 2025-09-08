@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Product } from "../../../types/product";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import * as ProductService from "../../../services/ProductService";
+import { Product } from "../../../types/product";
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
 import styles from "./AdminProducts.module.css";
+import BottomNav from "../../../components/Admin/BottomNav";
 
 const AdminProducts: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -12,33 +13,32 @@ const AdminProducts: React.FC = () => {
 
   const navigate = useNavigate();
 
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await ProductService.getProducts("", "", "", 1, 100);
+      const data = response?.products || [];
+      setProducts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError("Failed to load products.");
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
   }, []);
 
- const fetchProducts = async () => {
-  try {
-    const response = await ProductService.getProducts("", "", "", 1, 100);
-    const data = response?.products || [];
-    console.log("Fetched products:", data);
-    setProducts(data);
-  } catch (err) {
-    console.error("Error fetching products:", err);
-    setError("Failed to load products.");
-  } finally {
-    setLoading(false);
-  }
-};
-
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
-      try {
-        await ProductService.deleteProduct(id);
-        setProducts(prev => prev.filter(product => product._id !== id));
-      } catch (err) {
-        console.error("Error deleting product:", err);
-        setError("Failed to delete product.");
-      }
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    try {
+      await ProductService.deleteProduct(id);
+      setProducts((prev) => prev.filter((p) => p._id !== id));
+    } catch {
+      setError("Failed to delete product.");
     }
   };
 
@@ -46,19 +46,31 @@ const AdminProducts: React.FC = () => {
     navigate(`/admin/products/edit/${id}`);
   };
 
-  if (loading) return <p>Loading products...</p>;
-  if (error) return <p>{error}</p>;
+  if (loading) return <p className={styles.loading}>Loading products...</p>;
 
   return (
     <div className={styles.adminProducts}>
-      <h2>Manage Products</h2>
+      <h2 className={styles.heading}>Manage Products</h2>
       <AdminNavBar />
-      <button
-        onClick={() => navigate("/admin/products/create")}
-        className={styles.addProductBtn}
-      >
-        Add New Product
-      </button>
+
+      {error && (
+        <div className={styles.error}>
+          {error}{" "}
+          <button className={styles.retryBtn} onClick={fetchProducts}>
+            Retry
+          </button>
+        </div>
+      )}
+
+      <div className={styles.topBar}>
+        <button
+          onClick={() => navigate("/admin/products/create")}
+          className={styles.addProductBtn}
+        >
+          Add New Product
+        </button>
+      </div>
+
       <table className={styles.productTable}>
         <thead>
           <tr>
@@ -73,60 +85,82 @@ const AdminProducts: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {products.map((product) => (
-            <tr key={product._id}>
-              <td data-label="Images">
-                {product.images && product.images.length > 0 ? (
-                  <div className={styles.imageGallery}>
-                    {product.images.map((image, index) => {
-                      const imgUrl = typeof image === "string" ? image : image.url;
-                      console.log("Image URL:", imgUrl); // DEBUG
-                      return (
-                        <img
-                          key={index}
-                          src={imgUrl}
-                          alt={`${product.name} image ${index + 1}`}
-                          className={styles.productImage}
-                        />
-                      );
-                    })}
-                  </div>
-                ) : (
-                  "No Image"
-                )}
-              </td>
-              <td data-label="Name">{product.name}</td>
-              <td data-label="Category">{typeof product.category === "string" ? product.category : product.category?.name}</td>
-              <td data-label="Subcategory">{typeof product.subcategory === "string" ? product.subcategory : product.subcategory?.name}</td>
-              <td data-label="Price">€{product.price.toFixed(2)}</td>
-              <td data-label="Stock">{product.stock}</td>
-              <td data-label="Active">{product.isActive ? "Yes" : "No"}</td>
-              <td data-label="Actions">
-                <button
-                  onClick={() => handleEdit(product._id)}
-                  className={`${styles.button} ${styles.editBtn}`}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(product._id)}
-                  className={`${styles.button} ${styles.deleteBtn}`}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
+          {products
+            .slice()
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map((product) => {
+              const price =
+                typeof product.price === "number" && isFinite(product.price)
+                  ? product.price.toFixed(2)
+                  : "0.00";
+
+              return (
+                <tr key={product._id}>
+                  <td data-label="Images">
+                    {product.images && product.images.length > 0 ? (
+                      <div className={styles.imageGallery}>
+                        {product.images.map((image, index) => {
+                          const imgUrl =
+                            typeof image === "string" ? image : image?.url || "/images/no-image.png";
+                          return (
+                            <img
+                              key={`${product._id}-${index}`}
+                              src={imgUrl}
+                              alt={`${product.name} ${index + 1}`}
+                              className={styles.productImage}
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = "/images/no-image.png";
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      "No Image"
+                    )}
+                  </td>
+
+                  <td data-label="Name">{product.name}</td>
+
+                  <td data-label="Category">
+                    {typeof product.category === "string"
+                      ? product.category
+                      : product.category?.name || "—"}
+                  </td>
+
+                  <td data-label="Subcategory">
+                    {typeof product.subcategory === "string"
+                      ? product.subcategory
+                      : product.subcategory?.name || "—"}
+                  </td>
+
+                  <td data-label="Price">€{price}</td>
+
+                  <td data-label="Stock">{product.stock ?? 0}</td>
+
+                  <td data-label="Active">{product.isActive ? "Yes" : "No"}</td>
+
+                  <td data-label="Actions">
+                    <button
+                      onClick={() => handleEdit(product._id)}
+                      className={`${styles.button} ${styles.editBtn}`}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(product._id)}
+                      className={`${styles.button} ${styles.deleteBtn}`}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
         </tbody>
       </table>
-      <div className={styles.backButton}>
-        <button onClick={() => navigate(-1)} className={`${styles.button} ${styles.backBtn}`}>
-          Go Back
-        </button>
-        <Link to="/" className={`${styles.button} ${styles.mainMenuBtn}`} style={{ marginLeft: 10 }}>
-          Main Menu
-        </Link>
-      </div>
+
+      <BottomNav />
     </div>
   );
 };

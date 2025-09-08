@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       username: decoded.username,
       email: decoded.email,
       role,
-      // удобный флаг в одном месте
+    
       isAdmin: role === "admin" || decoded.isAdmin === true,
     };
   };

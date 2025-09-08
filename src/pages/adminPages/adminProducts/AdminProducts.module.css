@@ -42,7 +42,7 @@ h2 {
 }
 
 .addProductBtn:hover {
-  background-color: rgb(42, 199, 76);
+  background-color: rgb(71, 116, 253);
 }
 
 .productTable {
@@ -100,12 +100,12 @@ h2 {
 }
 
 .editBtn {
-  background-color: rgba(42, 199, 76, 0.308);
-  color: #333;
+  background-color: rgba(5, 3, 70, 0.308);
+  color: #070707;
 }
 
 .editBtn:hover {
-  background-color: rgb(42, 199, 76);
+  background-color: rgb(71, 116, 253);
 }
 
 .deleteBtn {
@@ -114,8 +114,8 @@ h2 {
 }
 
 .deleteBtn:hover {
-  background-color: rgb(42, 199, 76);
-  color: red;
+  background-color: red;
+  color: rgb(6, 6, 6);
 }
 
 .backButton {
@@ -132,7 +132,7 @@ h2 {
 }
 
 .backBtn:hover {
-  background-color: rgb(42, 199, 76);
+  background-color: rgb(71, 116, 253);
   color: white;
 }
 
@@ -142,7 +142,7 @@ h2 {
 }
 
 .mainMenuBtn:hover {
-  background-color: rgb(42, 199, 76);
+  background-color: rgb(71, 116, 253);
   color: white;
 }
 

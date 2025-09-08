@@ -13,7 +13,6 @@ const FavoriteList = () => {
   const [addingId, setAddingId] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // используем тот же API, что в ProductGrid/ProductCard
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -54,7 +53,6 @@ const FavoriteList = () => {
       setAddingId(product._id);
       setError(null);
 
-      // Формируем payload в том же формате, что и в ProductGrid/ProductCard
       const image = imageFromProduct(product);
       const price = numberPrice((product as any).price);
 
@@ -66,11 +64,9 @@ const FavoriteList = () => {
         image,
       });
 
-      // После добавления сразу убираем из избранного (бэкенд + UI)
       try {
         await FavoriteService.removeFromFavorites(product._id);
       } catch {
-        // не критично — просто предупредим
         toast.warn("Added to cart, but failed to remove from favorites");
       }
       setFavorites((prev) => prev.filter((f) => f._id !== product._id));
@@ -119,7 +115,6 @@ const FavoriteList = () => {
 
                   <span className={styles.productName}>{product.name}</span>
 
-                  {/* Add to cart (и удалить из избранного) */}
                   <button
                     className={styles.addButton}
                     onClick={() => handleAddToCart(product)}
@@ -143,7 +138,6 @@ const FavoriteList = () => {
                     {addingId === product._id ? "Adding..." : "Add to cart"}
                   </button>
 
-                  {/* Remove from favorites вручную */}
                   <button
                     className={styles.removeButton}
                     onClick={() => handleRemoveFromFavorites(product._id)}

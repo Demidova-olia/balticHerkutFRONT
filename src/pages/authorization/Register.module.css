@@ -62,7 +62,8 @@
   }
   
   .button:hover:enabled {
-    color: rgb(136, 25, 25);
+    color: rgb(254, 253, 253);
+    background-color: rgb(71, 116, 253);
   }
   
  .footerText {
@@ -73,7 +74,7 @@
   }
   
   .footerText a {
-    color: rgb(42, 199, 76);
+    color: rgb(71, 116, 253);
     text-decoration: none;
   }
   
@@ -84,7 +85,7 @@
     text-align: center;
   }
   .returnLink:hover {
-    color: rgb(42, 199, 76);
+    color: rgb(71, 116, 253);
   }
   .returnLink{
     text-align: center;
