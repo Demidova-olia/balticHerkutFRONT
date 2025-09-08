@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
-import { useAuth } from '../../../hooks/useAuth';
-import axiosInstance from '../../../utils/axios';
-import { toast } from 'react-toastify';
-import styles from './AdminOrders.module.css';
-import { AdminNavBar } from '../../../components/Admin/AdminNavBar';
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "../../../hooks/useAuth";
+import axiosInstance from "../../../utils/axios";
+import { toast } from "react-toastify";
+import styles from "./AdminOrders.module.css";
+import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
+import BottomNav from "../../../components/Admin/BottomNav";
 
 type Product = {
   _id: string;
@@ -17,28 +18,30 @@ type OrderItem = {
   quantity: number;
 };
 
-type User = {
+type UserInfo = {
   username: string;
   email: string;
+  role?: string;
+  isAdmin?: boolean;
 };
 
 type Order = {
   _id: string;
-  user?: User;
+  user?: UserInfo;
   items: OrderItem[];
-  status: 'pending' | 'shipped' | 'delivered' | 'canceled' | 'paid' | 'finished';
+  status: "pending" | "shipped" | "delivered" | "canceled" | "paid" | "finished";
   totalAmount: number;
   createdAt: string;
   address: string;
 };
 
 const statusOptions = [
-  { label: 'Pending', value: 'pending' },
-  { label: 'Shipped', value: 'shipped' },
-  { label: 'Delivered', value: 'delivered' },
-  { label: 'Canceled', value: 'canceled' },
-  { label: 'Paid', value: 'paid' },
-  { label: 'Finished', value: 'finished' },
+  { label: "Pending", value: "pending" },
+  { label: "Shipped", value: "shipped" },
+  { label: "Delivered", value: "delivered" },
+  { label: "Canceled", value: "canceled" },
+  { label: "Paid", value: "paid" },
+  { label: "Finished", value: "finished" },
 ];
 
 const OrderRow = ({
@@ -46,16 +49,16 @@ const OrderRow = ({
   handleStatusChange,
 }: {
   order: Order;
-  handleStatusChange: (orderId: string, newStatus: Order['status']) => void;
+  handleStatusChange: (orderId: string, newStatus: Order["status"]) => void;
 }) => (
   <tr>
     <td>{order._id}</td>
-    <td>{order.user?.email || 'No data'}</td>
+    <td>{order.user?.email || "No data"}</td>
     <td>
       <ul>
         {order.items.map((item, index) => (
           <li key={index}>
-            {item.productId?.name || 'Unknown product'} x {item.quantity}
+            {item.productId?.name || "Unknown product"} x {item.quantity}
           </li>
         ))}
       </ul>
@@ -65,11 +68,9 @@ const OrderRow = ({
     <td>
       <select
         value={order.status}
-        onChange={(e) =>
-          handleStatusChange(order._id, e.target.value as Order['status'])
-        }
+        onChange={(e) => handleStatusChange(order._id, e.target.value as Order["status"])}
         className={styles.selectStatus}
-        disabled={['finished', 'canceled'].includes(order.status)}
+        disabled={["finished", "canceled"].includes(order.status)}
       >
         {statusOptions.map((option) => (
           <option key={option.value} value={option.value}>
@@ -83,63 +84,70 @@ const OrderRow = ({
 );
 
 const AdminOrders = () => {
-  const { user } = useAuth();
+  const { user, loading } = (useAuth() as { user?: any; loading?: boolean }) || {};
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const isAdmin = useMemo(() => {
+    const role = String(user?.role ?? user?.user?.role ?? "").trim().toLowerCase();
+    return Boolean(user?.isAdmin || user?.user?.isAdmin || role === "admin");
+  }, [user]);
 
   const fetchOrders = async () => {
     try {
-      setLoading(true);
-      const response = await axiosInstance.get<Order[]>('/admin/orders');
-      setOrders(response.data);
+      setFetching(true);
       setError(null);
-    } catch {
-      setError('Failed to fetch orders from the server');
+      const { data } = await axiosInstance.get<Order[]>("/admin/orders");
+      setOrders(Array.isArray(data) ? data : []);
+    } catch (e: any) {
+      const s = e?.response?.status;
+      setError(
+        s === 401
+          ? "Unauthorized (401): проверьте авторизацию."
+          : s === 403
+          ? "Forbidden (403): нет прав на список заказов."
+          : "Failed to fetch orders from the server"
+      );
       setOrders([]);
     } finally {
-      setLoading(false);
+      setFetching(false);
     }
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (!loading && isAdmin) fetchOrders();
+  }, [loading, isAdmin]);
 
-  const handleStatusChange = async (orderId: string, newStatus: Order['status']) => {
+  const handleStatusChange = async (orderId: string, newStatus: Order["status"]) => {
     try {
       await axiosInstance.put(`/admin/orders/${orderId}`, { status: newStatus });
-      setOrders((prev) =>
-        prev.map((order) =>
-          order._id === orderId ? { ...order, status: newStatus } : order
-        )
+      setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)));
+      toast.success("Order status updated");
+    } catch (e: any) {
+      const s = e?.response?.status;
+      toast.error(
+        s === 401 ? "Unauthorized (401)" : s === 403 ? "Forbidden (403): need admin" : "Update failed"
       );
-      toast.success('Order status updated successfully');
-    } catch {
-      toast.error('Failed to update order status');
     }
   };
 
-  if (!user || user.role !== 'ADMIN') {
-    return <div className={styles.adminError}>You do not have permission to view this page.</div>;
-  }
-
-  if (error) {
+  if (loading) return <div className={styles.loading}>Loading...</div>;
+  if (!isAdmin) return <div className={styles.adminError}>You do not have permission to view this page.</div>;
+  if (error)
     return (
       <div className={styles.error}>
-        {error}
-        <button onClick={fetchOrders}>Retry</button>
+        {error} <button onClick={fetchOrders}>Retry</button>
       </div>
     );
-  }
-
-  if (loading) return <div className={styles.loading}>Loading...</div>;
+  if (fetching) return <div className={styles.loading}>Loading...</div>;
   if (orders.length === 0) return <div className={styles.noOrders}>No orders available</div>;
 
   return (
     <div className={styles.adminOrders}>
       <h1>Order Management</h1>
-      <AdminNavBar/>
+      <AdminNavBar />
+
       <table className={styles.ordersTable}>
         <thead>
           <tr>
@@ -158,9 +166,10 @@ const AdminOrders = () => {
           ))}
         </tbody>
       </table>
+
+      <BottomNav />
     </div>
   );
 };
 
 export default AdminOrders;
-

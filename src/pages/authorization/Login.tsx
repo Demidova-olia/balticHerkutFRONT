@@ -7,6 +7,7 @@ import styles from "./Login.module.css";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -16,7 +17,6 @@ function Login() {
     e.preventDefault();
     setError("");
     setIsLoading(true);
-
     try {
       await login(email, password);
       toast.success("Logged in successfully!");
@@ -34,6 +34,7 @@ function Login() {
     <div className={styles.container}>
       <h1 className={styles.title}>Login</h1>
       {error && <div className={styles.error}>{error}</div>}
+
       <form onSubmit={handleSubmit} className={styles.form}>
         <div>
           <label htmlFor="email" className={styles.inputLabel}>Email:</label>
@@ -47,26 +48,36 @@ function Login() {
             className={styles.inputField}
           />
         </div>
+
         <div>
           <label htmlFor="password" className={styles.inputLabel}>Password:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={isLoading}
-            className={styles.inputField}
-          />
+          <div className={styles.passwordWrap}>
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={isLoading}
+              className={styles.inputField}
+            />
+            <button
+              type="button"
+              className={styles.togglePwdBtn}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              title={showPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowPassword(v => !v)}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
         </div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className={styles.submitButton}
-        >
+
+        <button type="submit" disabled={isLoading} className={styles.submitButton}>
           {isLoading ? "Logging in..." : "Login"}
         </button>
       </form>
+
       <div className="mt-4 text-center">
         <Link to="/register" className={styles.registerLink}>Register</Link>
       </div>

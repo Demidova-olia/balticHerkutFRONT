@@ -1,0 +1,40 @@
+.bottomNav {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;  
+  align-content: flex-end;     
+  width: 100%;                 
+  margin-top: 16px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+}
+
+.backBtn {
+  background: #e5e7eb;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.backBtn:hover {
+  background: #dfe3e8;
+}
+
+.mainMenuBtn {
+  background: #111827;
+  color: #fff;
+}
+
+.mainMenuBtn:hover {
+  background: #0b1220;
+}

@@ -51,7 +51,7 @@
   }
   
   .submitButton:hover {
-    background-color: rgb(42, 199, 76);
+    background-color: rgb(71, 116, 253);
   }
   
   .backButtonContainer {
@@ -71,7 +71,7 @@
   }
   
   .button:hover {
-    background-color:rgb(42, 199, 76);
+    background-color:rgb(71, 116, 253);
     color: white;
   }
   

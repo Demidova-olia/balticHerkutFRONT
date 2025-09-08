@@ -1,10 +1,22 @@
-.adminPanel {
-  padding: 20px;
-  background-color: #f9f9f9;
+/* AdminPanel.module.css */
+
+/* ВЕСЬ экран: NavBar сверху, контент растягивается на остаток */
+.page {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* если хочешь фон на всю страницу, перенеси фон сюда */
+  background-color: #f9f9f9;
 }
 
-h1 {
+/* Контент растягивается, без жёсткого 100vh */
+.adminPanel {
+  flex: 1;
+  padding: 20px;
+}
+
+/* СКОПИРОВАЛ твои стили, но h1 теперь только внутри adminPanel */
+.adminPanel h1 {
   font-size: 28px;
   margin: 20px 0;
   color: #333;
@@ -29,7 +41,7 @@ h1 {
 .adminButton {
   display: inline-block;
   text-align: center;
-  background-color: rgba(42, 199, 76, 0.384);
+  background-color: rgba(71, 117, 253, 0.441);
   color: #333;
   padding: 15px 20px;
   font-size: 16px;
@@ -38,16 +50,15 @@ h1 {
   width: 100%;
   transition: background-color 0.3s ease;
 }
-
 .adminButton:hover {
-  background-color: rgb(42, 199, 76);
+  background-color: rgb(71, 116, 253);
   color: white;
 }
 
 .button {
   display: block;
   margin: 0 auto;
-  background-color: rgba(42, 199, 76, 0.418);
+  background-color: rgba(71, 117, 253, 0.377);
   color: #333;
   padding: 12px 25px;
   font-size: 16px;
@@ -56,36 +67,26 @@ h1 {
   cursor: pointer;
   transition: background-color 0.3s;
 }
-
 .button:hover {
-  background-color: rgb(42, 199, 76);
+  background-color: rgb(71, 116, 253);
+  color: #fbfbfb;
 }
-
 
 @media (max-width: 768px) {
   .adminButtons {
     flex-direction: column;
     align-items: center;
   }
-
   .adminButtonWrapper {
     max-width: 100%;
     width: 90%;
     max-height: 45px;
   }
-
   .adminButton {
     font-size: 15px;
     padding: 12px;
   }
-
-  h1 {
+  .adminPanel h1 {
     font-size: 22px;
   }
 }
-
-
-
-
-
-  

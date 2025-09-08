@@ -29,12 +29,12 @@
 }
 
 .link:hover {
-  color: rgb(42, 199, 76);
+  color: rgb(71, 116, 253);
 }
 
 .active {
   font-weight: bold;
-  color: rgb(42, 199, 76);
+  color: rgb(71, 116, 253);
 }
 
 @media (max-width: 630px) {
