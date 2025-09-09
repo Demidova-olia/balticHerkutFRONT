@@ -2,6 +2,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { NavLink, useNavigate } from "react-router-dom";
 import styles from "./NavBar.module.css";
 import Cart from "../Cart/Cart";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const NavBar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -107,6 +108,9 @@ const NavBar: React.FC = () => {
               >
                 Register
               </NavLink>
+            </li>
+            <li>
+              <LanguageSwitcher />
             </li>
           </>
         )}

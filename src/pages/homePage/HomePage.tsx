@@ -129,10 +129,8 @@ const HomePage: React.FC = () => {
     <>
       <NavBar />
       <div className={styles.pageContainer}>
-        {/* HERO с баннером-логотипом */}
         <div className={styles.welcomeMessage}>
           <div className={styles.logoWrap}>
-            {/* Положи файл сюда: /public/assets/Logo.jpg  (Vite: абсолютный путь /assets/...) */}
             <img
               src="/assets/Logo.jpg"
               alt="Baltic Herkut"
@@ -144,7 +142,6 @@ const HomePage: React.FC = () => {
 
           <h2>Welcome to our store!</h2>
 
-          {/* Карусель */}
           <div className={styles.carouselSpacer}>
             <ImageCarousel />
           </div>
@@ -152,24 +149,20 @@ const HomePage: React.FC = () => {
           <p>Browse a variety of products and services.</p>
         </div>
 
-        {/* Поиск */}
         <div className={styles.searchBarContainer}>
           <SearchBar value={searchTerm} onChange={handleSearchChange} />
         </div>
 
-        {/* Подзаголовок */}
         <div className={styles.welcomeMessage}>
           <p>Select a category to start exploring!</p>
         </div>
 
-        {/* Панель Reset */}
         <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
           <button onClick={handleResetFilters} className={styles.ResetFilter}>
             Reset Filters
           </button>
         </div>
 
-        {/* Категории */}
         <CategoryTree
           categories={categories}
           selectedCategoryId={selectedCategoryId ?? null}
@@ -180,7 +173,6 @@ const HomePage: React.FC = () => {
 
         <h2 className={styles.categorySelectTitle}>Our Products</h2>
 
-        {/* Продукты */}
         {loading ? (
           <Loading text="Loading products..." className={styles.loadingText} />
         ) : error ? (

@@ -1,0 +1,54 @@
+{
+  "about": {
+    "headTitle": "Tietoa meistä",
+    "form": {
+      "heroUrl": "Hero-kuvan URL",
+      "heroUpload": "Lataa hero-kuva (valinnainen)",
+      "title": "Otsikko",
+      "subtitle": "Alaotsikko",
+      "storeUrl": "Myymälän kuvan URL",
+      "storeUpload": "Lataa myymälän kuva (valinnainen)",
+      "intro": "Johdanto",
+      "more": "Lisätiedot",
+      "address": "Osoite",
+      "hours": "Aukioloajat",
+      "social": "Sosiaalisen median tili",
+      "reqUrl": "Yhtiötietojen kuvan URL",
+      "reqUpload": "Lataa yhtiötietojen kuva (valinnainen)"
+    },
+    "ourStore": {
+      "title": "Myymälämme",
+      "address": "Osoite",
+      "hours": "Aukioloajat",
+      "openInMaps": "Avaa Google Mapsissa"
+    },
+    "why": {
+      "title": "Miksi Baltic Herkut?",
+      "point1": "Luotettavat toimittajat ja tasainen laatu.",
+      "point2": "Valikoimaa päivitetään säännöllisesti.",
+      "point3": "Ystävällinen henkilökunta ja apua valintaan.",
+      "follow": "Seuraa meitä some-kanavissa — uutuuksia ja tarjouksia:"
+    },
+    "alt": {
+      "storefront": "Myymälän julkisivu",
+      "requisites": "Yhtiötiedot"
+    },
+    "req": {
+      "title": "Yhtiötiedot",
+      "hint": "Voit tallentaa kuvan hiiren oikealla. Tarvitsetko PDF:n? Lähetämme pyydettäessä.",
+      "hintEdit": "Liitä suora kuvan URL tai lataa uusi."
+    },
+    "buttons": {
+      "edit": "Muokkaa",
+      "cancel": "Peruuta",
+      "save": "Tallenna muutokset",
+      "saving": "Tallennetaan..."
+    },
+    "errors": {
+      "unauthorized": "401 Unauthorized: tarkista kirjautuminen (evästeet/tunnus).",
+      "forbidden": "403 Forbidden: vaaditaan ylläpitäjän oikeudet.",
+      "notFound": "404 Not Found: polkua {{url}} ei löytynyt taustapalvelusta.",
+      "generic": "Tallennus epäonnistui"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "about": {
+    "headTitle": "About",
+    "form": {
+      "heroUrl": "Hero image URL",
+      "heroUpload": "Upload hero image (optional)",
+      "title": "Title",
+      "subtitle": "Subtitle",
+      "storeUrl": "Store image URL",
+      "storeUpload": "Upload store image (optional)",
+      "intro": "Intro",
+      "more": "More",
+      "address": "Address",
+      "hours": "Opening hours",
+      "social": "Social handle",
+      "reqUrl": "Requisites image URL",
+      "reqUpload": "Upload requisites image (optional)"
+    },
+    "ourStore": {
+      "title": "Our Store",
+      "address": "Address",
+      "hours": "Opening hours",
+      "openInMaps": "Open in Google Maps"
+    },
+    "why": {
+      "title": "Why Baltic Herkut?",
+      "point1": "Trusted suppliers and consistent quality.",
+      "point2": "Selection that is regularly refreshed.",
+      "point3": "Friendly staff and help choosing products.",
+      "follow": "Follow us on social media for new arrivals and promos:"
+    },
+    "alt": {
+      "storefront": "Storefront",
+      "requisites": "Company requisites"
+    },
+    "req": {
+      "title": "Requisites",
+      "hint": "You can right-click the image to save. If you need a PDF, we can send it upon request.",
+      "hintEdit": "Paste a direct image URL or upload a new image."
+    },
+    "buttons": {
+      "edit": "Edit",
+      "cancel": "Cancel",
+      "save": "Save changes",
+      "saving": "Saving..."
+    },
+    "errors": {
+      "unauthorized": "401 Unauthorized: check your auth (cookies/token not present).",
+      "forbidden": "403 Forbidden: admin access required to edit.",
+      "notFound": "404 Not Found: path {{url}} was not found on backend.",
+      "generic": "Failed to save content"
+    }
+  }
+}

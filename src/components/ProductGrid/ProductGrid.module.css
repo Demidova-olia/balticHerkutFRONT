@@ -100,8 +100,8 @@
 }
 
 .addToCartBtn:hover {
-  background-color: rgb(219, 219, 219);
-  color: rgb(71, 116, 253);
+  background-color: rgb(71, 116, 253);
+  color: rgb(219, 219, 219);
 }
 
 @media (max-width: 1400px) {

@@ -44,7 +44,7 @@
   .stock {
     font-size: 1rem;
     margin-bottom: 1rem;
-    color: #2f855a;
+    color: rgba(71, 117, 253, 0.432);
   }
   
   .categoryInfo {
@@ -54,7 +54,7 @@
   }
   
   .addToCartButton {
-    background-color: rgba(9, 117, 9, 0.514);
+    background-color: rgba(71, 117, 253, 0.463);
     color: #333;
     padding: 0.75rem 1.5rem;
     font-weight: 600;
@@ -67,7 +67,7 @@
   }
   
   .addToCartButton:hover {
-    background-color: green;
+    background-color: rgb(71, 116, 253);
     color:white;
   }
   
@@ -123,7 +123,7 @@
   
   .reviewForm button {
     align-self: flex-start;
-    background-color: rgba(9, 117, 9, 0.514);
+    background-color: rgba(23, 9, 117, 0.514);
     color: #333;
     padding: 0.5rem 1.25rem;
     font-size: 1rem;
@@ -135,7 +135,7 @@
   }
   
   .reviewForm button:hover {
-    background-color: green;
+    background-color: rgb(71, 116, 253);
     color: white;
   }
   .actionRow {

@@ -4,6 +4,7 @@ import { Product } from "../../types/product";
 import { FaHeart } from "react-icons/fa";
 import styles from "./FavoriteIcon.module.css";
 import { useAuth } from "../../hooks/useAuth";
+import axios from "axios"; 
 
 const FavoriteIcon = ({ productId }: { productId: string }) => {
   const [favorites, setFavorites] = useState<Product[]>([]);
@@ -12,16 +13,33 @@ const FavoriteIcon = ({ productId }: { productId: string }) => {
   const { isAuthenticated, token } = useAuth();
 
   useEffect(() => {
+    let mounted = true;
+
     const fetchFavorites = async () => {
       if (!isAuthenticated) return;
       try {
+
         const favoritesData = await FavoriteService.getFavorites();
+        if (!mounted) return;
         setFavorites(favoritesData);
-      } catch (err: unknown) {
+      } catch (err: any) {
+
+        if (
+          axios.isCancel?.(err) ||
+          err?.code === "ERR_CANCELED" ||
+          err?.name === "CanceledError" ||
+          err?.message === "canceled"
+        ) {
+          return;
+        }
         setError(err instanceof Error ? err.message : "An unknown error occurred");
       }
     };
+
     fetchFavorites();
+    return () => {
+      mounted = false;
+    };
   }, [isAuthenticated]);
 
   const handleToggleFavorite = async () => {
@@ -43,7 +61,15 @@ const FavoriteIcon = ({ productId }: { productId: string }) => {
         const addedProduct = await FavoriteService.addToFavorites(productId);
         setFavorites((prev) => [...prev, addedProduct]);
       }
-    } catch (err: unknown) {
+    } catch (err: any) {
+      if (
+        axios.isCancel?.(err) ||
+        err?.code === "ERR_CANCELED" ||
+        err?.name === "CanceledError" ||
+        err?.message === "canceled"
+      ) {
+        return;
+      }
       setError(err instanceof Error ? err.message : "An unknown error occurred");
     }
   };
@@ -63,10 +89,11 @@ const FavoriteIcon = ({ productId }: { productId: string }) => {
         className={iconClass}
         title={isFavorite ? "Remove from favorites" : "Add to favorites"}
       />
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && error !== "canceled" && (
+        <p style={{ color: "red", margin: 0 }}>{error}</p>
+      )}
     </div>
   );
 };
 
 export default FavoriteIcon;
-
