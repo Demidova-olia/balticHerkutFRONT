@@ -11,6 +11,9 @@
 .categoryBlock {
   position: relative;
 }
+.categoryButton:hover {
+  background-color: rgba(71, 117, 253, 0.495);;
+}
 
 .categoryButton {
   display: block;
@@ -43,6 +46,7 @@
 .subcategoryItem:hover,
 .subcategoryItem.activeSubcategory {
   background-color: #e1e1e1;
+
 }
 
 .activeCategory, .activeSubcategory {

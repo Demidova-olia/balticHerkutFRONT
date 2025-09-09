@@ -1,45 +1,52 @@
 html, body, #root {
+  width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
 }
 
 body {
-  font-family: sans-serif;
-  display: flex;
-  justify-content: center;  
-  align-items: center;  
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  display: block;       
+  min-width: 0;
+  color: #333;
 }
 
 #root {
   width: 100%;
-  max-width: 1200px;
-  padding: 20px 0;
+  max-width: none;          
+  margin: 0;
+  padding: 0;             
   box-sizing: border-box;
-  color: #333;
 }
 
-body, html {
-  overflow-x: hidden;
+html, body {
+  overflow-x: visible;
 }
 
 .adminProducts {
-  padding: 20px;
+  padding: 20px;    
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: hidden;  
+  box-sizing: border-box;
 }
 
 .productTable {
   width: 100%;
-  overflow-x: auto;
   table-layout: fixed;
-  word-wrap: break-word;
+  border-collapse: collapse;
+}
+
+.productTableWrapper {
+  width: 100%;
+  overflow-x: auto;  
 }
 
 .productTable td,
 .productTable th {
   word-break: break-word;
   max-width: 150px;
+  padding: 8px;
 }
 
 .productImage {
@@ -47,6 +54,7 @@ body, html {
   max-width: 100px;
   height: auto;
   object-fit: cover;
+  display: block;
 }
 
 .imageGallery {
@@ -58,9 +66,9 @@ body, html {
 }
 
 @media (max-width: 768px) {
+
   .productTable {
     display: block;
-    overflow-x: hidden;
   }
 
   .productTable tr {
@@ -76,7 +84,8 @@ body, html {
     content: attr(data-label);
     font-weight: bold;
     display: inline-block;
-    width: 120px;
+    min-width: 120px;
+    margin-right: 8px;
   }
 
   .productTable td {
@@ -84,4 +93,13 @@ body, html {
     justify-content: space-between;
     padding: 8px 0;
   }
+}
+
+#root {
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+body {
+  display: block !important;
 }

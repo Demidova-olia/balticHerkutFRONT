@@ -4,6 +4,7 @@ import NavBar from "../../components/NavBar/NavBar";
 import axiosInstance from "../../utils/axios";
 import { useAuth } from "../../hooks/useAuth";
 import styles from "./AboutUs.module.css";
+import { useTranslation } from "react-i18next";
 
 type AboutContent = {
   heroImageUrl: string;
@@ -19,11 +20,13 @@ type AboutContent = {
   socialsHandle: string;
 };
 
-// === КОНФИГ: если у бэка префикс /api, поменяй на "/api/about"
+// Если у бэка префикс /api — поменяйте на "/api/about"
 const ABOUT_URL = "/about";
 
 const DEFAULT_CONTENT: AboutContent = {
   heroImageUrl: "/assets/Logo.jpg",
+  // ВАЖНО: это данные с бэка. Их не переводим на клиенте,
+  // локализацию UI делаем отдельно через t().
   title: "About Us",
   subtitle: "Baltic Herkut — your favorite Baltic foods in Oulu.",
   storeImageUrl: "/assets/storefront.jpg",
@@ -38,7 +41,6 @@ const DEFAULT_CONTENT: AboutContent = {
   socialsHandle: "@balticherkut",
 };
 
-// утилита: делает все строковые поля хотя бы пустыми строками
 function normalize(data?: Partial<AboutContent>): AboutContent {
   const base = { ...DEFAULT_CONTENT, ...(data || {}) } as AboutContent;
   return {
@@ -65,6 +67,7 @@ function deepEqual(a: any, b: any) {
 }
 
 const AboutUs: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth() as { user?: any };
   const role = String(user?.role || user?.user?.role || "").toLowerCase();
   const isAdmin = Boolean(user?.isAdmin || role === "admin");
@@ -83,20 +86,11 @@ const AboutUs: React.FC = () => {
 
   const lastSavedRef = useRef<AboutContent | null>(null);
 
-  // Заголовок вкладки
+  // Заголовок вкладки — локализуем и обновляем при смене языка
   useEffect(() => {
-    document.title = "About — Baltic Herkut";
-  }, []);
+    document.title = `${t("about.headTitle")} — Baltic Herkut`;
+  }, [i18n.language, t]);
 
-  // ===== ВАЖНО: проверь свой axiosInstance =====
-  // Он должен отправлять куки/токен:
-  // axiosInstance.defaults.withCredentials = true
-  // axiosInstance.interceptors.request.use(cfg => {
-  //   cfg.headers.Authorization = `Bearer ${token}`; // если JWT
-  //   return cfg;
-  // });
-
-  // Загрузка с бэка (с анти-кэшем)
   const fetchAbout = async () => {
     const res = await axiosInstance.get<{ data?: Partial<AboutContent> }>(ABOUT_URL, {
       params: { _t: Date.now() },
@@ -110,11 +104,9 @@ const AboutUs: React.FC = () => {
         setLoading(true);
         setError(null);
         const serverData = await fetchAbout();
-        console.log("[GET] %s ->", ABOUT_URL, serverData);
         setContent(serverData);
         setDraft(serverData);
       } catch (e: any) {
-        console.warn("[GET] failed:", e?.message || e);
         const fallback = normalize(DEFAULT_CONTENT);
         setContent(fallback);
         setDraft(fallback);
@@ -123,9 +115,9 @@ const AboutUs: React.FC = () => {
       }
     };
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // При входе в режим редактирования — синхронизация
   useEffect(() => {
     if (editMode) {
       const n = normalize(content);
@@ -137,7 +129,6 @@ const AboutUs: React.FC = () => {
     }
   }, [editMode, content]);
 
-  // отображаем либо черновик, либо контент
   const c = useMemo<AboutContent>(() => (editMode ? draft : content), [editMode, draft, content]);
 
   const startEdit = () => {
@@ -162,16 +153,8 @@ const AboutUs: React.FC = () => {
       const payload: AboutContent = normalize(draft);
       const hasFiles = Boolean(heroFile || storeFile || reqFile);
 
-      console.log("[PUT] payload:", payload, "files:", {
-        hero: !!heroFile,
-        store: !!storeFile,
-        req: !!reqFile,
-      });
-
-      // 1) Отправляем изменения
       if (!hasFiles) {
-        const res = await axiosInstance.put<{ data?: Partial<AboutContent> }>(ABOUT_URL, payload);
-        console.log("[PUT] status:", res.status, "data:", res.data);
+        await axiosInstance.put<{ data?: Partial<AboutContent> }>(ABOUT_URL, payload);
       } else {
         const fd = new FormData();
         (Object.entries(payload) as [keyof AboutContent, string][])
@@ -180,28 +163,19 @@ const AboutUs: React.FC = () => {
         if (storeFile) fd.append("storeImage", storeFile);
         if (reqFile) fd.append("requisitesImage", reqFile);
 
-        const res = await axiosInstance.put<{ data?: Partial<AboutContent> }>(ABOUT_URL, fd);
-        console.log("[PUT multipart] status:", res.status, "data:", res.data);
+        await axiosInstance.put<{ data?: Partial<AboutContent> }>(ABOUT_URL, fd);
       }
 
-      // 2) Сразу же форсим повторный GET (с анти-кэшем),
-      //    чтобы взять то, что реально записал сервер
       let serverAfter = await fetchAbout();
-      console.log("[GET after PUT] ->", serverAfter);
 
-      // 3) Если сервер вернул старое (не изменилось), НЕ затираем локальные изменения:
       if (deepEqual(serverAfter, content)) {
-        console.warn(
-          "[WARN] Server returned same data as before. Keeping local draft as source of truth."
-        );
-        serverAfter = payload; // подчистую подхватить твои изменения
+        serverAfter = payload;
       }
 
       setContent(serverAfter);
       setDraft(serverAfter);
       lastSavedRef.current = serverAfter;
 
-      // Сброс файлов и выход из editMode
       setHeroFile(null);
       setStoreFile(null);
       setReqFile(null);
@@ -209,15 +183,14 @@ const AboutUs: React.FC = () => {
     } catch (e: any) {
       const status = e?.response?.status;
       if (status === 401) {
-        setError("401 Unauthorized: проверь авторизацию (куки/токен не передаются).");
+        setError(t("about.errors.unauthorized"));
       } else if (status === 403) {
-        setError("403 Forbidden: нужен доступ администратора для редактирования.");
+        setError(t("about.errors.forbidden"));
       } else if (status === 404) {
-        setError(`404 Not Found: путь ${ABOUT_URL} не найден на бэкенде.`);
+        setError(t("about.errors.notFound", { url: ABOUT_URL }));
       } else {
-        setError(e?.response?.data?.message || e?.message || "Failed to save content");
+        setError(e?.response?.data?.message || e?.message || t("about.errors.generic"));
       }
-      console.error("[PUT] failed:", e);
     } finally {
       setSaving(false);
     }
@@ -241,7 +214,7 @@ const AboutUs: React.FC = () => {
             ) : (
               <>
                 <div className={styles.fieldRow}>
-                  <label className={styles.label}>Hero image URL</label>
+                  <label className={styles.label}>{t("about.form.heroUrl")}</label>
                   <input
                     className={styles.input}
                     value={draft.heroImageUrl}
@@ -249,7 +222,7 @@ const AboutUs: React.FC = () => {
                   />
                 </div>
                 <div className={styles.fieldRow}>
-                  <label className={styles.label}>Upload hero image (optional)</label>
+                  <label className={styles.label}>{t("about.form.heroUpload")}</label>
                   <input
                     className={styles.input}
                     type="file"
@@ -272,7 +245,7 @@ const AboutUs: React.FC = () => {
           ) : (
             <div className={styles.formGrid}>
               <div className={styles.fieldCol}>
-                <label className={styles.label}>Title</label>
+                <label className={styles.label}>{t("about.form.title")}</label>
                 <input
                   className={styles.input}
                   value={draft.title}
@@ -280,7 +253,7 @@ const AboutUs: React.FC = () => {
                 />
               </div>
               <div className={styles.fieldCol}>
-                <label className={styles.label}>Subtitle</label>
+                <label className={styles.label}>{t("about.form.subtitle")}</label>
                 <input
                   className={styles.input}
                   value={draft.subtitle}
@@ -297,7 +270,7 @@ const AboutUs: React.FC = () => {
             {!editMode ? (
               <img
                 src={c.storeImageUrl}
-                alt="Storefront"
+                alt={t("about.alt.storefront")}
                 className={styles.media}
                 loading="lazy"
                 decoding="async"
@@ -305,7 +278,7 @@ const AboutUs: React.FC = () => {
             ) : (
               <>
                 <div className={styles.fieldRow}>
-                  <label className={styles.label}>Store image URL</label>
+                  <label className={styles.label}>{t("about.form.storeUrl")}</label>
                   <input
                     className={styles.input}
                     value={draft.storeImageUrl}
@@ -313,7 +286,7 @@ const AboutUs: React.FC = () => {
                   />
                 </div>
                 <div className={styles.fieldRow}>
-                  <label className={styles.label}>Upload store image (optional)</label>
+                  <label className={styles.label}>{t("about.form.storeUpload")}</label>
                   <input
                     className={styles.input}
                     type="file"
@@ -328,48 +301,52 @@ const AboutUs: React.FC = () => {
           <div className={styles.content}>
             {!editMode ? (
               <>
-                <h2>Our Store</h2>
+                <h2>{t("about.ourStore.title")}</h2>
                 <p>{c.descriptionIntro}</p>
                 <p>{c.descriptionMore}</p>
 
                 <div className={styles.infoList}>
                   <div>
-                    <strong>Address:</strong> {c.address}
+                    <strong>{t("about.ourStore.address")}:</strong> {c.address}
                   </div>
                   <div>
-                    <strong>Opening hours:</strong> {c.hours}
+                    <strong>{t("about.ourStore.hours")}:</strong> {c.hours}
                   </div>
                 </div>
 
                 <a className={styles.mapBtn} href={c.gmapsUrl} target="_blank" rel="noreferrer">
-                  Open in Google Maps
+                  {t("about.ourStore.openInMaps")}
                 </a>
               </>
             ) : (
               <>
-                <h2>Our Store</h2>
+                <h2>{t("about.ourStore.title")}</h2>
                 <div className={styles.fieldRow}>
-                  <label className={styles.label}>Intro</label>
+                  <label className={styles.label}>{t("about.form.intro")}</label>
                   <textarea
                     className={styles.textarea}
                     rows={3}
                     value={draft.descriptionIntro}
-                    onChange={(e) => setDraft((d) => ({ ...d, descriptionIntro: e.target.value }))}
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, descriptionIntro: e.target.value }))
+                    }
                   />
                 </div>
                 <div className={styles.fieldRow}>
-                  <label className={styles.label}>More</label>
+                  <label className={styles.label}>{t("about.form.more")}</label>
                   <textarea
                     className={styles.textarea}
                     rows={4}
                     value={draft.descriptionMore}
-                    onChange={(e) => setDraft((d) => ({ ...d, descriptionMore: e.target.value }))}
+                    onChange={(e) =>
+                      setDraft((d) => ({ ...d, descriptionMore: e.target.value }))
+                    }
                   />
                 </div>
 
                 <div className={styles.formGrid}>
                   <div className={styles.fieldCol}>
-                    <label className={styles.label}>Address</label>
+                    <label className={styles.label}>{t("about.form.address")}</label>
                     <input
                       className={styles.input}
                       value={draft.address}
@@ -377,7 +354,7 @@ const AboutUs: React.FC = () => {
                     />
                   </div>
                   <div className={styles.fieldCol}>
-                    <label className={styles.label}>Opening hours</label>
+                    <label className={styles.label}>{t("about.form.hours")}</label>
                     <input
                       className={styles.input}
                       value={draft.hours}
@@ -403,21 +380,20 @@ const AboutUs: React.FC = () => {
         <section className={styles.cardAlt}>
           {!editMode ? (
             <div className={styles.content}>
-              <h2>Why Baltic Herkut?</h2>
+              <h2>{t("about.why.title")}</h2>
               <ul className={styles.bullets}>
-                <li>Trusted suppliers and consistent quality.</li>
-                <li>Selection that is regularly refreshed.</li>
-                <li>Friendly staff and help choosing products.</li>
+                <li>{t("about.why.point1")}</li>
+                <li>{t("about.why.point2")}</li>
+                <li>{t("about.why.point3")}</li>
               </ul>
               <p>
-                Follow us on social media for new arrivals and promos:
-                <strong> {c.socialsHandle}</strong>.
+                {t("about.why.follow")} <strong>{c.socialsHandle}</strong>.
               </p>
             </div>
           ) : (
             <div className={styles.formGrid}>
               <div className={styles.fieldCol}>
-                <label className={styles.label}>Social handle</label>
+                <label className={styles.label}>{t("about.form.social")}</label>
                 <input
                   className={styles.input}
                   value={draft.socialsHandle}
@@ -434,7 +410,7 @@ const AboutUs: React.FC = () => {
             {!editMode ? (
               <img
                 src={c.requisitesImageUrl}
-                alt="Company requisites"
+                alt={t("about.alt.requisites")}
                 className={styles.media}
                 loading="lazy"
                 decoding="async"
@@ -442,7 +418,7 @@ const AboutUs: React.FC = () => {
             ) : (
               <>
                 <div className={styles.fieldRow}>
-                  <label className={styles.label}>Requisites image URL</label>
+                  <label className={styles.label}>{t("about.form.reqUrl")}</label>
                   <input
                     className={styles.input}
                     value={draft.requisitesImageUrl}
@@ -452,7 +428,7 @@ const AboutUs: React.FC = () => {
                   />
                 </div>
                 <div className={styles.fieldRow}>
-                  <label className={styles.label}>Upload requisites image (optional)</label>
+                  <label className={styles.label}>{t("about.form.reqUpload")}</label>
                   <input
                     className={styles.input}
                     type="file"
@@ -466,35 +442,32 @@ const AboutUs: React.FC = () => {
           <div className={styles.content}>
             {!editMode ? (
               <>
-                <h2>Requisites</h2>
-                <p className={styles.muted}>
-                  You can right-click the image to save. If you need a PDF, we can send it upon
-                  request.
-                </p>
+                <h2>{t("about.req.title")}</h2>
+                <p className={styles.muted}>{t("about.req.hint")}</p>
               </>
             ) : (
               <>
-                <h2>Requisites</h2>
-                <p className={styles.muted}>Paste a direct image URL or upload a new image.</p>
+                <h2>{t("about.req.title")}</h2>
+                <p className={styles.muted}>{t("about.req.hintEdit")}</p>
               </>
             )}
           </div>
         </section>
 
-        {/* ADMIN CONTРОLS */}
+        {/* ADMIN CONTROLS */}
         {isAdmin && (
           <div className={styles.adminBar}>
             {!editMode ? (
               <button className={styles.primary} onClick={startEdit} disabled={loading}>
-                Edit
+                {t("about.buttons.edit")}
               </button>
             ) : (
               <div className={styles.btnRow}>
                 <button className={styles.secondary} onClick={cancelEdit} disabled={saving}>
-                  Cancel
+                  {t("about.buttons.cancel")}
                 </button>
                 <button className={styles.primary} onClick={saveEdit} disabled={saving}>
-                  {saving ? "Saving..." : "Save changes"}
+                  {saving ? t("about.buttons.saving") : t("about.buttons.save")}
                 </button>
               </div>
             )}

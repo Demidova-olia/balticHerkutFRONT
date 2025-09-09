@@ -1,5 +1,4 @@
 {
-  
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
@@ -8,13 +7,25 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"],
+
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+
     "allowJs": true,
     "strict": true,
     "isolatedModules": true,
-     "noEmit": true,
-     "jsx": "react-jsx",      
+    "noEmit": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx"
   },
-  "include": ["src", "jest.config.mjs"]
+  "include": [
+    "src",
+    "src/**/*.json",
+    "jest.config.mjs"
+  ]
 }
