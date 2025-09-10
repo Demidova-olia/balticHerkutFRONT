@@ -6,10 +6,7 @@ import {
   ProductData,
 } from "../types/product";
 
-/** Утилита: добавляем локализованное поле в FormData.
- * Если пришла строка — кладём как есть.
- * Если объект (ru/en/fi) — сериализуем в JSON.
- */
+
 const appendLocalized = (
   fd: FormData,
   key: string,
@@ -20,11 +17,10 @@ const appendLocalized = (
   } else if (value && typeof value === "object") {
     fd.append(key, JSON.stringify(value));
   } else {
-    fd.append(key, ""); // на всякий случай
+    fd.append(key, ""); 
   }
 };
 
-/** Мягко игнорируем отменённые запросы (дедупликация и т.п.) */
 const isCanceled = (err: unknown) =>
   (err as any)?.code === "ERR_CANCELED" ||
   (err as any)?.name === "CanceledError" ||
@@ -46,15 +42,13 @@ export const getProducts = async (
         page,
         limit,
       },
-      dedupe: false, // чтобы не ловить CanceledError при частых вызовах
+      dedupe: false,
       requestKey: `products:${page}:${limit}:${searchTerm}:${categoryId}:${subcategoryId}`,
     });
 
-    // Бэк отвечает в виде { message, data: {...} }
     return response.data.data;
   } catch (error) {
     if (isCanceled(error)) {
-      // Вернём пустые данные, чтобы UI не падал
       return { products: [], totalPages: 0, totalProducts: 0 };
     }
     console.error("Error fetching products:", error);
@@ -64,28 +58,28 @@ export const getProducts = async (
 
 export const getProductById = async (id: string): Promise<Product> => {
   try {
-    console.log("[getProductById] Запрос продукта по ID:", id);
+    console.log("[getProductById] Get product by ID:", id);
 
     const response = await axiosInstance.get<{ data: Product }>(
       `/products/id/${id}`,
       {
-        dedupe: false,                           // не отменять предыдущие
-        requestKey: `product-${id}-${Date.now()}` // уникализируем запрос
+        dedupe: false,     
+        requestKey: `product-${id}-${Date.now()}` 
       }
     );
 
-    console.log("[getProductById] Ответ от сервера:", response);
-    console.log("[getProductById] Данные продукта:", response.data);
+    console.log("[getProductById] Server response:", response);
+    console.log("[getProductById] Product data:", response.data);
 
     return response.data.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       console.error(
-        "[getProductById] Axios ошибка:",
+        "[getProductById] Axios error:",
         error.response?.data || error.message
       );
     } else {
-      console.error("[getProductById] Неизвестная ошибка:", error);
+      console.error("[getProductById] Unknown error:", error);
     }
     throw error;
   }
@@ -94,30 +88,24 @@ export const getProductById = async (id: string): Promise<Product> => {
 export const createProduct = async (data: ProductData): Promise<Product> => {
   const formData = new FormData();
 
-  // Локализованные поля — через JSON.stringify при необходимости
   appendLocalized(formData, "name", data.name);
   appendLocalized(formData, "description", data.description);
 
   formData.append("price", String(data.price));
   formData.append("category", data.category);
 
-  // не отправляем пустую подкатегорию
   if (data.subcategory && data.subcategory !== "undefined" && data.subcategory !== "null") {
     formData.append("subcategory", data.subcategory);
   }
 
   formData.append("stock", String(data.stock));
 
-  // изображения: отправляем только новые файлы; существующие передаём отдельно
   data.images.forEach((file) => {
     if (file instanceof File) {
       formData.append("images", file);
     }
   });
 
-  // Если у тебя есть существующие изображения (объекты), и их надо сохранить —
-  // передай их отдельным полем existingImages (как в updateProduct):
-  // formData.append('existingImages', JSON.stringify(existingImages || []));
 
   const response = await axiosInstance.post("/products", formData);
   return response.data.data;
@@ -131,7 +119,6 @@ export const updateProduct = async (
 ): Promise<Product> => {
   const formData = new FormData();
 
-  // Локализованные поля — через JSON.stringify при необходимости
   appendLocalized(formData, "name", data.name);
   appendLocalized(formData, "description", data.description);
 
@@ -170,9 +157,6 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
   return response.data.data;
 };
 
-// ⚠️ Маршруты должны соответствовать бэку.
-// Если у тебя на бэке /api/products/:categoryId — оставь так.
-// Если /api/products/category/:id — поменяй здесь путь.
 export const getProductsByCategory = async (
   categoryId: string
 ): Promise<Product[]> => {
