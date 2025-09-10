@@ -1,4 +1,54 @@
-{
+{ "register": {
+    "title": "Register",
+    "labels": {
+      "username": "Username:",
+      "email": "Email:",
+      "phone": "Phone Number:",
+      "password": "Password:",
+      "confirmPassword": "Confirm Password:"
+    },
+    "placeholders": {
+      "username": "Enter your username",
+      "email": "Enter your email",
+      "phone": "Enter your phone number",
+      "password": "Enter your password",
+      "confirmPassword": "Repeat your password"
+    },
+    "buttons": {
+      "submit": "Register",
+      "loading": "Registering..."
+    },
+    "haveAccount": "Already have an account?",
+    "loginLink": "Log in",
+    "returnHome": "Return to Home Page",
+    "errors": {
+      "required": "All fields are required",
+      "mismatch": "Passwords do not match"
+    },
+    "toasts": {
+      "success": "Registration successful! You can now log in.",
+      "fail": "Registration error"
+    }
+  },
+  "login": {
+    "title": "Login",
+    "emailLabel": "Email:",
+    "passwordLabel": "Password:",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "show": "Show",
+    "hide": "Hide",
+    "showPwd": "Show password",
+    "hidePwd": "Hide password",
+    "submit": "Login",
+    "loading": "Logging in...",
+    "registerLink": "Register",
+    "returnHome": "Return to Home Page",
+    "toasts": {
+      "success": "Logged in successfully!",
+      "fail": "Login failed"
+    }
+  },
   "about": {
     "headTitle": "About",
     "form": {

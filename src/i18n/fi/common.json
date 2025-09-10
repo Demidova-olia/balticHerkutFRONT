@@ -1,20 +1,75 @@
 {
+  "register": {
+    "title": "Rekisteröidy",
+    "labels": {
+      "username": "Käyttäjänimi:",
+      "email": "Sähköposti:",
+      "phone": "Puhelinnumero:",
+      "password": "Salasana:",
+      "confirmPassword": "Vahvista salasana:"
+    },
+    "placeholders": {
+      "username": "Syötä käyttäjänimesi",
+      "email": "Syötä sähköpostisi",
+      "phone": "Syötä puhelinnumerosi",
+      "password": "Syötä salasanasi",
+      "confirmPassword": "Toista salasanasi"
+    },
+    "buttons": {
+      "submit": "Rekisteröidy",
+      "loading": "Rekisteröidään..."
+    },
+    "haveAccount": "Onko sinulla jo tili?",
+    "loginLink": "Kirjaudu",
+    "returnHome": "Palaa etusivulle",
+    "errors": {
+      "required": "Kaikki kentät ovat pakollisia",
+      "mismatch": "Salasanat eivät täsmää"
+    },
+    "toasts": {
+      "success": "Rekisteröinti onnistui! Voit nyt kirjautua.",
+      "fail": "Rekisteröintivirhe"
+    }
+  },
+  "login": {
+    "title": "Kirjaudu sisään",
+    "emailLabel": "Sähköposti:",
+    "passwordLabel": "Salasana:",
+    "emailPlaceholder": "Syötä sähköpostisi",
+    "passwordPlaceholder": "Syötä salasanasi",
+    "show": "Näytä",
+    "hide": "Piilota",
+    "showPwd": "Näytä salasana",
+    "hidePwd": "Piilota salasana",
+    "submit": "Kirjaudu",
+    "loading": "Kirjaudutaan...",
+    "registerLink": "Rekisteröidy",
+    "returnHome": "Palaa etusivulle",
+    "toasts": {
+      "success": "Kirjautuminen onnistui!",
+      "fail": "Kirjautuminen epäonnistui"
+    }
+  },
   "about": {
     "headTitle": "Tietoa meistä",
     "form": {
       "heroUrl": "Hero-kuvan URL",
-      "heroUpload": "Lataa hero-kuva (valinnainen)",
+      "heroUpload": "Lataa hero-kuva",
       "title": "Otsikko",
       "subtitle": "Alaotsikko",
       "storeUrl": "Myymälän kuvan URL",
-      "storeUpload": "Lataa myymälän kuva (valinnainen)",
+      "storeUpload": "Lataa myymälän kuva",
       "intro": "Johdanto",
       "more": "Lisätiedot",
       "address": "Osoite",
       "hours": "Aukioloajat",
-      "social": "Sosiaalisen median tili",
-      "reqUrl": "Yhtiötietojen kuvan URL",
-      "reqUpload": "Lataa yhtiötietojen kuva (valinnainen)"
+      "social": "Sosiaalinen tili",
+      "reqUrl": "Rekvisiittakuvan URL",
+      "reqUpload": "Lataa rekvisiittakuva"
+    },
+    "alt": {
+      "storefront": "Myymälän julkisivu",
+      "requisites": "Yrityksen rekvisiitta"
     },
     "ourStore": {
       "title": "Myymälämme",
@@ -25,18 +80,14 @@
     "why": {
       "title": "Miksi Baltic Herkut?",
       "point1": "Luotettavat toimittajat ja tasainen laatu.",
-      "point2": "Valikoimaa päivitetään säännöllisesti.",
-      "point3": "Ystävällinen henkilökunta ja apua valintaan.",
-      "follow": "Seuraa meitä some-kanavissa — uutuuksia ja tarjouksia:"
-    },
-    "alt": {
-      "storefront": "Myymälän julkisivu",
-      "requisites": "Yhtiötiedot"
+      "point2": "Valikoima päivittyy säännöllisesti.",
+      "point3": "Ystävällinen palvelu ja apu valinnassa.",
+      "follow": "Seuraa meitä tarjouksista ja uutuuksista:"
     },
     "req": {
-      "title": "Yhtiötiedot",
-      "hint": "Voit tallentaa kuvan hiiren oikealla. Tarvitsetko PDF:n? Lähetämme pyydettäessä.",
-      "hintEdit": "Liitä suora kuvan URL tai lataa uusi."
+      "title": "Rekvisiitta",
+      "hint": "Voit tallentaa kuvan hiiren oikealla. Pyynnöstä lähetämme PDF:n.",
+      "hintEdit": "Liitä suora kuvan URL tai lataa uusi kuva."
     },
     "buttons": {
       "edit": "Muokkaa",
@@ -45,10 +96,11 @@
       "saving": "Tallennetaan..."
     },
     "errors": {
-      "unauthorized": "401 Unauthorized: tarkista kirjautuminen (evästeet/tunnus).",
-      "forbidden": "403 Forbidden: vaaditaan ylläpitäjän oikeudet.",
-      "notFound": "404 Not Found: polkua {{url}} ei löytynyt taustapalvelusta.",
-      "generic": "Tallennus epäonnistui"
+      "unauthorized": "Ei oikeuksia (401): kirjaudu sisään.",
+      "forbidden": "Kielletty (403): vaatii ylläpitäjän oikeudet.",
+      "notFound": "Päätepistettä {{url}} ei löytynyt (404).",
+      "generic": "Tallennus epäonnistui."
     }
   }
 }
+

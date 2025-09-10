@@ -2,9 +2,11 @@ import { useState, FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import styles from "./Login.module.css";
 
 function Login() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -19,12 +21,13 @@ function Login() {
     setIsLoading(true);
     try {
       await login(email, password);
-      toast.success("Logged in successfully!");
+      toast.success(t("login.toasts.success"));
       navigate("/");
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      toast.error(error.response?.data?.message || "Login failed");
-      setError(error.response?.data?.message || "Login failed");
+      const msg = error.response?.data?.message || t("login.toasts.fail");
+      toast.error(msg);
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
@@ -32,12 +35,14 @@ function Login() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Login</h1>
+      <h1 className={styles.title}>{t("login.title")}</h1>
       {error && <div className={styles.error}>{error}</div>}
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <div>
-          <label htmlFor="email" className={styles.inputLabel}>Email:</label>
+          <label htmlFor="email" className={styles.inputLabel}>
+            {t("login.emailLabel")}
+          </label>
           <input
             type="email"
             id="email"
@@ -46,11 +51,14 @@ function Login() {
             required
             disabled={isLoading}
             className={styles.inputField}
+            placeholder={t("login.emailPlaceholder") ?? ""}
           />
         </div>
 
         <div>
-          <label htmlFor="password" className={styles.inputLabel}>Password:</label>
+          <label htmlFor="password" className={styles.inputLabel}>
+            {t("login.passwordLabel")}
+          </label>
           <div className={styles.passwordWrap}>
             <input
               type={showPassword ? "text" : "password"}
@@ -60,28 +68,33 @@ function Login() {
               required
               disabled={isLoading}
               className={styles.inputField}
+              placeholder={t("login.passwordPlaceholder") ?? ""}
             />
             <button
               type="button"
               className={styles.togglePwdBtn}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              title={showPassword ? "Hide password" : "Show password"}
-              onClick={() => setShowPassword(v => !v)}
+              aria-label={showPassword ? t("login.hidePwd") : t("login.showPwd")}
+              title={showPassword ? t("login.hidePwd") : t("login.showPwd")}
+              onClick={() => setShowPassword((v) => !v)}
             >
-              {showPassword ? "Hide" : "Show"}
+              {showPassword ? t("login.hide") : t("login.show")}
             </button>
           </div>
         </div>
 
         <button type="submit" disabled={isLoading} className={styles.submitButton}>
-          {isLoading ? "Logging in..." : "Login"}
+          {isLoading ? t("login.loading") : t("login.submit")}
         </button>
       </form>
 
       <div className="mt-4 text-center">
-        <Link to="/register" className={styles.registerLink}>Register</Link>
+        <Link to="/register" className={styles.registerLink}>
+          {t("login.registerLink")}
+        </Link>
       </div>
-      <Link to="/home" className={styles.returnLink}> Return to Home Page</Link>
+      <Link to="/home" className={styles.returnLink}>
+        {t("login.returnHome")}
+      </Link>
     </div>
   );
 }

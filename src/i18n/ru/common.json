@@ -1,4 +1,54 @@
-{
+  { "register": {
+      "title": "Регистрация",
+      "labels": {
+        "username": "Имя пользователя:",
+        "email": "Email:",
+        "phone": "Номер телефона:",
+        "password": "Пароль:",
+        "confirmPassword": "Подтвердите пароль:"
+      },
+      "placeholders": {
+        "username": "Введите имя пользователя",
+        "email": "Введите email",
+        "phone": "Введите номер телефона",
+        "password": "Введите пароль",
+        "confirmPassword": "Повторите пароль"
+      },
+      "buttons": {
+        "submit": "Зарегистрироваться",
+        "loading": "Регистрация..."
+      },
+      "haveAccount": "Уже есть аккаунт?",
+      "loginLink": "Войти",
+      "returnHome": "Вернуться на главную",
+      "errors": {
+        "required": "Все поля обязательны",
+        "mismatch": "Пароли не совпадают"
+      },
+      "toasts": {
+        "success": "Регистрация прошла успешно! Теперь вы можете войти.",
+        "fail": "Ошибка регистрации"
+      }
+    },
+  "login": {
+    "title": "Вход",
+    "emailLabel": "Email:",
+    "passwordLabel": "Пароль:",
+    "emailPlaceholder": "Введите email",
+    "passwordPlaceholder": "Введите пароль",
+    "show": "Показать",
+    "hide": "Скрыть",
+    "showPwd": "Показать пароль",
+    "hidePwd": "Скрыть пароль",
+    "submit": "Войти",
+    "loading": "Входим...",
+    "registerLink": "Регистрация",
+    "returnHome": "Вернуться на главную",
+    "toasts": {
+      "success": "Вы успешно вошли!",
+      "fail": "Ошибка входа"
+    }
+  },
   "about": {
     "headTitle": "О нас",
     "form": {
