@@ -1,81 +1,161 @@
 .checkoutContainer {
-    max-width: 640px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  }
-  
-  .heading {
-    font-size: 1.75rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    color: #1f2937;
-  }
-  
-  .checkoutItems {
-    margin-bottom: 1.5rem;
-  }
-  
-  .itemCard {
-    border-bottom: 1px solid #e5e7eb;
-    padding: 0.75rem 0;
-  }
-  
-  .total {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 1.5rem;
-    text-align: right;
-  }
-  
-  .addressInput {
-    margin-bottom: 1rem;
+  max-width: 920px;    
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
 
+.heading {
+  font-size: 1.875rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #1f2937;
+}
+
+.tableWrap {
+  width: 100%;
+  overflow-x: auto; 
+  margin-bottom: 1.25rem;
+}
+
+.itemsTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px; 
+}
+
+.itemsTable thead th {
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.75rem 0.75rem;
+}
+
+.itemsTable tbody td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.75rem 0.75rem;
+  vertical-align: middle;
+  color: #1f2937;
+}
+
+.itemsTable tbody tr:hover {
+  background: #fafafa;
+}
+
+.colItem { width: 55%; }
+.colQty { width: 10%; text-align: center; }
+.colPrice { width: 17%; text-align: right; }
+.colTotal { width: 18%; text-align: right; }
+
+
+.cellQty { text-align: center; }
+.cellPrice { text-align: right; }
+.cellTotal { text-align: right; }
+
+.itemCellInner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.itemThumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.itemName {
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.emptyRow {
+  text-align: center;
+  color: #6b7280;
+  padding: 1rem 0.75rem;
+}
+
+.total {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 1rem 0 1.25rem;
+  text-align: right;
+}
+
+.addressInput {
+  margin-bottom: 1rem;
+}
+
+.addressInput label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.addressInput input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.addressInput input:focus {
+  outline: none;
+  border-color: #466efc;
+  box-shadow: 0 0 0 3px rgba(71, 116, 253, 0.25);
+}
+
+.errorMessage {
+  color: #dc2626;
+  margin-bottom: 1rem;
+}
+
+.submitButton {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background-color: rgba(71, 117, 253, 0.9);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.05s ease, background-color 0.2s ease;
+}
+
+.submitButton:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: rgb(71, 116, 253);
+}
+
+.submitButton:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+@media (max-width: 640px) {
+  .heading {
+    font-size: 1.5rem;
   }
-  
-  .addressInput label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #374151;
+  .itemThumb {
+    width: 48px;
+    height: 48px;
   }
-  
-  .addressInput input {
-    width: 96%;
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    font-size: 1rem;
-  }
-  
-  .errorMessage {
-    color: red;
-    margin-bottom: 1rem;
-  }
-  
-  .submitButton {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: #10b981;
-    color: white;
-    font-weight: 600;
-    font-size: 1rem;
-    border: none;
-    border-radius: 0.375rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .submitButton:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-  }
-  
-  .submitButton:hover:not(:disabled) {
-    background-color: #059669;
-  }
-  
+}

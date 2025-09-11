@@ -1,5 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+// src/pages/products/ProductPage.tsx
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
 import { Product } from "../../types/product";
 import { Review } from "../../types/review";
 import { getProductById } from "../../services/ProductService";
@@ -11,12 +14,42 @@ import { AxiosError } from "axios";
 import NavBar from "../../components/NavBar/NavBar";
 import FavoriteIcon from "../../components/Favorite/FavoriteIcon";
 
+function useLocalizedPicker() {
+  const { i18n } = useTranslation();
+  const lang = i18n.language?.slice(0, 2).toLowerCase();
+
+  return useMemo(() => {
+    const order = Array.from(
+      new Set([lang, "en", "ru", "fi"].filter(Boolean) as string[])
+    );
+    const pick = (val: unknown): string => {
+      if (!val) return "";
+      if (typeof val === "string") return val;
+      if (typeof val === "object") {
+        const obj = val as Record<string, unknown>;
+        for (const l of order) {
+          const v = obj[l];
+          if (typeof v === "string" && v.trim()) return v;
+        }
+
+        const src = (obj["_source"] as string | undefined)?.toLowerCase();
+        if (src && typeof obj[src] === "string") return String(obj[src]);
+      }
+      return "";
+    };
+    return pick;
+  }, [lang]);
+}
+
 const ProductPage: React.FC = () => {
+  const { t } = useTranslation("common");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { isAuthenticated, token, user } = useAuth(); 
+  const { isAuthenticated, token, user } = useAuth();
   const { addToCart } = useCart();
+
+  const pick = useLocalizedPicker();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,23 +64,26 @@ const ProductPage: React.FC = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       if (!id) {
-        setError("No product ID provided");
+        setError(t("product.errors.noId", "No product ID provided"));
         setLoading(false);
         return;
       }
-
       try {
         const fetchedProduct = await getProductById(id);
         setProduct(fetchedProduct);
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Unexpected error occurred");
+        setError(
+          err instanceof Error
+            ? err.message
+            : t("common.unexpected", "Unexpected error occurred")
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchProduct();
-  }, [id]);
+  }, [id, t]);
 
   const loadReviews = useCallback(async () => {
     if (!id) return;
@@ -71,9 +107,11 @@ const ProductPage: React.FC = () => {
         ? product.images[0]
         : product.images?.[0]?.url ?? "/placeholder.jpg";
 
+    const displayName = pick(product.name) || t("product.noName", "No Name");
+
     addToCart({
       id: product._id,
-      name: product.name,
+      name: displayName, 
       price: product.price ?? 0,
       quantity: 1,
       image: imageUrl,
@@ -115,7 +153,7 @@ const ProductPage: React.FC = () => {
         navigate("/login");
       } else {
         console.error("Review submission error:", axiosError);
-        alert("Failed to submit review. Try again later.");
+        alert(t("reviews.submitError", "Failed to submit review. Try again later."));
       }
     }
   };
@@ -126,39 +164,58 @@ const ProductPage: React.FC = () => {
       loadReviews();
     } catch (error) {
       console.error("Failed to delete review", error);
-      alert("Error deleting review.");
+      alert(t("reviews.deleteError", "Error deleting review."));
     }
   };
 
-  if (loading) return <div className={styles.centered}>Loading...</div>;
+  if (loading) return <div className={styles.centered}>{t("common.loading", "Loading...")}</div>;
   if (error) return <p className={styles.error}>{error}</p>;
-  if (!product) return <p className={styles.centered}>Product not found.</p>;
+  if (!product) return <p className={styles.centered}>{t("product.notFound", "Product not found.")}</p>;
 
   const productImage =
     typeof product.images?.[0] === "string"
       ? product.images[0]
       : product.images?.[0]?.url ?? "/placeholder.jpg";
 
+  const displayName = pick(product.name) || t("product.noName", "No Name");
+  const displayDesc = pick(product.description) || "";
+  const categoryName =
+    typeof product.category === "object"
+      ? pick((product.category as any)?.name) || t("product.na", "N/A")
+      : t("product.na", "N/A");
+  const subcategoryName =
+    typeof product.subcategory === "object"
+      ? pick((product.subcategory as any)?.name) || t("product.none", "None")
+      : t("product.none", "None");
+
   return (
     <>
       <NavBar />
       <div className={styles.pageContainer}>
-        <h1 className={styles.title}>
-          {product.name}
-        </h1>
+        <h1 className={styles.title}>{displayName}</h1>
+
         <div className={styles.imageWrapper}>
-          <img src={productImage} alt={product.name} />
+          <img src={productImage} alt={displayName} />
         </div>
-        <p className={styles.description}>{product.description}</p>
-        <p className={styles.price}>€{(product.price ?? 0).toFixed(2)}</p>
-        <p className={styles.stock}>Stock: {product.stock}</p>
-        <p className={styles.categoryInfo}>
-          Category: {typeof product.category === "object" ? product.category.name : "N/A"} <br />
-          Subcategory: {typeof product.subcategory === "object" ? product.subcategory.name : "None"}
+
+        <p className={styles.description}>{displayDesc}</p>
+
+        <p className={styles.price}>
+          €{(product.price ?? 0).toFixed(2)}
         </p>
+
+        <p className={styles.stock}>
+          {t("product.stock", "Stock")}: {product.stock}
+        </p>
+
+        <p className={styles.categoryInfo}>
+          {t("product.category", "Category")}: {categoryName} <br />
+          {t("product.subcategory", "Subcategory")}: {subcategoryName}
+        </p>
+
         <div className={styles.actionRow}>
           <button className={styles.addToCartButton} onClick={handleAddToCart}>
-            Add to cart
+            {t("product.addToCart", "Add to cart")}
           </button>
           <span className={styles.favoriteIconWrapper}>
             <FavoriteIcon productId={product._id} />
@@ -168,17 +225,22 @@ const ProductPage: React.FC = () => {
         <hr className={styles.divider} />
 
         <section className={styles.reviewsSection}>
-          <h2>Reviews</h2>
+          <h2>{t("reviews.title", "Reviews")}</h2>
+
           {reviews.length === 0 ? (
-            <p>No reviews yet.</p>
+            <p>{t("reviews.none", "No reviews yet.")}</p>
           ) : (
             reviews.map((review) => (
               <div key={review._id} className={styles.reviewItem}>
-                <strong>Rating:</strong> {review.rating}/5
+                <strong>{t("reviews.rating", "Rating")}:</strong> {review.rating}/5
                 {review.comment && <p>{review.comment}</p>}
-                <small>{new Date(review.createdAt).toLocaleDateString()}</small>
+                <small>
+                  {new Date(review.createdAt).toLocaleDateString()}
+                </small>
+
                 {isAuthenticated &&
-                  (typeof review.userId === "object" ? review.userId._id : review.userId) === user?.id && (
+                  (typeof review.userId === "object" ? review.userId._id : review.userId) ===
+                    user?.id && (
                     <div className={styles.reviewActions}>
                       <button
                         onClick={() => {
@@ -188,9 +250,11 @@ const ProductPage: React.FC = () => {
                           setComment(review.comment || "");
                         }}
                       >
-                        Edit
+                        {t("reviews.edit", "Edit")}
                       </button>
-                      <button onClick={() => handleDeleteReview(review._id)}>Delete</button>
+                      <button onClick={() => handleDeleteReview(review._id)}>
+                        {t("reviews.delete", "Delete")}
+                      </button>
                     </div>
                   )}
               </div>
@@ -199,9 +263,9 @@ const ProductPage: React.FC = () => {
 
           {isAuthenticated && !editing && !userReview && (
             <form className={styles.reviewForm} onSubmit={handleReviewSubmit}>
-              <h3>Leave a Review</h3>
+              <h3>{t("reviews.leave", "Leave a Review")}</h3>
               <label>
-                Rating:
+                {t("reviews.ratingLabel", "Rating")}:
                 <select value={rating} onChange={(e) => setRating(+e.target.value)}>
                   {[5, 4, 3, 2, 1].map((r) => (
                     <option key={r} value={r}>
@@ -213,18 +277,18 @@ const ProductPage: React.FC = () => {
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Write your comment..."
+                placeholder={t("reviews.placeholder", "Write your comment...")}
                 required
               />
-              <button type="submit">Submit</button>
+              <button type="submit">{t("reviews.submit", "Submit")}</button>
             </form>
           )}
 
           {isAuthenticated && editing && (
             <form className={styles.reviewForm} onSubmit={handleReviewSubmit}>
-              <h3>Edit Your Review</h3>
+              <h3>{t("reviews.editYour", "Edit Your Review")}</h3>
               <label>
-                Rating:
+                {t("reviews.ratingLabel", "Rating")}:
                 <select value={rating} onChange={(e) => setRating(+e.target.value)}>
                   {[5, 4, 3, 2, 1].map((r) => (
                     <option key={r} value={r}>
@@ -236,10 +300,10 @@ const ProductPage: React.FC = () => {
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Update your comment..."
+                placeholder={t("reviews.updatePlaceholder", "Update your comment...")}
                 required
               />
-              <button type="submit">Update</button>
+              <button type="submit">{t("reviews.update", "Update")}</button>
               <button
                 type="button"
                 onClick={() => {
@@ -249,12 +313,17 @@ const ProductPage: React.FC = () => {
                   setComment("");
                 }}
               >
-                Cancel
+                {t("reviews.cancel", "Cancel")}
               </button>
             </form>
           )}
 
-          {!isAuthenticated && <p><a href="/login">Log in</a> to leave a review.</p>}
+          {!isAuthenticated && (
+            <p>
+              <a href="/login">{t("reviews.loginToReview", "Log in")}</a>{" "}
+              {t("reviews.toLeave", "to leave a review.")}
+            </p>
+          )}
         </section>
       </div>
     </>

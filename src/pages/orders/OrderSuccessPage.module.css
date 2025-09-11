@@ -16,7 +16,7 @@
   
   .button {
     padding: 10px 20px;
-    background-color: #10b98175;
+    background-color: rgba(71, 117, 253, 0.457);
     color: #333;
     text-decoration: none;
     border-radius: 8px;
@@ -24,7 +24,7 @@
   }
   
   .button:hover {
-    background-color: #10b981;
+    background-color: rgb(71, 116, 253);
     color: white;
   }
   

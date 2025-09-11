@@ -1,5 +1,6 @@
 import { useAuth } from "../../hooks/useAuth";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import styles from "./NavBar.module.css";
 import Cart from "../Cart/Cart";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -7,11 +8,19 @@ import LanguageSwitcher from "./LanguageSwitcher";
 const NavBar: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation(["common"], { keyPrefix: "nav" });
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+
+  const role =
+    (user?.role ?? (user as any)?.user?.role ?? "")
+      .toString()
+      .trim()
+      .toUpperCase();
+  const isAdmin = Boolean((user as any)?.isAdmin || role === "ADMIN");
 
   return (
     <nav className={styles.navbar}>
@@ -23,9 +32,10 @@ const NavBar: React.FC = () => {
               isActive ? `${styles.link} ${styles.active}` : styles.link
             }
           >
-            Home
+            {t("home", { defaultValue: "Home" })}
           </NavLink>
         </li>
+
         <li>
           <NavLink
             to="/aboutUs"
@@ -33,9 +43,10 @@ const NavBar: React.FC = () => {
               isActive ? `${styles.link} ${styles.active}` : styles.link
             }
           >
-            About Us
+            {t("about", { defaultValue: "About Us" })}
           </NavLink>
         </li>
+
         <li>
           <NavLink
             to="/productsPage"
@@ -43,7 +54,7 @@ const NavBar: React.FC = () => {
               isActive ? `${styles.link} ${styles.active}` : styles.link
             }
           >
-            Products
+            {t("products", { defaultValue: "Products" })}
           </NavLink>
         </li>
 
@@ -56,9 +67,10 @@ const NavBar: React.FC = () => {
                   isActive ? `${styles.link} ${styles.active}` : styles.link
                 }
               >
-                Profile
+                {t("profile", { defaultValue: "Profile" })}
               </NavLink>
             </li>
+
             <li>
               <NavLink
                 to="/cart"
@@ -66,10 +78,11 @@ const NavBar: React.FC = () => {
                   isActive ? `${styles.link} ${styles.active}` : styles.link
                 }
               >
-                Cart
+                {t("cart", { defaultValue: "Cart" })}
               </NavLink>
             </li>
-            {user?.role?.toUpperCase() === "ADMIN" && (
+
+            {isAdmin && (
               <li>
                 <NavLink
                   to="/admin"
@@ -77,13 +90,14 @@ const NavBar: React.FC = () => {
                     isActive ? `${styles.link} ${styles.active}` : styles.link
                   }
                 >
-                  Admin Panel
+                  {t("admin", { defaultValue: "Admin Panel" })}
                 </NavLink>
               </li>
             )}
+
             <li>
               <button onClick={handleLogout} className={styles.logoutButton}>
-                Logout
+                {t("logout", { defaultValue: "Logout" })}
               </button>
             </li>
           </>
@@ -96,7 +110,7 @@ const NavBar: React.FC = () => {
                   isActive ? `${styles.link} ${styles.active}` : styles.link
                 }
               >
-                Login
+                {t("login", { defaultValue: "Login" })}
               </NavLink>
             </li>
             <li>
@@ -106,19 +120,20 @@ const NavBar: React.FC = () => {
                   isActive ? `${styles.link} ${styles.active}` : styles.link
                 }
               >
-                Register
+                {t("register", { defaultValue: "Register" })}
               </NavLink>
-            </li>
-            <li>
-              <LanguageSwitcher />
             </li>
           </>
         )}
-            <li>    
-              <Cart/>
-            </li>
+
+        <li>
+          <LanguageSwitcher />
+        </li>
+
+        <li>
+          <Cart />
+        </li>
       </ul>
-      
     </nav>
   );
 };

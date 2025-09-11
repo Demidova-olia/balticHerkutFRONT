@@ -6,27 +6,39 @@ import { useAuth } from "../../hooks/useAuth";
 import styles from "./AboutUs.module.css";
 import { useTranslation } from "react-i18next";
 
+type Localized = string | { en?: string; ru?: string; fi?: string };
+
 type AboutContent = {
   heroImageUrl: string;
-  title: string;
-  subtitle: string;
+  title: Localized;
+  subtitle: Localized;
   storeImageUrl: string;
-  descriptionIntro: string;
-  descriptionMore: string;
-  address: string;
-  hours: string;
+  descriptionIntro: Localized;
+  descriptionMore: Localized;
+  address: Localized;
+  hours: Localized;
   gmapsUrl: string;
   requisitesImageUrl: string;
-  socialsHandle: string;
+  socialsHandle: Localized;
 };
 
-// Если у бэка префикс /api — поменяйте на "/api/about"
 const ABOUT_URL = "/about";
+
+function pickText(val: Localized, lang: string) {
+  if (val && typeof val === "object") {
+    const v =
+      val[lang as "en" | "ru" | "fi"] ??
+      val.en ??
+      val.ru ??
+      val.fi ??
+      "";
+    return typeof v === "string" ? v : "";
+  }
+  return (val as string) ?? "";
+}
 
 const DEFAULT_CONTENT: AboutContent = {
   heroImageUrl: "/assets/Logo.jpg",
-  // ВАЖНО: это данные с бэка. Их не переводим на клиенте,
-  // локализацию UI делаем отдельно через t().
   title: "About Us",
   subtitle: "Baltic Herkut — your favorite Baltic foods in Oulu.",
   storeImageUrl: "/assets/storefront.jpg",
@@ -86,7 +98,6 @@ const AboutUs: React.FC = () => {
 
   const lastSavedRef = useRef<AboutContent | null>(null);
 
-  // Заголовок вкладки — локализуем и обновляем при смене языка
   useEffect(() => {
     document.title = `${t("about.headTitle")} — Baltic Herkut`;
   }, [i18n.language, t]);
@@ -94,6 +105,7 @@ const AboutUs: React.FC = () => {
   const fetchAbout = async () => {
     const res = await axiosInstance.get<{ data?: Partial<AboutContent> }>(ABOUT_URL, {
       params: { _t: Date.now() },
+      headers: { "Accept-Language": i18n.language },
     });
     return normalize(res?.data?.data);
   };
@@ -106,7 +118,7 @@ const AboutUs: React.FC = () => {
         const serverData = await fetchAbout();
         setContent(serverData);
         setDraft(serverData);
-      } catch (e: any) {
+      } catch {
         const fallback = normalize(DEFAULT_CONTENT);
         setContent(fallback);
         setDraft(fallback);
@@ -154,16 +166,20 @@ const AboutUs: React.FC = () => {
       const hasFiles = Boolean(heroFile || storeFile || reqFile);
 
       if (!hasFiles) {
-        await axiosInstance.put<{ data?: Partial<AboutContent> }>(ABOUT_URL, payload);
+        await axiosInstance.put<{ data?: Partial<AboutContent> }>(ABOUT_URL, payload, {
+          headers: { "Accept-Language": i18n.language },
+        });
       } else {
         const fd = new FormData();
-        (Object.entries(payload) as [keyof AboutContent, string][])
-          .forEach(([k, v]) => fd.append(k, v ?? ""));
+        (Object.entries(payload) as [keyof AboutContent, any][])
+          .forEach(([k, v]) => fd.append(k, typeof v === "string" ? v : JSON.stringify(v)));
         if (heroFile) fd.append("heroImage", heroFile);
         if (storeFile) fd.append("storeImage", storeFile);
         if (reqFile) fd.append("requisitesImage", reqFile);
 
-        await axiosInstance.put<{ data?: Partial<AboutContent> }>(ABOUT_URL, fd);
+        await axiosInstance.put<{ data?: Partial<AboutContent> }>(ABOUT_URL, fd, {
+          headers: { "Accept-Language": i18n.language },
+        });
       }
 
       let serverAfter = await fetchAbout();
@@ -196,6 +212,8 @@ const AboutUs: React.FC = () => {
     }
   };
 
+  const p = (v: Localized) => pickText(v, i18n.language);
+
   return (
     <>
       <NavBar />
@@ -205,7 +223,7 @@ const AboutUs: React.FC = () => {
           <div className={styles.heroWrap}>
             {!editMode ? (
               <img
-                src={c.heroImageUrl}
+                src={p(c.heroImageUrl as any) || (c.heroImageUrl as string)}
                 alt="Baltic Herkut"
                 className={styles.heroImg}
                 loading="eager"
@@ -217,7 +235,7 @@ const AboutUs: React.FC = () => {
                   <label className={styles.label}>{t("about.form.heroUrl")}</label>
                   <input
                     className={styles.input}
-                    value={draft.heroImageUrl}
+                    value={p(draft.heroImageUrl as any) || (draft.heroImageUrl as string)}
                     onChange={(e) => setDraft((d) => ({ ...d, heroImageUrl: e.target.value }))}
                   />
                 </div>
@@ -239,8 +257,8 @@ const AboutUs: React.FC = () => {
         <header className={styles.header}>
           {!editMode ? (
             <>
-              <h1 className={styles.title}>{c.title}</h1>
-              <p className={styles.subtitle}>{c.subtitle}</p>
+              <h1 className={styles.title}>{p(c.title)}</h1>
+              <p className={styles.subtitle}>{p(c.subtitle)}</p>
             </>
           ) : (
             <div className={styles.formGrid}>
@@ -248,7 +266,7 @@ const AboutUs: React.FC = () => {
                 <label className={styles.label}>{t("about.form.title")}</label>
                 <input
                   className={styles.input}
-                  value={draft.title}
+                  value={p(draft.title)}
                   onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
                 />
               </div>
@@ -256,7 +274,7 @@ const AboutUs: React.FC = () => {
                 <label className={styles.label}>{t("about.form.subtitle")}</label>
                 <input
                   className={styles.input}
-                  value={draft.subtitle}
+                  value={p(draft.subtitle)}
                   onChange={(e) => setDraft((d) => ({ ...d, subtitle: e.target.value }))}
                 />
               </div>
@@ -269,7 +287,7 @@ const AboutUs: React.FC = () => {
           <div className={styles.mediaWrap}>
             {!editMode ? (
               <img
-                src={c.storeImageUrl}
+                src={p(c.storeImageUrl as any) || (c.storeImageUrl as string)}
                 alt={t("about.alt.storefront")}
                 className={styles.media}
                 loading="lazy"
@@ -281,7 +299,7 @@ const AboutUs: React.FC = () => {
                   <label className={styles.label}>{t("about.form.storeUrl")}</label>
                   <input
                     className={styles.input}
-                    value={draft.storeImageUrl}
+                    value={p(draft.storeImageUrl as any) || (draft.storeImageUrl as string)}
                     onChange={(e) => setDraft((d) => ({ ...d, storeImageUrl: e.target.value }))}
                   />
                 </div>
@@ -302,15 +320,15 @@ const AboutUs: React.FC = () => {
             {!editMode ? (
               <>
                 <h2>{t("about.ourStore.title")}</h2>
-                <p>{c.descriptionIntro}</p>
-                <p>{c.descriptionMore}</p>
+                <p>{p(c.descriptionIntro)}</p>
+                <p>{p(c.descriptionMore)}</p>
 
                 <div className={styles.infoList}>
                   <div>
-                    <strong>{t("about.ourStore.address")}:</strong> {c.address}
+                    <strong>{t("about.ourStore.address")}:</strong> {p(c.address)}
                   </div>
                   <div>
-                    <strong>{t("about.ourStore.hours")}:</strong> {c.hours}
+                    <strong>{t("about.ourStore.hours")}:</strong> {p(c.hours)}
                   </div>
                 </div>
 
@@ -326,7 +344,7 @@ const AboutUs: React.FC = () => {
                   <textarea
                     className={styles.textarea}
                     rows={3}
-                    value={draft.descriptionIntro}
+                    value={p(draft.descriptionIntro)}
                     onChange={(e) =>
                       setDraft((d) => ({ ...d, descriptionIntro: e.target.value }))
                     }
@@ -337,7 +355,7 @@ const AboutUs: React.FC = () => {
                   <textarea
                     className={styles.textarea}
                     rows={4}
-                    value={draft.descriptionMore}
+                    value={p(draft.descriptionMore)}
                     onChange={(e) =>
                       setDraft((d) => ({ ...d, descriptionMore: e.target.value }))
                     }
@@ -349,7 +367,7 @@ const AboutUs: React.FC = () => {
                     <label className={styles.label}>{t("about.form.address")}</label>
                     <input
                       className={styles.input}
-                      value={draft.address}
+                      value={p(draft.address)}
                       onChange={(e) => setDraft((d) => ({ ...d, address: e.target.value }))}
                     />
                   </div>
@@ -357,7 +375,7 @@ const AboutUs: React.FC = () => {
                     <label className={styles.label}>{t("about.form.hours")}</label>
                     <input
                       className={styles.input}
-                      value={draft.hours}
+                      value={p(draft.hours)}
                       onChange={(e) => setDraft((d) => ({ ...d, hours: e.target.value }))}
                     />
                   </div>
@@ -387,7 +405,7 @@ const AboutUs: React.FC = () => {
                 <li>{t("about.why.point3")}</li>
               </ul>
               <p>
-                {t("about.why.follow")} <strong>{c.socialsHandle}</strong>.
+                {t("about.why.follow")} <strong>{p(c.socialsHandle)}</strong>.
               </p>
             </div>
           ) : (
@@ -396,7 +414,7 @@ const AboutUs: React.FC = () => {
                 <label className={styles.label}>{t("about.form.social")}</label>
                 <input
                   className={styles.input}
-                  value={draft.socialsHandle}
+                  value={p(draft.socialsHandle)}
                   onChange={(e) => setDraft((d) => ({ ...d, socialsHandle: e.target.value }))}
                 />
               </div>
@@ -409,7 +427,7 @@ const AboutUs: React.FC = () => {
           <div className={styles.mediaWrap}>
             {!editMode ? (
               <img
-                src={c.requisitesImageUrl}
+                src={p(c.requisitesImageUrl as any) || (c.requisitesImageUrl as string)}
                 alt={t("about.alt.requisites")}
                 className={styles.media}
                 loading="lazy"
@@ -421,7 +439,7 @@ const AboutUs: React.FC = () => {
                   <label className={styles.label}>{t("about.form.reqUrl")}</label>
                   <input
                     className={styles.input}
-                    value={draft.requisitesImageUrl}
+                    value={p(draft.requisitesImageUrl as any) || (draft.requisitesImageUrl as string)}
                     onChange={(e) =>
                       setDraft((d) => ({ ...d, requisitesImageUrl: e.target.value }))
                     }

@@ -1,5 +1,9 @@
-import { User } from "../types/user";
+// src/services/UserService.ts
 import axiosInstance from "../utils/axios";
+import { User } from "../types/user";
+import { IOrder } from "../types/order";
+import { Product } from "../types/product";
+import { Review } from "../types/review";
 
 interface RegisterData {
   username: string;
@@ -13,57 +17,54 @@ interface LoginData {
   password: string;
 }
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("Token not found in localStorage.");
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
-};
+// Нормализация ответа API: { data: ... } или просто ...
+const unwrap = <T>(res: any): T => (res?.data?.data ?? res?.data) as T;
 
 const UserService = {
-  register: async (data: RegisterData) => {
-    const response = await axiosInstance.post("/users/register", data);
-    return response.data;
+  // Все методы принимают опциональный AbortSignal для отмены
+  async register(data: RegisterData, signal?: AbortSignal) {
+    const res = await axiosInstance.post("/users/register", data, { signal });
+    return unwrap<any>(res);
   },
 
-  login: async (data: LoginData) => {
-    const response = await axiosInstance.post("/users/login", data);
-    return response.data;
+  async login(data: LoginData, signal?: AbortSignal) {
+    const res = await axiosInstance.post("/users/login", data, { signal });
+    // обычно тут { token, user }
+    return unwrap<{ token: string; user: User }>(res);
   },
 
-  getProfile: async () => {
-    const response = await axiosInstance.get("/users/profile", getAuthHeaders());
-    return response.data;
+  async getProfile(signal?: AbortSignal): Promise<User> {
+    const res = await axiosInstance.get("/users/profile", { signal });
+    return unwrap<User>(res);
   },
 
-  getOrders: async () => {
-    const response = await axiosInstance.get("/users/orders", getAuthHeaders());
-    return response.data;
+  async updateProfile(data: Partial<User>, signal?: AbortSignal) {
+    const res = await axiosInstance.put("/users/profile", data, { signal });
+    return unwrap<User>(res);
   },
 
-  getFavorites: async () => {
-    const response = await axiosInstance.get("/users/favorites", getAuthHeaders());
-    return response.data;
+  async getOrders(signal?: AbortSignal): Promise<IOrder[]> {
+    // оставляю /users/orders, раз у тебя это уже используется
+    const res = await axiosInstance.get("/users/orders", { signal });
+    return unwrap<IOrder[]>(res) ?? [];
   },
 
-  getReviews: async () => {
-    const response = await axiosInstance.get("/users/reviews", getAuthHeaders());
-    return response.data;
+  async getFavorites(signal?: AbortSignal): Promise<Product[]> {
+    const res = await axiosInstance.get("/users/favorites", { signal });
+    return unwrap<Product[]>(res) ?? [];
   },
 
-  deleteUser: async (id: string) => {
-    const response = await axiosInstance.delete(`/users/${id}`, getAuthHeaders());
-    return response.data;
+  async getReviews(signal?: AbortSignal): Promise<Review[]> {
+    const res = await axiosInstance.get("/users/reviews", { signal });
+    return unwrap<Review[]>(res) ?? [];
   },
 
-  updateProfile: async (data: Partial<User>) => {
-    const response = await axiosInstance.put("/users/profile", data, getAuthHeaders());
-    return response.data;
+  async deleteUser(id: string, signal?: AbortSignal) {
+    const res = await axiosInstance.delete(`/users/${id}`, { signal });
+    return unwrap<any>(res);
   },
 };
 
 export default UserService;
+
 
