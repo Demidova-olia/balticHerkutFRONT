@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import styles from "./AdminOrders.module.css";
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
 import BottomNav from "../../../components/Admin/BottomNav";
+import { useTranslation } from "react-i18next";
 
 type Product = {
   _id: string;
@@ -14,20 +15,20 @@ type Product = {
 };
 
 type OrderItem = {
-  productId: Product;
+  productId: Product | string | null | undefined;
   quantity: number;
 };
 
 type UserInfo = {
-  username: string;
-  email: string;
+  username?: string;
+  email?: string;
   role?: string;
   isAdmin?: boolean;
 };
 
 type Order = {
   _id: string;
-  user?: UserInfo;
+  user?: UserInfo | null;
   items: OrderItem[];
   status: "pending" | "shipped" | "delivered" | "canceled" | "paid" | "finished";
   totalAmount: number;
@@ -44,6 +45,13 @@ const statusOptions = [
   { label: "Finished", value: "finished" },
 ];
 
+function productNameFrom(item: OrderItem): string {
+  const p = item?.productId as any;
+  if (!p) return "Unknown product";
+  if (typeof p === "string") return p || "Unknown product";
+  return p?.name || "Unknown product";
+}
+
 const OrderRow = ({
   order,
   handleStatusChange,
@@ -55,16 +63,20 @@ const OrderRow = ({
     <td>{order._id}</td>
     <td>{order.user?.email || "No data"}</td>
     <td>
-      <ul>
-        {order.items.map((item, index) => (
-          <li key={index}>
-            {item.productId?.name || "Unknown product"} x {item.quantity}
-          </li>
-        ))}
-      </ul>
+      {Array.isArray(order.items) && order.items.length > 0 ? (
+        <ul>
+          {order.items.map((item, index) => (
+            <li key={index}>
+              {productNameFrom(item)} × {item.quantity}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <em>—</em>
+      )}
     </td>
-    <td>€{order.totalAmount.toFixed(2)}</td>
-    <td>{order.address}</td>
+    <td>€{Number(order.totalAmount || 0).toFixed(2)}</td>
+    <td>{order.address || "—"}</td>
     <td>
       <select
         value={order.status}
@@ -88,6 +100,7 @@ const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation("common");
 
   const isAdmin = useMemo(() => {
     const role = String(user?.role ?? user?.user?.role ?? "").trim().toLowerCase();
@@ -137,33 +150,44 @@ const AdminOrders = () => {
   if (error)
     return (
       <div className={styles.error}>
-        {error} <button onClick={fetchOrders}>Retry</button>
+        {error} <button onClick={fetchOrders}>{t("admin.metrics.refresh", { defaultValue: "Refresh" })}</button>
       </div>
     );
-  if (fetching) return <div className={styles.loading}>Loading...</div>;
-  if (orders.length === 0) return <div className={styles.noOrders}>No orders available</div>;
 
   return (
     <div className={styles.adminOrders}>
-      <h1>Order Management</h1>
+      <h1>{t("admin.orders.title", { defaultValue: "Order Management" })}</h1>
       <AdminNavBar />
 
       <table className={styles.ordersTable}>
         <thead>
           <tr>
-            <th>Order ID</th>
-            <th>User Email</th>
-            <th>Products</th>
-            <th>Total</th>
-            <th>Address</th>
-            <th>Status</th>
-            <th>Date</th>
+            <th>{t("admin.orders.table.orderId", { defaultValue: "Order ID" })}</th>
+            <th>{t("admin.orders.table.userEmail", { defaultValue: "User Email" })}</th>
+            <th>{t("admin.orders.table.products", { defaultValue: "Products" })}</th>
+            <th>{t("admin.orders.table.total", { defaultValue: "Total" })}</th>
+            <th>{t("admin.orders.table.address", { defaultValue: "Address" })}</th>
+            <th>{t("admin.orders.table.status", { defaultValue: "Status" })}</th>
+            <th>{t("admin.orders.table.date", { defaultValue: "Date" })}</th>
           </tr>
         </thead>
+
         <tbody>
-          {orders.map((order) => (
-            <OrderRow key={order._id} order={order} handleStatusChange={handleStatusChange} />
-          ))}
+          {fetching ? (
+            <tr>
+              <td colSpan={7} className={styles.loading}>{t("loading.default", { defaultValue: "Loading..." })}</td>
+            </tr>
+          ) : orders.length === 0 ? (
+            <tr>
+              <td colSpan={7} className={styles.noOrders}>
+                {t("admin.orders.empty", { defaultValue: "No orders yet." })}
+              </td>
+            </tr>
+          ) : (
+            orders.map((order) => (
+              <OrderRow key={order._id} order={order} handleStatusChange={handleStatusChange} />
+            ))
+          )}
         </tbody>
       </table>
 
@@ -173,3 +197,4 @@ const AdminOrders = () => {
 };
 
 export default AdminOrders;
+

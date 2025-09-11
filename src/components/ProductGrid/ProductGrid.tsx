@@ -1,4 +1,3 @@
-// src/components/ProductGrid/ProductGrid.tsx
 import React from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -13,7 +12,6 @@ interface Props {
   products: Product[];
 }
 
-// Универсальный выбор локализованной строки на клиенте
 function pickLocalized(value: unknown, lang: string): string {
   if (!value) return "";
   if (typeof value === "string") return value;
@@ -32,6 +30,8 @@ function pickLocalized(value: unknown, lang: string): string {
   return "";
 }
 
+const FALLBACK_IMG = "/assets/no-image.svg";
+
 const ProductGrid: React.FC<Props> = ({ products }) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -39,66 +39,72 @@ const ProductGrid: React.FC<Props> = ({ products }) => {
 
   if (!products || products.length === 0) {
     return <p>{t("noProducts", "No products found.")}</p>;
+
   }
 
   return (
     <div className={styles.productGridContainer}>
       <div className={styles.productGrid}>
         {products.map((product) => {
+          const raw = product?.images?.[0] as any;
           const image =
-            typeof product.images?.[0] === "string"
-              ? product.images[0]
-              : product.images?.[0]?.url || "/placeholder.jpg";
+            typeof raw === "string"
+              ? raw
+              : raw?.url || FALLBACK_IMG;
 
-          const priceText =
-            typeof product.price === "number" ? product.price.toFixed(2) : "N/A";
+          const price =
+            typeof product.price === "number" ? product.price : 0;
 
           const nameStr =
-            pickLocalized((product as any).name, i18n.language) || t("product.noName", "No Name");
+            pickLocalized((product as any).name, i18n.language) ||
+            t("product.noName", "No Name");
+
           const descStr =
             pickLocalized((product as any).description, i18n.language) ||
             t("product.noDescription", "No description available.");
 
           return (
-            <div key={product._id} className={styles.productItem}>
-              <div
-                className={styles.productImageWrapper}
-                onClick={() => navigate(`/product/id/${product._id}`)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    navigate(`/product/id/${product._id}`);
-                  }
-                }}
-              >
+            <div
+              key={product._id}
+              className={styles.productItem}
+              onClick={() => navigate(`/product/id/${product._id}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  navigate(`/product/id/${product._id}`);
+                }
+              }}
+            >
+              <div className={styles.imageBox}>
                 <img
                   className={styles.productImage}
                   src={image}
                   alt={nameStr || "Product"}
                   onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = "/placeholder.jpg";
+                    (e.currentTarget as HTMLImageElement).onerror = null;
+                    (e.currentTarget as HTMLImageElement).src = FALLBACK_IMG;
                   }}
                 />
               </div>
 
               <h3 className={styles.productName}>{nameStr}</h3>
 
-              <p className={styles.productDics}>{descStr}</p>
+              <p className={styles.productDesc}>{descStr}</p>
 
               <p className={styles.productPrice}>
-                {t("product.priceLabel", "Price")}: €{priceText}
+                {t("product.priceLabel", "Price")}: €{price.toFixed(2)}
               </p>
 
-              <div className={styles.CartBtnAndFav}>
+              <div className={styles.actions}>
                 <button
                   className={styles.addToCartBtn}
                   onClick={(e) => {
                     e.stopPropagation();
                     addToCart({
                       id: product._id,
-                      name: nameStr, // строка, а не LocalizedField
-                      price: typeof product.price === "number" ? product.price : 0,
+                      name: nameStr,
+                      price,
                       quantity: 1,
                       image,
                     });
@@ -109,6 +115,7 @@ const ProductGrid: React.FC<Props> = ({ products }) => {
 
                 {isAuthenticated() && (
                   <span
+                    className={styles.favWrapper}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();

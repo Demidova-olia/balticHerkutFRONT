@@ -50,9 +50,12 @@ const FavoriteList = () => {
   const [favorites, setFavorites] = useState<Product[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [addingId, setAddingId] = useState<string | null>(null);
+
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { t, i18n } = useTranslation("favorites");
+
+  // ВАЖНО: используем общий словарь "common" + keyPrefix "favorites"
+  const { t, i18n } = useTranslation("common", { keyPrefix: "favorites" });
 
   useEffect(() => {
     let alive = true;
@@ -66,16 +69,14 @@ const FavoriteList = () => {
       } catch (err: unknown) {
         if (!alive) return;
         if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") return;
-        setError(
-          t("errors.unknown", { defaultValue: "Failed to load favorites." })
-        );
+        setError(t("errors.unknown", { defaultValue: "Failed to load favorites." }));
       }
     })();
 
     return () => {
       alive = false;
     };
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRemoveFromFavorites = async (productId: string) => {
@@ -183,6 +184,7 @@ const FavoriteList = () => {
                     onClick={() => handleAddToCart(product)}
                     disabled={addingId === product._id}
                     title={t("buttons.addToCart", { defaultValue: "Add to cart" })}
+                    aria-busy={addingId === product._id}
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
