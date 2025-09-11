@@ -17,20 +17,55 @@
     },
     "errors": {
       "fetch": "Error fetching profile data"
+    },
+    "editPage": {
+      "title": "Edit Profile",
+      "labels": {
+        "username": "Username",
+        "email": "Email",
+        "phone": "Phone Number",
+        "street": "Street",
+        "city": "City",
+        "postalCode": "Postal Code",
+        "country": "Country"
+      },
+      "placeholders": {
+        "username": "Username",
+        "email": "Email",
+        "phone": "Phone Number",
+        "street": "Street",
+        "city": "City",
+        "postalCode": "Postal Code",
+        "country": "Country"
+      },
+      "buttons": {
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "back": "Back to Profile"
+      },
+      "messages": {
+        "success": "Profile updated successfully.",
+        "fail": "Failed to update profile.",
+        "loadFail": "Failed to load profile data"
+      }
     }
   },
+
   "filters": { "reset": "Reset Filters" },
+
   "products": {
     "loading": "Loading products...",
     "none": "No products found.",
     "error": "An error occurred while loading products."
   },
+
   "order": {
     "success": {
       "title": "Thank you! Your order has been received.",
       "backHome": "Back to Home"
     }
   },
+
   "home": {
     "title": "Home",
     "logoAlt": "Baltic Herkut",
@@ -41,9 +76,11 @@
     "ourProducts": "Our Products",
     "loadingProducts": "Loading products..."
   },
+
   "errors": {
     "unknown": "Unknown error"
   },
+
   "checkout": {
     "title": "Order Summary",
     "quantity": "Quantity",
@@ -53,6 +90,15 @@
     "addressPlaceholder": "Enter your delivery address",
     "processing": "Processing...",
     "confirm": "Confirm Order",
+    "table": {
+      "headers": {
+        "name": "Item",
+        "qty": "Qty",
+        "price": "Price",
+        "subtotal": "Subtotal"
+      },
+      "imageAlt": "{{name}} image"
+    },
     "toast": {
       "addressRequired": "Please enter your address before submitting the order.",
       "success": "Order submitted successfully!",
@@ -60,10 +106,12 @@
       "cartEmpty": "Your cart is empty."
     }
   },
+
   "search": {
     "placeholder": "Search products...",
     "ariaLabel": "Search products"
   },
+
   "cart": {
     "title": "Your Cart",
     "empty": "Your cart is empty",
@@ -72,7 +120,9 @@
     "total": "Total",
     "checkout": "Proceed to Checkout"
   },
+
   "noProducts": "No products found.",
+
   "product": {
     "noName": "No Name",
     "noDescription": "No description available.",
@@ -80,6 +130,7 @@
     "addToCart": "Add to cart",
     "quantity": "Quantity:"
   },
+
   "orders": {
     "title": "My Orders",
     "empty": "You have no orders.",
@@ -96,11 +147,13 @@
     "errorPrefix": "Error:",
     "unknownError": "An unknown error occurred."
   },
+
   "loading": {
     "default": "Loading...",
     "products": "Loading products...",
     "orders": "Loading orders..."
   },
+
   "nav": {
     "home": "Home",
     "about": "About Us",
@@ -112,6 +165,7 @@
     "login": "Login",
     "register": "Register"
   },
+
   "register": {
     "title": "Register",
     "labels": {
@@ -144,6 +198,7 @@
       "fail": "Registration error"
     }
   },
+
   "login": {
     "title": "Login",
     "emailLabel": "Email:",
@@ -163,6 +218,7 @@
       "fail": "Login failed"
     }
   },
+
   "about": {
     "headTitle": "About",
     "form": {
@@ -213,6 +269,39 @@
       "forbidden": "403 Forbidden: admin access required to edit.",
       "notFound": "404 Not Found: path {{url}} was not found on backend.",
       "generic": "Failed to save content"
+    }
+  },
+
+  "favorites": {
+    "title": "Favorites",
+    "empty": "Nothing here yet.",
+    "labels": {
+      "noName": "No Name"
+    },
+    "buttons": {
+      "addToCart": "Add to cart",
+      "adding": "Adding...",
+      "remove": "Remove"
+    },
+    "errors": {
+      "unknown": "Failed to load favorites.",
+      "addToCart": "Failed to add to cart"
+    },
+    "toasts": {
+      "removed": "Removed from favorites",
+      "added": "Added to cart",
+      "addedButNotRemoved": "Added to cart, but failed to remove from favorites"
+    }
+  },
+
+  "admin": {
+    "metrics": {
+      "title": "Admin Statistics",
+      "orders": "Total Orders",
+      "revenue": "Total Revenue",
+      "error": "Failed to fetch data",
+      "noAccess": "No access to admin statistics.",
+      "refresh": "Refresh"
     }
   }
 }

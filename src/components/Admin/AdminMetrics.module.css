@@ -1,0 +1,49 @@
+
+:global(.admin-metrics) {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  border: 1px solid #eef2f7;
+}
+
+:global(.admin-metrics h2) {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937; /* slate-800 */
+  letter-spacing: 0.2px;
+}
+
+:global(.admin-metrics p) {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0.25rem 0;
+  font-size: 0.975rem;
+  color: #374151; /* slate-700 */
+}
+
+:global(.admin-metrics p > strong) {
+  font-weight: 600;
+  color: #111827; /* slate-900 */
+}
+
+:global(.admin-metrics .error) {
+  margin-top: 0.5rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: 8px;
+  background: #fee2e2;   /* red-100 */
+  border: 1px solid #fecaca; /* red-200 */
+  color: #991b1b;        /* red-800 */
+  font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+  :global(.admin-metrics p) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}

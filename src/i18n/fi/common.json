@@ -3,10 +3,8 @@
     "title": "Profiili",
     "edit": "Muokkaa profiilia",
     "loading": "Ladataan profiilia...",
-    "noData": "Profiilitietoja ei ole.",
-    "alt": {
-      "avatar": "Profiilikuva"
-    },
+    "noData": "Ei profiilitietoja.",
+    "alt": { "avatar": "Profiilikuva" },
     "labels": {
       "email": "Sähköposti",
       "phone": "Puhelin",
@@ -18,58 +16,102 @@
       "favorites": "Suosikit"
     },
     "errors": {
-      "fetch": "Profiilitietojen lataus epäonnistui"
+      "fetch": "Profiilitietojen nouto epäonnistui"
+    },
+    "editPage": {
+      "title": "Muokkaa profiilia",
+      "labels": {
+        "username": "Käyttäjänimi",
+        "email": "Sähköposti",
+        "phone": "Puhelinnumero",
+        "street": "Katu",
+        "city": "Kaupunki",
+        "postalCode": "Postinumero",
+        "country": "Maa"
+      },
+      "placeholders": {
+        "username": "Käyttäjänimi",
+        "email": "Sähköposti",
+        "phone": "Puhelinnumero",
+        "street": "Katu",
+        "city": "Kaupunki",
+        "postalCode": "Postinumero",
+        "country": "Maa"
+      },
+      "buttons": {
+        "save": "Tallenna muutokset",
+        "saving": "Tallennetaan...",
+        "back": "Takaisin profiiliin"
+      },
+      "messages": {
+        "success": "Profiili päivitetty.",
+        "fail": "Profiilin päivitys epäonnistui.",
+        "loadFail": "Profiilin lataus epäonnistui"
+      }
     }
   },
+
   "filters": { "reset": "Tyhjennä suodattimet" },
+
   "products": {
     "loading": "Ladataan tuotteita...",
     "none": "Tuotteita ei löytynyt.",
-    "error": "Virhe tuotteiden latauksessa."
+    "error": "Tuotteiden latauksessa tapahtui virhe."
   },
+
   "order": {
     "success": {
       "title": "Kiitos! Tilauksesi on vastaanotettu.",
       "backHome": "Takaisin etusivulle"
     }
   },
+
   "home": {
     "title": "Etusivu",
     "logoAlt": "Baltic Herkut",
-    "welcome": "Tervetuloa myymäläämme!",
-    "browse": "Tutustu tuotteisiin ja palveluihin.",
+    "welcome": "Tervetuloa kauppaamme!",
+    "browse": "Selaa laajaa valikoimaa tuotteita ja palveluja.",
     "selectCategory": "Valitse kategoria aloittaaksesi!",
     "resetFilters": "Tyhjennä suodattimet",
     "ourProducts": "Tuotteemme",
     "loadingProducts": "Ladataan tuotteita..."
   },
+
   "errors": {
     "unknown": "Tuntematon virhe"
   },
+
   "checkout": {
     "title": "Tilausyhteenveto",
     "quantity": "Määrä",
     "price": "Hinta",
     "total": "Yhteensä",
     "addressLabel": "Toimitusosoite",
-    "addressPlaceholder": "Syötä toimitusosoite",
+    "addressPlaceholder": "Syötä toimitusosoitteesi",
     "processing": "Käsitellään...",
     "confirm": "Vahvista tilaus",
-    "item": "Tuote",
-    "unitPrice": "Yksikköhinta",
-    "lineTotal": "Rivisumma",
-    "tableAria": "Tilauksen rivit",
+    "table": {
+      "headers": {
+        "name": "Tuote",
+        "qty": "Määrä",
+        "price": "Hinta",
+        "subtotal": "Välisumma"
+      },
+      "imageAlt": "{{name}} kuva"
+    },
     "toast": {
-      "addressRequired": "Syötä osoite ennen tilauksen vahvistamista.",
+      "addressRequired": "Syötä osoite ennen tilauksen lähettämistä.",
       "success": "Tilaus lähetetty!",
       "fail": "Tilauksen lähetys epäonnistui. Yritä uudelleen.",
-      "cartEmpty": "Ostoskori on tyhjä."
+      "cartEmpty": "Ostoskorisi on tyhjä."
     }
   },
+
   "search": {
     "placeholder": "Hae tuotteita...",
     "ariaLabel": "Hae tuotteita"
   },
+
   "cart": {
     "title": "Ostoskorisi",
     "empty": "Ostoskorisi on tyhjä",
@@ -78,16 +120,19 @@
     "total": "Yhteensä",
     "checkout": "Siirry kassalle"
   },
+
   "noProducts": "Tuotteita ei löytynyt.",
+
   "product": {
-    "noName": "Nimetön",
+    "noName": "Ei nimeä",
     "noDescription": "Ei kuvausta.",
     "priceLabel": "Hinta",
     "addToCart": "Lisää koriin",
     "quantity": "Määrä:"
   },
+
   "orders": {
-    "title": "Tilaukseni",
+    "title": "Omat tilaukset",
     "empty": "Sinulla ei ole tilauksia.",
     "orderId": "Tilausnumero:",
     "user": "Käyttäjä:",
@@ -95,34 +140,32 @@
     "total": "Yhteensä:",
     "status": "Tila:",
     "createdAt": "Luotu:",
-    "items": "Rivit:",
+    "items": "Tuotteet:",
     "unknownProduct": "Tuntematon tuote",
     "unknownUser": "Tuntematon käyttäjä",
     "unknownEmail": "Tuntematon sähköposti",
     "errorPrefix": "Virhe:",
     "unknownError": "Tuntematon virhe."
   },
+
   "loading": {
     "default": "Ladataan...",
     "products": "Ladataan tuotteita...",
     "orders": "Ladataan tilauksia..."
   },
+
   "nav": {
     "home": "Etusivu",
     "about": "Tietoa meistä",
     "products": "Tuotteet",
     "profile": "Profiili",
-    "cart": "Kori",
+    "cart": "Ostoskori",
     "admin": "Ylläpito",
     "logout": "Kirjaudu ulos",
     "login": "Kirjaudu",
     "register": "Rekisteröidy"
   },
-  "lang": {
-    "en": "English",
-    "ru": "Русский",
-    "fi": "Suomi"
-  },
+
   "register": {
     "title": "Rekisteröidy",
     "labels": {
@@ -133,10 +176,10 @@
       "confirmPassword": "Vahvista salasana:"
     },
     "placeholders": {
-      "username": "Syötä käyttäjänimi",
-      "email": "Syötä sähköposti",
-      "phone": "Syötä puhelinnumero",
-      "password": "Syötä salasana",
+      "username": "Anna käyttäjänimi",
+      "email": "Anna sähköpostiosoite",
+      "phone": "Anna puhelinnumero",
+      "password": "Anna salasana",
       "confirmPassword": "Toista salasana"
     },
     "buttons": {
@@ -145,22 +188,23 @@
     },
     "haveAccount": "Onko sinulla jo tili?",
     "loginLink": "Kirjaudu",
-    "returnHome": "Takaisin etusivulle",
+    "returnHome": "Palaa etusivulle",
     "errors": {
       "required": "Kaikki kentät ovat pakollisia",
       "mismatch": "Salasanat eivät täsmää"
     },
     "toasts": {
-      "success": "Rekisteröinti onnistui! Voit nyt kirjautua.",
-      "fail": "Rekisteröintivirhe"
+      "success": "Rekisteröinti onnistui! Voit nyt kirjautua sisään.",
+      "fail": "Rekisteröinnissä tapahtui virhe"
     }
   },
+
   "login": {
     "title": "Kirjaudu",
     "emailLabel": "Sähköposti:",
     "passwordLabel": "Salasana:",
-    "emailPlaceholder": "Syötä sähköposti",
-    "passwordPlaceholder": "Syötä salasana",
+    "emailPlaceholder": "Anna sähköpostiosoite",
+    "passwordPlaceholder": "Anna salasana",
     "show": "Näytä",
     "hide": "Piilota",
     "showPwd": "Näytä salasana",
@@ -168,17 +212,18 @@
     "submit": "Kirjaudu",
     "loading": "Kirjaudutaan...",
     "registerLink": "Rekisteröidy",
-    "returnHome": "Takaisin etusivulle",
+    "returnHome": "Palaa etusivulle",
     "toasts": {
       "success": "Kirjautuminen onnistui!",
       "fail": "Kirjautuminen epäonnistui"
     }
   },
+
   "about": {
     "headTitle": "Tietoa",
     "form": {
-      "heroUrl": "Kansikuvan URL",
-      "heroUpload": "Lataa kansikuva (valinnainen)",
+      "heroUrl": "Hero-kuvan URL",
+      "heroUpload": "Lataa hero-kuva (valinnainen)",
       "title": "Otsikko",
       "subtitle": "Alaotsikko",
       "storeUrl": "Myymälän kuvan URL",
@@ -187,9 +232,9 @@
       "more": "Lisätietoja",
       "address": "Osoite",
       "hours": "Aukioloajat",
-      "social": "Sometunnus",
-      "reqUrl": "Yhtiötietojen kuvan URL",
-      "reqUpload": "Lataa yhtiötietojen kuva (valinnainen)"
+      "social": "Sosiaalinen tili",
+      "reqUrl": "Yritystietokuvan URL",
+      "reqUpload": "Lataa yritystietokuva (valinnainen)"
     },
     "ourStore": {
       "title": "Myymälämme",
@@ -200,64 +245,63 @@
     "why": {
       "title": "Miksi Baltic Herkut?",
       "point1": "Luotettavat toimittajat ja tasainen laatu.",
-      "point2": "Valikoimaa täydennetään säännöllisesti.",
+      "point2": "Valikoimaa päivitetään säännöllisesti.",
       "point3": "Ystävällinen palvelu ja apu valinnassa.",
-      "follow": "Seuraa meitä somessa – uutuudet ja kampanjat:"
+      "follow": "Seuraa meitä somessa — uutuudet ja kampanjat:"
     },
     "alt": {
       "storefront": "Myymälän julkisivu",
-      "requisites": "Yhtiötiedot"
+      "requisites": "Yritystiedot"
     },
     "req": {
-      "title": "Yhtiötiedot",
-      "hint": "Voit tallentaa kuvan hiiren oikealla painikkeella. PDF onnistuu pyynnöstä.",
+      "title": "Yritystiedot",
+      "hint": "Voit tallentaa kuvan oikealla klikkauksella. Tarvitsetko PDF:n? Lähetämme pyynnöstä.",
       "hintEdit": "Liitä suora kuvalinkki tai lataa uusi kuva."
     },
     "buttons": {
       "edit": "Muokkaa",
       "cancel": "Peruuta",
-      "save": "Tallenna",
+      "save": "Tallenna muutokset",
       "saving": "Tallennetaan..."
     },
     "errors": {
-      "unauthorized": "401 Unauthorized: tarkista kirjautuminen (evästeet/tunnus puuttuu).",
-      "forbidden": "403 Forbidden: muokkaus vaatii ylläpito-oikeudet.",
-      "notFound": "404 Not Found: polkua {{url}} ei löytynyt palvelimelta.",
-      "generic": "Tallennus epäonnistui"
+      "unauthorized": "401 Luvaton: tarkista todennus (evästeet/tunnus puuttuu).",
+      "forbidden": "403 Kielletty: muokkaus vaatii ylläpitäjäoikeudet.",
+      "notFound": "404 Ei löytynyt: polkua {{url}} ei löytynyt palvelimelta.",
+      "generic": "Sisällön tallennus epäonnistui"
     }
   },
+
   "favorites": {
-    "title": "Suosikkituotteesi",
-    "none": "Suosikkeja ei ole.",
-    "add": "Ostoskoriin",
-    "adding": "Lisätään...",
-    "remove": "Poista",
-    "added": "Lisätty koriin",
-    "removed": "Poistettu suosikeista",
-    "addFailRemoveWarn": "Lisättiin koriin, mutta poistaminen suosikeista epäonnistui"
-  },
-  "productPage": {
-    "stockLabel": "Varasto",
-    "categoryLabel": "Kategoria",
-    "subcategoryLabel": "Alakategoria",
-    "reviews": {
-      "title": "Arvostelut",
-      "none": "Ei arvosteluja vielä.",
-      "rating": "Arvosana",
-      "edit": "Muokkaa",
-      "delete": "Poista",
-      "leave": "Jätä arvostelu",
-      "submit": "Lähetä",
-      "editTitle": "Muokkaa arvostelua",
-      "update": "Päivitä",
-      "cancel": "Peruuta",
-      "loginPrompt": "Kirjaudu sisään jättääksesi arvostelun."
+    "title": "Suosikit",
+    "empty": "Täällä ei ole vielä mitään.",
+    "labels": {
+      "noName": "Ei nimeä"
+    },
+    "buttons": {
+      "addToCart": "Lisää koriin",
+      "adding": "Lisätään...",
+      "remove": "Poista"
     },
     "errors": {
-      "noProductId": "Tuotteen tunnistetta ei annettu",
-      "notFoundProduct": "Tuotetta ei löytynyt.",
-      "reviewSubmit": "Arvostelun lähetys epäonnistui. Yritä myöhemmin.",
-      "reviewDelete": "Virhe arvostelun poistossa."
+      "unknown": "Suosikkien lataus epäonnistui.",
+      "addToCart": "Lisääminen ostoskoriin epäonnistui"
+    },
+    "toasts": {
+      "removed": "Poistettu suosikeista",
+      "added": "Lisätty ostoskoriin",
+      "addedButNotRemoved": "Lisättiin koriin, mutta poistaminen suosikeista epäonnistui"
+    }
+  },
+
+  "admin": {
+    "metrics": {
+      "title": "Ylläpidon tilastot",
+      "orders": "Tilausten määrä",
+      "revenue": "Liikevaihto",
+      "error": "Tietojen haku epäonnistui",
+      "noAccess": "Ei oikeuksia ylläpitotilastoihin.",
+      "refresh": "Päivitä"
     }
   }
 }
