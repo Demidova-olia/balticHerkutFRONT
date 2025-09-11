@@ -1,5 +1,8 @@
-import { useEffect, useState } from "react";
+// src/pages/homePage/HomePage.tsx
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
+import { useTranslation } from "react-i18next";
+
 import NavBar from "../../components/NavBar/NavBar";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import CategoryTree from "../../components/CategoryTree/CategoryTree";
@@ -30,25 +33,52 @@ function isProductResponse(obj: unknown): obj is ProductResponse {
 
 const HomePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t, i18n } = useTranslation("common");
+
+  // Отдельно храним "ввод" и "реальный запрос" (после дебаунса)
+  const initialSearch = searchParams.get("search") || "";
+  const initialCat = searchParams.get("category") || null;
+  const initialSub = searchParams.get("subcategory") || "";
+
+  const [inputValue, setInputValue] = useState(initialSearch);
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(initialCat);
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string>(initialSub);
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
-    searchParams.get("category") || null
-  );
-  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string>(
-    searchParams.get("subcategory") || ""
-  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Заголовок страницы по языку
   useEffect(() => {
+    document.title = `${t("home.title", "Home")} — Baltic Herkut`;
+  }, [t, i18n.language]);
+
+  // Загрузка категорий один раз
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const categoriesData = await CategoryService.getCategoriesWithSubcategories();
+        if (!cancelled) setCategories(categoriesData);
+      } catch {
+        if (!cancelled) setCategories([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Загрузка продуктов при изменении фильтров/поиска
+  useEffect(() => {
+    let cancelled = false;
+
     const fetchData = async () => {
       setLoading(true);
       try {
-        const categoriesData = await CategoryService.getCategoriesWithSubcategories();
-        setCategories(categoriesData);
-
         let productResponse: unknown;
 
         if (selectedCategoryId && selectedSubcategoryId) {
@@ -68,6 +98,8 @@ const HomePage: React.FC = () => {
           );
         }
 
+        if (cancelled) return;
+
         if (Array.isArray(productResponse)) {
           setProducts(productResponse);
         } else if (isProductResponse(productResponse)) {
@@ -77,21 +109,32 @@ const HomePage: React.FC = () => {
         }
         setError(null);
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-        setProducts([]);
+        if (!cancelled) {
+          setError(t("errors.unknown", "Unknown error"));
+          setProducts([]);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchData();
-  }, [searchTerm, selectedCategoryId, selectedSubcategoryId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [searchTerm, selectedCategoryId, selectedSubcategoryId, t]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  // Обновление ввода — только локально
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  // Дебаунс завершился — фиксируем searchTerm и URL
+  const handleDebouncedSearch = (value: string) => {
     setSearchTerm(value);
 
-    const params: Record<string, string> = { search: value };
+    const params: Record<string, string> = {};
+    if (value) params.search = value;
     if (selectedCategoryId) params.category = selectedCategoryId;
     if (selectedSubcategoryId) params.subcategory = selectedSubcategoryId;
     setSearchParams(params);
@@ -102,28 +145,36 @@ const HomePage: React.FC = () => {
     setSelectedCategoryId(newCategoryId);
     setSelectedSubcategoryId("");
 
-    const params: Record<string, string> = { search: searchTerm };
+    // Обновим URL, но не трогаем inputValue напрямую
+    const params: Record<string, string> = {};
+    if (searchTerm) params.search = searchTerm;
     if (newCategoryId) params.category = newCategoryId;
     setSearchParams(params);
   };
 
   const handleSubcategorySelect = (subcategoryId: string) => {
-    const newSubcategoryId =
-      subcategoryId === selectedSubcategoryId ? "" : subcategoryId;
+    const newSubcategoryId = subcategoryId === selectedSubcategoryId ? "" : subcategoryId;
     setSelectedSubcategoryId(newSubcategoryId);
 
-    const params: Record<string, string> = { search: searchTerm };
+    const params: Record<string, string> = {};
+    if (searchTerm) params.search = searchTerm;
     if (selectedCategoryId) params.category = selectedCategoryId;
     if (newSubcategoryId) params.subcategory = newSubcategoryId;
     setSearchParams(params);
   };
 
   const handleResetFilters = () => {
+    setInputValue("");
     setSearchTerm("");
     setSelectedCategoryId(null);
     setSelectedSubcategoryId("");
     setSearchParams({});
   };
+
+  const loadingText = useMemo(
+    () => t("home.loadingProducts", "Loading products..."),
+    [t]
+  );
 
   return (
     <>
@@ -133,33 +184,39 @@ const HomePage: React.FC = () => {
           <div className={styles.logoWrap}>
             <img
               src="/assets/Logo.jpg"
-              alt="Baltic Herkut"
+              alt={t("home.logoAlt", "Baltic Herkut")}
               className={styles.logoImage}
               loading="eager"
               decoding="async"
             />
           </div>
 
-          <h2>Welcome to our store!</h2>
+          <h2>{t("home.welcome", "Welcome to our store!")}</h2>
 
           <div className={styles.carouselSpacer}>
             <ImageCarousel />
           </div>
 
-          <p>Browse a variety of products and services.</p>
+          <p>{t("home.browse", "Browse a variety of products and services.")}</p>
         </div>
 
         <div className={styles.searchBarContainer}>
-          <SearchBar value={searchTerm} onChange={handleSearchChange} />
+          <SearchBar
+            value={inputValue}
+            onChange={handleSearchInputChange}
+            debounceMs={400}
+            onDebouncedChange={handleDebouncedSearch}
+            isLoading={loading}
+          />
         </div>
 
         <div className={styles.welcomeMessage}>
-          <p>Select a category to start exploring!</p>
+          <p>{t("home.selectCategory", "Select a category to start exploring!")}</p>
         </div>
 
         <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
           <button onClick={handleResetFilters} className={styles.ResetFilter}>
-            Reset Filters
+            {t("home.resetFilters", "Reset Filters")}
           </button>
         </div>
 
@@ -171,10 +228,10 @@ const HomePage: React.FC = () => {
           onSubcategorySelect={handleSubcategorySelect}
         />
 
-        <h2 className={styles.categorySelectTitle}>Our Products</h2>
+        <h2 className={styles.categorySelectTitle}>{t("home.ourProducts", "Our Products")}</h2>
 
         {loading ? (
-          <Loading text="Loading products..." className={styles.loadingText} />
+          <Loading text={loadingText} className={styles.loadingText} />
         ) : error ? (
           <p className={styles.errorText}>{error}</p>
         ) : (

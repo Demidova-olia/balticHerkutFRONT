@@ -1,20 +1,44 @@
-import { Product } from "../../types/product";
-import styles from "./ProductGrid.module.css";
+// src/components/ProductGrid/ProductGrid.tsx
+import React from "react";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
+
+import { Product } from "../../types/product";
 import { useCart } from "../../hooks/useCart";
 import FavoriteIcon from "../Favorite/FavoriteIcon";
 import { isAuthenticated } from "../../utils/authUtils";
+import styles from "./ProductGrid.module.css";
 
 interface Props {
   products: Product[];
 }
 
-const ProductGrid = ({ products }: Props) => {
+// Универсальный выбор локализованной строки на клиенте
+function pickLocalized(value: unknown, lang: string): string {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+
+  const v = value as Record<string, any>;
+  const byLang = v?.[lang];
+  if (typeof byLang === "string" && byLang.trim()) return byLang;
+
+  const src = typeof v?._source === "string" ? v._source : "en";
+  if (typeof v?.[src] === "string" && v[src].trim()) return v[src];
+
+  if (typeof v?.ru === "string" && v.ru.trim()) return v.ru;
+  if (typeof v?.en === "string" && v.en.trim()) return v.en;
+  if (typeof v?.fi === "string" && v.fi.trim()) return v.fi;
+
+  return "";
+}
+
+const ProductGrid: React.FC<Props> = ({ products }) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { i18n, t } = useTranslation("common");
 
   if (!products || products.length === 0) {
-    return <p>No products found.</p>;
+    return <p>{t("noProducts", "No products found.")}</p>;
   }
 
   return (
@@ -27,16 +51,16 @@ const ProductGrid = ({ products }: Props) => {
               : product.images?.[0]?.url || "/placeholder.jpg";
 
           const priceText =
-            typeof product.price === "number"
-              ? product.price.toFixed(2)
-              : "N/A";
+            typeof product.price === "number" ? product.price.toFixed(2) : "N/A";
+
+          const nameStr =
+            pickLocalized((product as any).name, i18n.language) || t("product.noName", "No Name");
+          const descStr =
+            pickLocalized((product as any).description, i18n.language) ||
+            t("product.noDescription", "No description available.");
 
           return (
-            <div
-              key={product._id}
-              className={styles.productItem}
-            >
-           
+            <div key={product._id} className={styles.productItem}>
               <div
                 className={styles.productImageWrapper}
                 onClick={() => navigate(`/product/id/${product._id}`)}
@@ -51,38 +75,37 @@ const ProductGrid = ({ products }: Props) => {
                 <img
                   className={styles.productImage}
                   src={image}
-                  alt={product.name || "Product"}
+                  alt={nameStr || "Product"}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = "/placeholder.jpg";
+                  }}
                 />
               </div>
 
-              <h3 className={styles.productName}>
-                {product.name || "No Name"}
-              </h3>
+              <h3 className={styles.productName}>{nameStr}</h3>
 
-              <p className={styles.productDics}>
-                {product.description || "No description available."}
+              <p className={styles.productDics}>{descStr}</p>
+
+              <p className={styles.productPrice}>
+                {t("product.priceLabel", "Price")}: €{priceText}
               </p>
-
-              <p className={styles.productPrice}>Price: €{priceText}</p>
 
               <div className={styles.CartBtnAndFav}>
                 <button
                   className={styles.addToCartBtn}
                   onClick={(e) => {
-
                     e.stopPropagation();
                     addToCart({
                       id: product._id,
-                      name: product.name,
-                      price: product.price || 0,
+                      name: nameStr, // строка, а не LocalizedField
+                      price: typeof product.price === "number" ? product.price : 0,
                       quantity: 1,
                       image,
                     });
                   }}
                 >
-                  Add to cart
+                  {t("product.addToCart", "Add to cart")}
                 </button>
-
 
                 {isAuthenticated() && (
                   <span
@@ -91,7 +114,6 @@ const ProductGrid = ({ products }: Props) => {
                       e.stopPropagation();
                     }}
                     onMouseDown={(e) => {
-
                       e.preventDefault();
                     }}
                   >

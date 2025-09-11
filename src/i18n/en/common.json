@@ -1,4 +1,118 @@
-{ "register": {
+{
+  "profile": {
+    "title": "Profile",
+    "edit": "Edit Profile",
+    "loading": "Loading profile...",
+    "noData": "No profile data.",
+    "alt": { "avatar": "Profile picture" },
+    "labels": {
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "joined": "Joined"
+    },
+    "sections": {
+      "orders": "My Orders",
+      "favorites": "Favorites"
+    },
+    "errors": {
+      "fetch": "Error fetching profile data"
+    }
+  },
+  "filters": { "reset": "Reset Filters" },
+  "products": {
+    "loading": "Loading products...",
+    "none": "No products found.",
+    "error": "An error occurred while loading products."
+  },
+  "order": {
+    "success": {
+      "title": "Thank you! Your order has been received.",
+      "backHome": "Back to Home"
+    }
+  },
+  "home": {
+    "title": "Home",
+    "logoAlt": "Baltic Herkut",
+    "welcome": "Welcome to our store!",
+    "browse": "Browse a variety of products and services.",
+    "selectCategory": "Select a category to start exploring!",
+    "resetFilters": "Reset Filters",
+    "ourProducts": "Our Products",
+    "loadingProducts": "Loading products..."
+  },
+  "errors": {
+    "unknown": "Unknown error"
+  },
+  "checkout": {
+    "title": "Order Summary",
+    "quantity": "Quantity",
+    "price": "Price",
+    "total": "Total",
+    "addressLabel": "Shipping Address",
+    "addressPlaceholder": "Enter your delivery address",
+    "processing": "Processing...",
+    "confirm": "Confirm Order",
+    "toast": {
+      "addressRequired": "Please enter your address before submitting the order.",
+      "success": "Order submitted successfully!",
+      "fail": "Failed to submit the order. Please try again.",
+      "cartEmpty": "Your cart is empty."
+    }
+  },
+  "search": {
+    "placeholder": "Search products...",
+    "ariaLabel": "Search products"
+  },
+  "cart": {
+    "title": "Your Cart",
+    "empty": "Your cart is empty",
+    "quantity": "Quantity",
+    "remove": "Remove",
+    "total": "Total",
+    "checkout": "Proceed to Checkout"
+  },
+  "noProducts": "No products found.",
+  "product": {
+    "noName": "No Name",
+    "noDescription": "No description available.",
+    "priceLabel": "Price",
+    "addToCart": "Add to cart",
+    "quantity": "Quantity:"
+  },
+  "orders": {
+    "title": "My Orders",
+    "empty": "You have no orders.",
+    "orderId": "Order ID:",
+    "user": "User:",
+    "address": "Address:",
+    "total": "Total:",
+    "status": "Status:",
+    "createdAt": "Created At:",
+    "items": "Items:",
+    "unknownProduct": "Unknown product",
+    "unknownUser": "Unknown user",
+    "unknownEmail": "Unknown Email",
+    "errorPrefix": "Error:",
+    "unknownError": "An unknown error occurred."
+  },
+  "loading": {
+    "default": "Loading...",
+    "products": "Loading products...",
+    "orders": "Loading orders..."
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About Us",
+    "products": "Products",
+    "profile": "Profile",
+    "cart": "Cart",
+    "admin": "Admin Panel",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register"
+  },
+  "register": {
     "title": "Register",
     "labels": {
       "username": "Username:",

@@ -1,81 +1,117 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import UserService from "../../services/UserService";
 import { IOrder } from "../../types/order";
 import { IUser } from "../../types/user";
+import { useTranslation } from "react-i18next";
+import Loading from "../../components/Loading/Loading";
 
 const MyOrderList: React.FC = () => {
+  const { t, i18n } = useTranslation("common");
   const [orders, setOrders] = useState<IOrder[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [openOrderId, setOpenOrderId] = useState<string | null>(null);
 
+  const fmtEUR = (n: number) =>
+    new Intl.NumberFormat(i18n.language, {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Number.isFinite(n) ? n : 0);
+
   useEffect(() => {
-    const fetchOrders = async () => {
+    let alive = true;
+
+    (async () => {
       try {
+        setError("");
+        setLoading(true);
+        // Если у вас уже есть поддержка AbortSignal в UserService, можно передать сигнал.
         const data = await UserService.getOrders();
+        if (!alive) return;
         setOrders(Array.isArray(data) ? data : []);
       } catch (err: unknown) {
-        if (err instanceof Error) setError(err.message);
-        else setError("An unknown error occurred.");
+        if (!alive) return;
+        // Игнорируем отменённые запросы (на всякий случай)
+        if (axios.isAxiosError(err) && err.code === "ERR_CANCELED") {
+          return;
+        }
+        setError(
+          t("orders.unknownError", {
+            defaultValue: "An unknown error occurred.",
+          })
+        );
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
       }
+    })();
+
+    return () => {
+      alive = false;
     };
-    fetchOrders();
-  }, []);
+  }, [t]);
 
   const toggleOrderDetails = (orderId: string) => {
     setOpenOrderId((prev) => (prev === orderId ? null : orderId));
   };
 
   // --- helpers ---
-
   const isPopulatedProduct = (p: any): p is { name?: string; price?: number } =>
     p && typeof p === "object";
 
   const getProductName = (productId: unknown): string => {
-    if (typeof productId === "string") return productId || "Unknown product";
+    if (typeof productId === "string")
+      return productId || t("orders.unknownProduct", { defaultValue: "Unknown product" });
     if (isPopulatedProduct(productId) && typeof productId.name === "string")
-      return productId.name || "Unknown product";
-    return "Unknown product";
-    // случаи: null/undefined -> Unknown product
+      return productId.name || t("orders.unknownProduct", { defaultValue: "Unknown product" });
+    return t("orders.unknownProduct", { defaultValue: "Unknown product" });
   };
 
   const getItemPrice = (item: any): number => {
-    // item.price может быть числом
     if (item && typeof item.price === "number") return item.price;
-    // или внутри productId.price
     if (isPopulatedProduct(item?.productId) && typeof item.productId.price === "number")
       return item.productId.price;
     return 0;
   };
 
   const getUserName = (user: unknown): string => {
-    if (typeof user === "string") return user || "Unknown user";
+    if (typeof user === "string") return user || t("orders.unknownUser", { defaultValue: "Unknown user" });
     const u = user as IUser | undefined;
-    return u?.username || "Unknown user";
+    return u?.username || t("orders.unknownUser", { defaultValue: "Unknown user" });
   };
 
   const getUserEmail = (user: unknown): string => {
-    if (typeof user === "string") return "Unknown Email";
+    if (typeof user === "string") return t("orders.unknownEmail", { defaultValue: "Unknown Email" });
     const u = user as IUser | undefined;
-    return u?.email || "Unknown Email";
+    return u?.email || t("orders.unknownEmail", { defaultValue: "Unknown Email" });
   };
 
-  if (loading) return <p>Loading orders...</p>;
-  if (error) return <p className="text-red-500">Error: {error}</p>;
+  if (loading) return <Loading textKey="loading.orders" />;
+
+  if (error) {
+    return (
+      <p className="text-red-500">
+        {t("orders.errorPrefix", { defaultValue: "Error:" })} {error}
+      </p>
+    );
+  }
 
   return (
     <div>
-      <h2 className="text-2xl font-semibold mb-4">My Orders</h2>
+      <h2 className="text-2xl font-semibold mb-4">
+        {t("orders.title", { defaultValue: "My Orders" })}
+      </h2>
+
       {orders.length === 0 ? (
-        <p>You have no orders.</p>
+        <p>{t("orders.empty", { defaultValue: "You have no orders." })}</p>
       ) : (
         <ul className="space-y-6">
           {orders.map((order) => (
             <li key={order._id} className="border rounded p-4 shadow-sm">
               <p>
-                <strong>Order ID:</strong>{" "}
+                <strong>{t("orders.orderId", { defaultValue: "Order ID:" })}</strong>{" "}
                 <button
                   onClick={() => toggleOrderDetails(order._id)}
                   className="text-blue-500 hover:underline"
@@ -87,34 +123,37 @@ const MyOrderList: React.FC = () => {
               {openOrderId === order._id && (
                 <div className="mt-4">
                   <p>
-                    <strong>User:</strong> {getUserName(order.user)} ({getUserEmail(order.user)})
+                    <strong>{t("orders.user", { defaultValue: "User:" })}</strong>{" "}
+                    {getUserName(order.user)} ({getUserEmail(order.user)})
                   </p>
                   <p>
-                    <strong>Address:</strong> {order.address || "—"}
+                    <strong>{t("orders.address", { defaultValue: "Address:" })}</strong>{" "}
+                    {order.address || "—"}
                   </p>
                   <p>
-                    <strong>Total:</strong>{" "}
-                    €{Number(order.totalAmount || 0).toFixed(2)}
+                    <strong>{t("orders.total", { defaultValue: "Total:" })}</strong>{" "}
+                    {fmtEUR(Number(order.totalAmount || 0))}
                   </p>
                   <p>
-                    <strong>Status:</strong> {order.status}
+                    <strong>{t("orders.status", { defaultValue: "Status:" })}</strong>{" "}
+                    {order.status || "—"}
                   </p>
                   <p>
-                    <strong>Created At:</strong>{" "}
+                    <strong>{t("orders.createdAt", { defaultValue: "Created At:" })}</strong>{" "}
                     {order.createdAt ? new Date(order.createdAt).toLocaleString() : "—"}
                   </p>
 
                   <div className="mt-2">
-                    <p className="font-semibold">Items:</p>
+                    <p className="font-semibold">{t("orders.items", { defaultValue: "Items:" })}</p>
                     <ul className="list-disc list-inside">
                       {Array.isArray(order.items) && order.items.length > 0 ? (
-                        order.items.map((item, idx) => {
-                          const name = getProductName((item as any)?.productId);
-                          const price = getItemPrice(item as any);
-                          const qty = Number((item as any)?.quantity || 0);
+                        order.items.map((item: any, idx: number) => {
+                          const name = getProductName(item?.productId);
+                          const price = getItemPrice(item);
+                          const qty = Number(item?.quantity || 0);
                           return (
-                            <li key={(item as any)?._id ?? `${order._id}-${idx}`}>
-                              {name} ×{qty} — €{Number(price).toFixed(2)}
+                            <li key={item?._id ?? `${order._id}-${idx}`}>
+                              {name} ×{qty} — {fmtEUR(price)}
                             </li>
                           );
                         })
@@ -134,3 +173,4 @@ const MyOrderList: React.FC = () => {
 };
 
 export default MyOrderList;
+

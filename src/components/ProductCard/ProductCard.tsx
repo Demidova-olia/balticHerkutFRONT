@@ -3,21 +3,49 @@ import { useCart } from "../../hooks/useCart";
 import { useState } from "react";
 import "./ProductCard.scss";
 import { Product } from "../../types/product";
+import { useTranslation } from "react-i18next";
 
 type ProductCardProps = {
   product: Product;
   onAddToCart?: () => void;
 };
 
+function pickLocalizedName(name: unknown, lang: string): string {
+  if (typeof name === "string") return name;
+  const obj = name as Record<string, any> | undefined;
+  const short = (lang || "en").slice(0, 2);
+
+  return (
+    obj?.[short] ||
+    (obj?._source ? obj?.[obj._source] : "") ||
+    obj?.en ||
+    obj?.ru ||
+    obj?.fi ||
+    "No Name"
+  );
+}
+
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
   const { _id, name, price, images } = product;
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState<number>(1);
+  const { t, i18n } = useTranslation("common");
 
   const imageUrl =
     typeof images?.[0] === "string"
       ? images[0]
       : images?.[0]?.url ?? "/images/no-image.png";
+
+  const localizedName = pickLocalizedName(name as unknown, i18n.language);
+  const numericPrice = Number(price ?? 0);
+
+  const fmtEUR = (n: number) =>
+    new Intl.NumberFormat(i18n.language, {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(n);
 
   const handleAddToCart = () => {
     if (onAddToCart) {
@@ -25,8 +53,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
     } else {
       addToCart({
         id: _id,
-        name,
-        price: price ?? 0, 
+        name: localizedName, 
+        price: numericPrice,
         quantity,
         image: imageUrl,
       });
@@ -34,7 +62,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setQuantity(parseInt(e.target.value));
+    setQuantity(parseInt(e.target.value, 10));
   };
 
   return (
@@ -43,17 +71,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
         <img
           className="product-image"
           src={imageUrl}
-          alt={name}
+          alt={localizedName}  
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = "/images/no-image.png";
           }}
         />
-        <h4>{name}</h4>
-        <p>{(price ?? 0).toFixed(2)} €</p>
+        <h4>{localizedName}</h4> 
+        <p>{fmtEUR(numericPrice)}</p>
       </Link>
+
       <div className="quantity-selector">
-        <label htmlFor={`quantity-${_id}`}>Quantity:</label>
+        <label htmlFor={`quantity-${_id}`}>
+          {t("product.quantity", { defaultValue: "Quantity:" })}
+        </label>
         <select
           id={`quantity-${_id}`}
           value={quantity}
@@ -66,8 +97,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
           ))}
         </select>
       </div>
+
       <button className="add-to-cart" onClick={handleAddToCart}>
-        Add to cart
+        {t("product.addToCart", { defaultValue: "Add to cart" })}
       </button>
     </div>
   );

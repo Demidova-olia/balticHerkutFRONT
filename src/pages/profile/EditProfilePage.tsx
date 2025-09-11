@@ -1,3 +1,4 @@
+// src/pages/profile/EditProfilePage.tsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User } from "../../types/user";
@@ -11,42 +12,51 @@ const EditProfilePage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const ac = new AbortController();
+
+    (async () => {
       try {
-        const data = await UserService.getProfile();
+        const data = await UserService.getProfile(ac.signal);
         setUser(data);
-      } catch {
+        setError("");
+      } catch (e: any) {
+        if (e?.code === "ERR_CANCELED") return; // игнор отмены
         setError("Failed to load profile data");
       }
-    };
-    fetchUser();
+    })();
+
+    return () => ac.abort();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name.startsWith("address.")) {
-      const key = name.split(".")[1];
+      const key = name.split(".")[1] as keyof NonNullable<User["address"]>;
       setUser((prev) => ({
         ...prev,
         address: {
-          ...prev.address,
+          ...(prev.address ?? {}),
           [key]: value,
-        },
+        } as User["address"],
       }));
     } else {
-      setUser((prev) => ({ ...prev, [name]: value }));
+      setUser((prev) => ({ ...prev, [name]: value } as Partial<User>));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const ac = new AbortController();
     try {
-      await UserService.updateProfile(user);
+      await UserService.updateProfile(user, ac.signal);
       setSuccess("Profile updated successfully.");
-      setTimeout(() => navigate("/profile"), 1500);
-    } catch {
+      setTimeout(() => navigate("/profile"), 1200);
+    } catch (e: any) {
+      if (e?.code === "ERR_CANCELED") return;
       setError("Failed to update profile.");
     }
+    // отменять тут необязательно; пример на случай долгих сабмитов:
+    // return () => ac.abort();
   };
 
   return (
