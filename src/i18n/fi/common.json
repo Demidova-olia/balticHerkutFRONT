@@ -228,6 +228,7 @@
   },
 
   "categories": {
+    "title": "Kategoriat",
     "empty": "Ei kategorioita.",
     "noSubcategories": "Ei alakategorioita"
   },

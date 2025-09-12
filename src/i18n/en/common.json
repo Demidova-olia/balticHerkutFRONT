@@ -228,6 +228,7 @@
   },
 
   "categories": {
+    "title": "Categories",
     "empty": "No categories yet.",
     "noSubcategories": "No subcategories"
   },
