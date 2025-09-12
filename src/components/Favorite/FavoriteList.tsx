@@ -17,18 +17,21 @@ type LocalizedField = {
   _mt?: Record<string, boolean>;
 };
 
-function pickLocalizedName(name: Product["name"], lang: string): string {
-  if (typeof name === "string") return name;
-  const lf = (name || {}) as LocalizedField;
-  const short = (lang || "en").slice(0, 2);
+function pickLocalizedName(value: unknown, lang: string): string {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+
+  const v = value as LocalizedField;
+  const short = (lang || "en").slice(0, 2) as keyof LocalizedField;
+
   return (
-    lf[short as keyof LocalizedField] ||
-    (lf._source ? lf[lf._source as keyof LocalizedField] : "") ||
-    lf.en ||
-    lf.ru ||
-    lf.fi ||
+    (v[short] as string | undefined)?.trim() ||
+    (v._source ? (v[v._source as keyof LocalizedField] as string | undefined) : "")?.trim() ||
+    (v.en || "").trim() ||
+    (v.ru || "").trim() ||
+    (v.fi || "").trim() ||
     ""
-  ) as string;
+  );
 }
 
 const FALLBACK_IMG = "/assets/no-image.svg";
@@ -149,8 +152,9 @@ const FavoriteList = () => {
         <ul className={styles.favoriteList}>
           {favorites.map((product) => {
             const img = imageFromProduct(product);
+            const nameSrc = (product as any).name_i18n ?? product.name;
             const nameStr =
-              pickLocalizedName(product.name, i18n.language) ||
+              pickLocalizedName(nameSrc, i18n.language) ||
               t("labels.noName", { defaultValue: "No Name" });
 
             return (
