@@ -1,5 +1,6 @@
 // src/components/CategoryTree/CategoryTree.tsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { CategoryWithSubcategories } from "../../types/category";
 import styles from "./CategoryTree.module.css";
@@ -12,20 +13,13 @@ interface Props {
   onSubcategorySelect: (subcategoryId: string) => void;
 }
 
-type LocalizedField = {
-  ru?: string;
-  en?: string;
-  fi?: string;
-  _source?: string;
-};
+type LocalizedField = { ru?: string; en?: string; fi?: string; _source?: string };
 
 function pickLocalizedName(value: unknown, lang: string): string {
   if (!value) return "";
-  if (typeof value === "string") return value;
-
+  if (typeof value === "string") return value.trim();
   const v = value as LocalizedField;
   const short = (lang || "en").slice(0, 2) as keyof LocalizedField;
-
   return (
     (v[short] as string | undefined)?.trim() ||
     (v._source ? (v[v._source as keyof LocalizedField] as string | undefined) : "")?.trim() ||
@@ -36,6 +30,8 @@ function pickLocalizedName(value: unknown, lang: string): string {
   );
 }
 
+type Anchor = { top: number; left: number; right: number; bottom: number; width: number };
+
 const CategoryTree: React.FC<Props> = ({
   categories,
   selectedCategoryId,
@@ -43,115 +39,152 @@ const CategoryTree: React.FC<Props> = ({
   onCategoryToggle,
   onSubcategorySelect,
 }) => {
-  const { i18n, t } = useTranslation("common");
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const { t, i18n } = useTranslation("common");
+  const lang = (i18n.resolvedLanguage || i18n.language || "en").slice(0, 2);
 
-  const lang = i18n.resolvedLanguage || i18n.language || "en";
-  const hasCategories = Array.isArray(categories) && categories.length > 0;
-
-  const normalized = useMemo(
+  const list = useMemo(
     () =>
-      (categories || []).map((c) => {
-        const catNameSource: any = (c as any).name_i18n ?? (c as any).name;
-        return {
-          ...c,
-          _name: pickLocalizedName(catNameSource, lang) || "—",
-          _subcategories: (c.subcategories || []).map((s: any) => {
-            const subNameSource: any = s?.name_i18n ?? s?.name;
-            return {
-              ...s,
-              _name: pickLocalizedName(subNameSource, lang) || "—",
-            };
-          }),
-        };
-      }),
+      (categories || []).map((c: any) => ({
+        ...c,
+        _name: pickLocalizedName(c.name_i18n ?? c.name, lang) || "—",
+        _subs: (c.subcategories || []).map((s: any) => ({
+          ...s,
+          _name: pickLocalizedName(s.name_i18n ?? s.name, lang) || "—",
+        })),
+      })),
     [categories, lang]
   );
 
-  const handleCategoryEnter = (categoryId: string) => setHoveredCategory(categoryId);
-  const handleCategoryLeave = () => setHoveredCategory(null);
-  const handleSubcategoryEnter = (categoryId: string) => setHoveredCategory(categoryId);
-  const handleSubcategoryLeave = () => setHoveredCategory(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [anchor, setAnchor] = useState<Anchor | null>(null);
 
-  if (!hasCategories) {
-    return (
-      <div className={styles.empty}>
-        {t("categories.empty", { defaultValue: "No categories yet." })}
-      </div>
-    );
-  }
+  const itemRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  const closeTimer = useRef<number | null>(null);
+
+  const clearClose = () => {
+    if (closeTimer.current) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+  const scheduleClose = () => {
+    clearClose();
+    closeTimer.current = window.setTimeout(() => setOpenId(null), 150);
+  };
+
+  const measure = (id: string) => {
+    const el = itemRefs.current[id];
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setAnchor({ top: r.top, left: r.left, right: r.right, bottom: r.bottom, width: r.width });
+  };
+
+  useLayoutEffect(() => {
+    const onUpdate = () => {
+      if (openId) measure(openId);
+    };
+    window.addEventListener("scroll", onUpdate, true);
+    window.addEventListener("resize", onUpdate);
+    return () => {
+      window.removeEventListener("scroll", onUpdate, true);
+      window.removeEventListener("resize", onUpdate);
+    };
+  }, [openId]);
+
+  const portalTarget = typeof document !== "undefined" ? document.body : null;
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.categoriesRow}>
-        {normalized.map((category) => {
-          const isOpen =
-            selectedCategoryId === category._id || hoveredCategory === category._id;
-          const dropdownId = `subcats-${category._id}`;
+    <aside className={styles.tree} aria-label={t("categories.title", { defaultValue: "Categories" })}>
+      <h3 className={styles.title}>{t("categories.title", { defaultValue: "Categories" })}</h3>
+
+      <ul className={styles.catList} role="list">
+        {list.map((cat) => {
+          const isOpen = openId === cat._id;
+
+          let flyNode: React.ReactNode = null;
+          if (isOpen && anchor && portalTarget) {
+            const margin = 8;
+            const minWidth = 260;
+            const leftCandidate = anchor.left + Math.round(anchor.width * 0.6); 
+            const left = Math.min(leftCandidate, window.innerWidth - minWidth - margin);
+            const top = anchor.bottom + 6;
+
+            flyNode = createPortal(
+              <div
+                id={`drop-${cat._id}`}
+                className={styles.fly}
+                style={{ top, left }}
+                role="listbox"
+                aria-label={cat._name}
+                onMouseEnter={clearClose}
+                onMouseLeave={scheduleClose}
+              >
+                <div className={styles.flyArrow} />
+                {(cat._subs || []).length ? (
+                  <ul className={styles.subList} role="list">
+                    {cat._subs.map((sub: any) => (
+                      <li key={sub._id} className={styles.subItem}>
+                        <button
+                          type="button"
+                          className={`${styles.subBtn} ${
+                            selectedSubcategoryId === sub._id ? styles.subBtnActive : ""
+                          }`}
+                          onClick={() => onSubcategorySelect(sub._id)}
+                        >
+                          {sub._name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className={styles.subEmpty}>
+                    {t("categories.noSubcategories", { defaultValue: "No subcategories" })}
+                  </div>
+                )}
+              </div>,
+              portalTarget
+            );
+          }
 
           return (
-            <div key={category._id} className={styles.categoryBlock}>
+            <li
+              key={cat._id}
+              ref={(el) => {
+                itemRefs.current[cat._id] = el;
+              }}
+              className={styles.catItem}
+              onMouseEnter={() => {
+                clearClose();
+                setOpenId(cat._id);
+                measure(cat._id);
+              }}
+              onMouseLeave={scheduleClose}
+            >
               <button
                 type="button"
-                onClick={() => onCategoryToggle(category._id)}
-                onMouseEnter={() => handleCategoryEnter(category._id)}
-                onMouseLeave={handleCategoryLeave}
-                className={`${styles.categoryButton} ${
-                  selectedCategoryId === category._id ? styles.activeCategory : ""
-                }`}
+                className={`${styles.catBtn} ${selectedCategoryId === cat._id ? styles.catBtnActive : ""}`}
+                onClick={() => {
+                  onCategoryToggle(cat._id);
+                  setOpenId(cat._id);
+                  measure(cat._id);
+                }}
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
-                aria-controls={dropdownId}
+                aria-controls={`drop-${cat._id}`}
+                title={cat._name}
               >
-                {category._name}
+                <span className={styles.catText}>{cat._name}</span>
+                <span className={`${styles.caret} ${isOpen ? styles.caretOpen : ""}`} aria-hidden>
+                  ▾
+                </span>
               </button>
 
-              {isOpen && (
-                <ul
-                  id={dropdownId}
-                  className={styles.subcategoryDropdown}
-                  role="listbox"
-                  onMouseEnter={() => handleSubcategoryEnter(category._id)}
-                  onMouseLeave={handleSubcategoryLeave}
-                >
-                  {(category._subcategories || []).length > 0 ? (
-                    category._subcategories.map((subcat) => (
-                      <li
-                        key={subcat._id}
-                        role="option"
-                        aria-selected={selectedSubcategoryId === subcat._id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSubcategorySelect(subcat._id);
-                        }}
-                        className={`${styles.subcategoryItem} ${
-                          selectedSubcategoryId === subcat._id ? styles.activeSubcategory : ""
-                        }`}
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            onSubcategorySelect(subcat._id);
-                          }
-                        }}
-                      >
-                        {subcat._name}
-                      </li>
-                    ))
-                  ) : (
-                    <li className={styles.subcategoryEmpty}>
-                      {t("categories.noSubcategories", {
-                        defaultValue: "No subcategories",
-                      })}
-                    </li>
-                  )}
-                </ul>
-              )}
-            </div>
+              {flyNode}
+            </li>
           );
         })}
-      </div>
-    </div>
+      </ul>
+    </aside>
   );
 };
 

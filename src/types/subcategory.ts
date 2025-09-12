@@ -17,5 +17,5 @@ export interface Subcategory {
 export interface SubcategoryPayload {
   name?: string | LocalizedField;
   description?: string | LocalizedField;
-  parent?: string; // ID категории
+  parent?: string; 
 }

@@ -1,4 +1,103 @@
-{ "categories": { "empty": "No categories yet.", "noSubcategories": "No subcategories" },
+{
+  "common": {
+    "yes": "Yes",
+    "no": "No",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "refresh": "Refresh"
+  },
+
+  "nav": {
+    "home": "Home",
+    "about": "About Us",
+    "products": "Products",
+    "profile": "Profile",
+    "cart": "Cart",
+    "admin": "Admin Panel",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "language": "Language"
+  },
+
+  "loading": {
+    "default": "Loading...",
+    "products": "Loading products...",
+    "orders": "Loading orders..."
+  },
+
+  "errors": {
+    "unknown": "Unknown error"
+  },
+
+  "home": {
+    "title": "Home",
+    "logoAlt": "Baltic Herkut",
+    "welcome": "Welcome to our store!",
+    "browse": "Browse a variety of products and services.",
+    "selectCategory": "Select a category to start exploring!",
+    "resetFilters": "Reset Filters",
+    "ourProducts": "Our Products",
+    "loadingProducts": "Loading products..."
+  },
+
+  "search": {
+    "placeholder": "Search products...",
+    "ariaLabel": "Search products"
+  },
+
+  "cart": {
+    "title": "Your Cart",
+    "empty": "Your cart is empty",
+    "quantity": "Quantity",
+    "remove": "Remove",
+    "total": "Total",
+    "checkout": "Proceed to Checkout"
+  },
+
+  "product": {
+    "noName": "No Name",
+    "noDescription": "No description available.",
+    "priceLabel": "Price",
+    "addToCart": "Add to cart",
+    "quantity": "Quantity:"
+  },
+
+  "products": {
+    "loading": "Loading products...",
+    "none": "No products found.",
+    "error": "An error occurred while loading products."
+  },
+
+  "noProducts": "No products found.",
+
+  "order": {
+    "success": {
+      "title": "Thank you! Your order has been received.",
+      "backHome": "Back to Home"
+    }
+  },
+
+  "orders": {
+    "title": "My Orders",
+    "empty": "You have no orders.",
+    "orderId": "Order ID:",
+    "user": "User:",
+    "address": "Address:",
+    "total": "Total:",
+    "status": "Status:",
+    "createdAt": "Created At:",
+    "items": "Items:",
+    "unknownProduct": "Unknown product",
+    "unknownUser": "Unknown user",
+    "unknownEmail": "Unknown Email",
+    "errorPrefix": "Error:",
+    "unknownError": "An unknown error occurred."
+  },
+
   "profile": {
     "title": "Profile",
     "edit": "Edit Profile",
@@ -51,173 +150,29 @@
     }
   },
 
-  "filters": { "reset": "Reset Filters" },
-
-  "products": {
-    "loading": "Loading products...",
-    "none": "No products found.",
-    "error": "An error occurred while loading products."
-  },
-
-  "order": {
-    "success": {
-      "title": "Thank you! Your order has been received.",
-      "backHome": "Back to Home"
-    }
-  },
-
-  "home": {
-    "title": "Home",
-    "logoAlt": "Baltic Herkut",
-    "welcome": "Welcome to our store!",
-    "browse": "Browse a variety of products and services.",
-    "selectCategory": "Select a category to start exploring!",
-    "resetFilters": "Reset Filters",
-    "ourProducts": "Our Products",
-    "loadingProducts": "Loading products..."
-  },
-
-  "errors": {
-    "unknown": "Unknown error"
-  },
-
-  "checkout": {
-    "title": "Order Summary",
-    "quantity": "Quantity",
-    "price": "Price",
-    "total": "Total",
-    "addressLabel": "Shipping Address",
-    "addressPlaceholder": "Enter your delivery address",
-    "processing": "Processing...",
-    "confirm": "Confirm Order",
-    "table": {
-      "headers": {
-        "name": "Item",
-        "qty": "Qty",
-        "price": "Price",
-        "subtotal": "Subtotal"
-      },
-      "imageAlt": "{{name}} image"
-    },
-    "toast": {
-      "addressRequired": "Please enter your address before submitting the order.",
-      "success": "Order submitted successfully!",
-      "fail": "Failed to submit the order. Please try again.",
-      "cartEmpty": "Your cart is empty."
-    }
-  },
-
-  "search": {
-    "placeholder": "Search products...",
-    "ariaLabel": "Search products"
-  },
-
-  "cart": {
-    "title": "Your Cart",
-    "empty": "Your cart is empty",
-    "quantity": "Quantity",
-    "remove": "Remove",
-    "total": "Total",
-    "checkout": "Proceed to Checkout"
-  },
-
-  "noProducts": "No products found.",
-
-  "product": {
-    "noName": "No Name",
-    "noDescription": "No description available.",
-    "priceLabel": "Price",
-    "addToCart": "Add to cart",
-    "quantity": "Quantity:"
-  },
-
-  "orders": {
-    "title": "My Orders",
-    "empty": "You have no orders.",
-    "orderId": "Order ID:",
-    "user": "User:",
-    "address": "Address:",
-    "total": "Total:",
-    "status": "Status:",
-    "createdAt": "Created At:",
-    "items": "Items:",
-    "unknownProduct": "Unknown product",
-    "unknownUser": "Unknown user",
-    "unknownEmail": "Unknown Email",
-    "errorPrefix": "Error:",
-    "unknownError": "An unknown error occurred."
-  },
-
-  "loading": {
-    "default": "Loading...",
-    "products": "Loading products...",
-    "orders": "Loading orders..."
-  },
-
-  "nav": {
-    "home": "Home",
-    "about": "About Us",
-    "products": "Products",
-    "profile": "Profile",
-    "cart": "Cart",
-    "admin": "Admin Panel",
-    "logout": "Logout",
-    "login": "Login",
-    "register": "Register"
-  },
-
-  "register": {
-    "title": "Register",
+  "favorites": {
+    "title": "Favorites",
+    "empty": "Nothing here yet.",
     "labels": {
-      "username": "Username:",
-      "email": "Email:",
-      "phone": "Phone Number:",
-      "password": "Password:",
-      "confirmPassword": "Confirm Password:"
-    },
-    "placeholders": {
-      "username": "Enter your username",
-      "email": "Enter your email",
-      "phone": "Enter your phone number",
-      "password": "Enter your password",
-      "confirmPassword": "Repeat your password"
+      "noName": "No Name"
     },
     "buttons": {
-      "submit": "Register",
-      "loading": "Registering..."
+      "addToCart": "Add to cart",
+      "adding": "Adding...",
+      "remove": "Remove"
     },
-    "haveAccount": "Already have an account?",
-    "loginLink": "Log in",
-    "returnHome": "Return to Home Page",
     "errors": {
-      "required": "All fields are required",
-      "mismatch": "Passwords do not match"
+      "unknown": "Failed to load favorites.",
+      "addToCart": "Failed to add to cart"
     },
     "toasts": {
-      "success": "Registration successful! You can now log in.",
-      "fail": "Registration error"
+      "removed": "Removed from favorites",
+      "added": "Added to cart",
+      "addedButNotRemoved": "Added to cart, but failed to remove from favorites"
     }
   },
 
-  "login": {
-    "title": "Login",
-    "emailLabel": "Email:",
-    "passwordLabel": "Password:",
-    "emailPlaceholder": "Enter your email",
-    "passwordPlaceholder": "Enter your password",
-    "show": "Show",
-    "hide": "Hide",
-    "showPwd": "Show password",
-    "hidePwd": "Hide password",
-    "submit": "Login",
-    "loading": "Logging in...",
-    "registerLink": "Register",
-    "returnHome": "Return to Home Page",
-    "toasts": {
-      "success": "Logged in successfully!",
-      "fail": "Login failed"
-    }
-  },
+  "filters": { "reset": "Reset Filters" },
 
   "about": {
     "headTitle": "About",
@@ -272,29 +227,49 @@
     }
   },
 
-  "favorites": {
-    "title": "Favorites",
-    "empty": "Nothing here yet.",
-    "labels": {
-      "noName": "No Name"
-    },
-    "buttons": {
-      "addToCart": "Add to cart",
-      "adding": "Adding...",
-      "remove": "Remove"
-    },
-    "errors": {
-      "unknown": "Failed to load favorites.",
-      "addToCart": "Failed to add to cart"
-    },
-    "toasts": {
-      "removed": "Removed from favorites",
-      "added": "Added to cart",
-      "addedButNotRemoved": "Added to cart, but failed to remove from favorites"
-    }
+  "categories": {
+    "empty": "No categories yet.",
+    "noSubcategories": "No subcategories"
   },
 
   "admin": {
+    "panel": {
+      "title": "Administration Page",
+      "buttons": {
+        "products": "Manage Products",
+        "orders": "Manage Orders",
+        "categories": "Manage Categories",
+        "subcategories": "Manage Subcategories"
+      },
+      "backHome": "Return to Homepage",
+      "welcome": {
+        "title": "Welcome back, {{username}}!",
+        "subtitle": "You're now logged in to the admin dashboard."
+      }
+    },
+    "productForm": {
+      "labels": {
+        "name": "Name",
+        "description": "Description",
+        "price": "Price",
+        "stock": "Stock",
+        "category": "Category",
+        "subcategory": "Subcategory",
+        "upload": "Upload New Images",
+        "newPreview": "New Images Preview:",
+        "currentImages": "Current Images:",
+        "removeAll": "Remove all images"
+      },
+      "selectOption": "Select",
+      "buttons": {
+        "submitting": "Submitting..."
+      },
+      "alerts": {
+        "selectCategory": "Please select a category.",
+        "nonNegative": "Price and stock cannot be negative.",
+        "deleteImageError": "Error deleting image."
+      }
+    },
     "metrics": {
       "title": "Admin Statistics",
       "orders": "Total Orders",
@@ -302,6 +277,141 @@
       "error": "Failed to fetch data",
       "noAccess": "No access to admin statistics.",
       "refresh": "Refresh"
+    },
+
+    "orders": {
+      "title": "Order Management",
+      "empty": "No orders yet.",
+      "permissionDenied": "You do not have permission to view this page.",
+      "table": {
+        "orderId": "Order ID",
+        "userEmail": "User Email",
+        "products": "Products",
+        "total": "Total",
+        "totalShort": "€",
+        "address": "Address",
+        "status": "Status",
+        "date": "Date"
+      },
+      "statusLabels": {
+        "pending": "Pending",
+        "shipped": "Shipped",
+        "delivered": "Delivered",
+        "canceled": "Canceled",
+        "paid": "Paid",
+        "finished": "Finished"
+      },
+      "fallbacks": {
+        "unknownProduct": "Unknown product",
+        "noData": "No data"
+      },
+      "toasts": {
+        "updated": "Order status updated"
+      },
+      "errors": {
+        "fetch": "Failed to fetch orders from the server",
+        "updateFailed": "Update failed",
+        "unauthorized": "Unauthorized (401): check your auth.",
+        "forbidden": "Forbidden (403): no rights to view orders.",
+        "unauthorizedShort": "Unauthorized (401)",
+        "forbiddenShort": "Forbidden (403): admin required"
+      }
+    },
+
+    "categories": {
+      "title": "Manage Categories",
+      "newPlaceholder": "New category",
+      "promptEdit": "Enter a new category name:",
+      "confirmDelete": "Are you sure you want to delete this category?",
+      "buttons": {
+        "add": "Add Category",
+        "adding": "Adding...",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "errors": {
+        "fetch": "Error fetching categories",
+        "duplicate": "Category with this name already exists",
+        "add": "Error adding category",
+        "edit": "Error editing category",
+        "delete": "Error deleting category"
+      }
+    },
+
+    "subcategories": {
+      "title": "Admin: Subcategories",
+      "errors": {
+        "load": "Failed to load data",
+        "duplicate": "Subcategory with this name already exists in the selected category",
+        "save": "Failed to save subcategory",
+        "delete": "Failed to delete subcategory"
+      },
+      "confirm": {
+        "delete": "Delete this subcategory?"
+      },
+      "form": {
+        "name": "Subcategory name",
+        "selectParent": "Select category"
+      },
+      "buttons": {
+        "saving": "Saving...",
+        "update": "Update",
+        "create": "Create",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "table": {
+        "name": "Name",
+        "parent": "Parent Category",
+        "actions": "Actions"
+      }
+    },
+
+    "products": {
+       "create": {
+        "title": "Create New Product",
+        "submit": "Create Product",
+        "toast": {
+          "success": "Product created!",
+          "fail": "Failed to create product."
+        }
+      },
+      "edit": {
+        "title": "Edit Product",
+        "submit": "Update Product",
+        "toast": {
+          "updated": "Product updated!",
+          "fetchFail": "Failed to fetch product.",
+          "invalidForm": "Invalid form data.",
+          "imgDeleted": "Image deleted",
+          "imgDeleteFail": "Failed to delete image"
+        }
+      },
+      "title": "Manage Products",
+      "buttons": {
+        "addNew": "Add New Product",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "table": {
+        "images": "Images",
+        "name": "Name",
+        "category": "Category",
+        "subcategory": "Subcategory",
+        "price": "Price",
+        "stock": "Stock",
+        "active": "Active",
+        "actions": "Actions"
+      },
+      "flags": { "yes": "Yes", "no": "No" },
+      "noImage": "No image",
+      "errors": {
+        "fetch": "Failed to load products.",
+        "delete": "Failed to delete product."
+      },
+      "confirmDelete": "Are you sure you want to delete this product?",
+      "confirm": { "delete": "Are you sure you want to delete this product?" }
     }
   }
 }

@@ -1,11 +1,6 @@
 import axios from "axios";
 import axiosInstance from "../utils/axios";
-import {
-  ProductsListResponse,
-  Product,
-  ProductData,
-} from "../types/product";
-
+import { ProductsListResponse, Product, ProductData } from "../types/product";
 
 const appendLocalized = (
   fd: FormData,
@@ -17,7 +12,7 @@ const appendLocalized = (
   } else if (value && typeof value === "object") {
     fd.append(key, JSON.stringify(value));
   } else {
-    fd.append(key, ""); 
+    fd.append(key, "");
   }
 };
 
@@ -25,6 +20,7 @@ const isCanceled = (err: unknown) =>
   (err as any)?.code === "ERR_CANCELED" ||
   (err as any)?.name === "CanceledError" ||
   (err as Error)?.message === "canceled";
+
 
 export const getProducts = async (
   searchTerm: string,
@@ -58,26 +54,14 @@ export const getProducts = async (
 
 export const getProductById = async (id: string): Promise<Product> => {
   try {
-    console.log("[getProductById] Get product by ID:", id);
-
-    const response = await axiosInstance.get<{ data: Product }>(
-      `/products/id/${id}`,
-      {
-        dedupe: false,     
-        requestKey: `product-${id}-${Date.now()}` 
-      }
-    );
-
-    console.log("[getProductById] Server response:", response);
-    console.log("[getProductById] Product data:", response.data);
-
+    const response = await axiosInstance.get<{ data: Product }>(`/products/id/${id}`, {
+      dedupe: false,
+      requestKey: `product-${id}-${Date.now()}`,
+    });
     return response.data.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error(
-        "[getProductById] Axios error:",
-        error.response?.data || error.message
-      );
+      console.error("[getProductById] Axios error:", error.response?.data || error.message);
     } else {
       console.error("[getProductById] Unknown error:", error);
     }
@@ -90,7 +74,6 @@ export const createProduct = async (data: ProductData): Promise<Product> => {
 
   appendLocalized(formData, "name", data.name);
   appendLocalized(formData, "description", data.description);
-
   formData.append("price", String(data.price));
   formData.append("category", data.category);
 
@@ -106,7 +89,6 @@ export const createProduct = async (data: ProductData): Promise<Product> => {
     }
   });
 
-
   const response = await axiosInstance.post("/products", formData);
   return response.data.data;
 };
@@ -121,7 +103,6 @@ export const updateProduct = async (
 
   appendLocalized(formData, "name", data.name);
   appendLocalized(formData, "description", data.description);
-
   formData.append("price", String(data.price));
   formData.append("stock", String(data.stock));
   formData.append("category", data.category);
@@ -157,9 +138,7 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
   return response.data.data;
 };
 
-export const getProductsByCategory = async (
-  categoryId: string
-): Promise<Product[]> => {
+export const getProductsByCategory = async (categoryId: string): Promise<Product[]> => {
   const response = await axiosInstance.get(`/products/${categoryId}`, {
     dedupe: false,
     requestKey: `byCategory:${categoryId}`,
@@ -171,10 +150,10 @@ export const getProductsByCategoryAndSubcategory = async (
   categoryId: string,
   subcategoryId: string
 ): Promise<Product[]> => {
-  const response = await axiosInstance.get(
-    `/products/${categoryId}/${subcategoryId}`,
-    { dedupe: false, requestKey: `byCatSub:${categoryId}:${subcategoryId}` }
-  );
+  const response = await axiosInstance.get(`/products/${categoryId}/${subcategoryId}`, {
+    dedupe: false,
+    requestKey: `byCatSub:${categoryId}:${subcategoryId}`,
+  });
   return response.data.data;
 };
 
@@ -183,9 +162,7 @@ export const deleteProductImage = async (
   publicId: string
 ): Promise<{ message: string; data: unknown }> => {
   const encodedId = encodeURIComponent(publicId);
-  const response = await axiosInstance.delete(
-    `/products/${productId}/images/${encodedId}`
-  );
+  const response = await axiosInstance.delete(`/products/${productId}/images/${encodedId}`);
   return response.data;
 };
 
@@ -196,23 +173,17 @@ export const updateProductImage = async (
 ): Promise<{ message: string; data: unknown }> => {
   const formData = new FormData();
   formData.append("image", image);
-
   const encodedId = encodeURIComponent(publicId);
-  const response = await axiosInstance.put(
-    `/products/${productId}/images/${encodedId}`,
-    formData
-  );
-
+  const response = await axiosInstance.put(`/products/${productId}/images/${encodedId}`, formData);
   return response.data;
 };
 
-// Optional utility if needed for direct Cloudinary uploads (not used in backend-controlled flow)
 export const uploadImage = async (
   file: File
 ): Promise<{ url: string; public_id: string }> => {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("upload_preset", "your_upload_preset"); // Replace with real preset
+  formData.append("upload_preset", "your_upload_preset");
 
   const response = await fetch(
     "https://api.cloudinary.com/v1_1/your_cloud_name/image/upload",
@@ -222,13 +193,8 @@ export const uploadImage = async (
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Image upload failed");
-  }
+  if (!response.ok) throw new Error("Image upload failed");
 
   const data = await response.json();
-  return {
-    url: data.secure_url,
-    public_id: data.public_id,
-  };
+  return { url: data.secure_url, public_id: data.public_id };
 };

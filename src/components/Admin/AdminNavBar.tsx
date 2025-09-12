@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import styles from "./AdminNavBar.module.css";
+import LanguageSwitcher from "../NavBar/LanguageSwitcher";
 
 export const AdminNavBar: React.FC = () => {
   return (
@@ -16,6 +17,7 @@ export const AdminNavBar: React.FC = () => {
             Dashboard
           </NavLink>
         </li>
+
         <li className={styles.navItem}>
           <NavLink
             to="/admin/categories"
@@ -26,6 +28,7 @@ export const AdminNavBar: React.FC = () => {
             Categories
           </NavLink>
         </li>
+
         <li className={styles.navItem}>
           <NavLink
             to="/admin/subcategories"
@@ -36,6 +39,7 @@ export const AdminNavBar: React.FC = () => {
             Subcategories
           </NavLink>
         </li>
+
         <li className={styles.navItem}>
           <NavLink
             to="/admin/products"
@@ -46,6 +50,7 @@ export const AdminNavBar: React.FC = () => {
             Products
           </NavLink>
         </li>
+
         <li className={styles.navItem}>
           <NavLink
             to="/admin/orders"
@@ -55,6 +60,10 @@ export const AdminNavBar: React.FC = () => {
           >
             Orders
           </NavLink>
+        </li>
+
+        <li className={`${styles.navItem} ${styles.langItem}`}>
+          <LanguageSwitcher />
         </li>
       </ul>
     </nav>

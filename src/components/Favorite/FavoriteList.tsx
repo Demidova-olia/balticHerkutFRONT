@@ -57,7 +57,6 @@ const FavoriteList = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
 
-  // ВАЖНО: используем общий словарь "common" + keyPrefix "favorites"
   const { t, i18n } = useTranslation("common", { keyPrefix: "favorites" });
 
   useEffect(() => {

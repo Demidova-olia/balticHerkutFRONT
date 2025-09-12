@@ -6,12 +6,11 @@
   }
   
   .container {
-    max-width: 640px;
     margin: 0 auto;
-    padding: 1rem;
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 0.5rem;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
   .heading {
@@ -21,6 +20,11 @@
     color: #1f2937;
     text-align: center;
   }
+  .page {
+  min-height: 100vh;
+  padding: 16px 0 40px;
+  background-color: #eef2f7;
+}
   
   .form {
     display: flex;

@@ -1,3 +1,4 @@
+// src/pages/admin/orders/AdminOrders.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import axiosInstance from "../../../utils/axios";
@@ -9,9 +10,9 @@ import { useTranslation } from "react-i18next";
 
 type Product = {
   _id: string;
-  name: string;
-  price: number;
-  image: string;
+  name: unknown;      
+  price?: number;
+  image?: string;
 };
 
 type OrderItem = {
@@ -36,76 +37,46 @@ type Order = {
   address: string;
 };
 
-const statusOptions = [
-  { label: "Pending", value: "pending" },
-  { label: "Shipped", value: "shipped" },
-  { label: "Delivered", value: "delivered" },
-  { label: "Canceled", value: "canceled" },
-  { label: "Paid", value: "paid" },
-  { label: "Finished", value: "finished" },
-];
+function pickLocalized(value: unknown, lang: string): string {
+  if (!value) return "";
+  if (typeof value === "string") return value.trim();
+  const v = value as Record<string, any>;
+  const short = (lang || "en").slice(0, 2);
 
-function productNameFrom(item: OrderItem): string {
-  const p = item?.productId as any;
-  if (!p) return "Unknown product";
-  if (typeof p === "string") return p || "Unknown product";
-  return p?.name || "Unknown product";
+  if (typeof v[short] === "string" && v[short].trim()) return v[short].trim();
+  if (typeof v._source === "string" && typeof v[v._source] === "string" && v[v._source].trim()) {
+    return v[v._source].trim();
+  }
+
+  if (typeof v.en === "string" && v.en.trim()) return v.en.trim();
+  if (typeof v.ru === "string" && v.ru.trim()) return v.ru.trim();
+  if (typeof v.fi === "string" && v.fi.trim()) return v.fi.trim();
+  return "";
 }
-
-const OrderRow = ({
-  order,
-  handleStatusChange,
-}: {
-  order: Order;
-  handleStatusChange: (orderId: string, newStatus: Order["status"]) => void;
-}) => (
-  <tr>
-    <td>{order._id}</td>
-    <td>{order.user?.email || "No data"}</td>
-    <td>
-      {Array.isArray(order.items) && order.items.length > 0 ? (
-        <ul>
-          {order.items.map((item, index) => (
-            <li key={index}>
-              {productNameFrom(item)} × {item.quantity}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <em>—</em>
-      )}
-    </td>
-    <td>€{Number(order.totalAmount || 0).toFixed(2)}</td>
-    <td>{order.address || "—"}</td>
-    <td>
-      <select
-        value={order.status}
-        onChange={(e) => handleStatusChange(order._id, e.target.value as Order["status"])}
-        className={styles.selectStatus}
-        disabled={["finished", "canceled"].includes(order.status)}
-      >
-        {statusOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </td>
-    <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-  </tr>
-);
 
 const AdminOrders = () => {
   const { user, loading } = (useAuth() as { user?: any; loading?: boolean }) || {};
   const [orders, setOrders] = useState<Order[]>([]);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
 
   const isAdmin = useMemo(() => {
     const role = String(user?.role ?? user?.user?.role ?? "").trim().toLowerCase();
     return Boolean(user?.isAdmin || user?.user?.isAdmin || role === "admin");
   }, [user]);
+
+  const statusOptions = useMemo(
+    () => [
+      { label: t("admin.orders.statusLabels.pending",   { defaultValue: "Pending" }),   value: "pending"   as const },
+      { label: t("admin.orders.statusLabels.shipped",   { defaultValue: "Shipped" }),   value: "shipped"   as const },
+      { label: t("admin.orders.statusLabels.delivered", { defaultValue: "Delivered" }), value: "delivered" as const },
+      { label: t("admin.orders.statusLabels.canceled",  { defaultValue: "Canceled" }),  value: "canceled"  as const },
+      { label: t("admin.orders.statusLabels.paid",      { defaultValue: "Paid" }),      value: "paid"      as const },
+      { label: t("admin.orders.statusLabels.finished",  { defaultValue: "Finished" }),  value: "finished"  as const },
+    ],
+    [t]
+  );
 
   const fetchOrders = async () => {
     try {
@@ -117,10 +88,10 @@ const AdminOrders = () => {
       const s = e?.response?.status;
       setError(
         s === 401
-          ? "Unauthorized (401): проверьте авторизацию."
+          ? t("admin.orders.errors.unauthorized", { defaultValue: "Unauthorized (401): check your auth." })
           : s === 403
-          ? "Forbidden (403): нет прав на список заказов."
-          : "Failed to fetch orders from the server"
+          ? t("admin.orders.errors.forbidden", { defaultValue: "Forbidden (403): no rights to view orders." })
+          : t("admin.orders.errors.fetch", { defaultValue: "Failed to fetch orders from the server" })
       );
       setOrders([]);
     } finally {
@@ -136,25 +107,99 @@ const AdminOrders = () => {
     try {
       await axiosInstance.put(`/admin/orders/${orderId}`, { status: newStatus });
       setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)));
-      toast.success("Order status updated");
+      toast.success(t("admin.orders.toasts.updated", { defaultValue: "Order status updated" }));
     } catch (e: any) {
       const s = e?.response?.status;
       toast.error(
-        s === 401 ? "Unauthorized (401)" : s === 403 ? "Forbidden (403): need admin" : "Update failed"
+        s === 401
+          ? t("admin.orders.errors.unauthorizedShort", { defaultValue: "Unauthorized (401)" })
+          : s === 403
+          ? t("admin.orders.errors.forbiddenShort", { defaultValue: "Forbidden (403): admin required" })
+          : t("admin.orders.errors.updateFailed", { defaultValue: "Update failed" })
       );
     }
   };
 
-  if (loading) return <div className={styles.loading}>Loading...</div>;
-  if (!isAdmin) return <div className={styles.adminError}>You do not have permission to view this page.</div>;
-  if (error)
+  const lang = i18n.resolvedLanguage || i18n.language || "en";
+
+  const OrderRow = ({ order }: { order: Order }) => (
+    <tr>
+      <td>{order._id}</td>
+      <td>{order.user?.email || t("admin.orders.fallbacks.noData", { defaultValue: "No data" })}</td>
+      <td>
+        {Array.isArray(order.items) && order.items.length > 0 ? (
+          <ul>
+            {order.items.map((item, index) => {
+              let name = "";
+              const p = item?.productId as any;
+              if (!p) {
+                name = t("admin.orders.fallbacks.unknownProduct", { defaultValue: "Unknown product" });
+              } else if (typeof p === "string") {
+                name = p || t("admin.orders.fallbacks.unknownProduct", { defaultValue: "Unknown product" });
+              } else {
+                name =
+                  pickLocalized(p?.name, lang) ||
+                  t("admin.orders.fallbacks.unknownProduct", { defaultValue: "Unknown product" });
+              }
+              return (
+                <li key={index}>
+                  {name} × {item.quantity}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <em>—</em>
+        )}
+      </td>
+      <td>
+        {t("admin.orders.table.totalShort", { defaultValue: "€" })}
+        {Number(order.totalAmount || 0).toFixed(2)}
+      </td>
+      <td>{order.address || "—"}</td>
+      <td>
+        <select
+          value={order.status}
+          onChange={(e) => handleStatusChange(order._id, e.target.value as Order["status"])}
+          className={styles.selectStatus}
+          disabled={["finished", "canceled"].includes(order.status)}
+        >
+          {statusOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </td>
+      <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+    </tr>
+  );
+
+  if (loading) {
+    return <div className={styles.loading}>{t("loading.default", { defaultValue: "Loading..." })}</div>;
+  }
+
+  if (!isAdmin) {
     return (
-      <div className={styles.error}>
-        {error} <button onClick={fetchOrders}>{t("admin.metrics.refresh", { defaultValue: "Refresh" })}</button>
+      <div className={styles.adminError}>
+        {t("admin.orders.permissionDenied", { defaultValue: "You do not have permission to view this page." })}
       </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.error}>
+        {error}{" "}
+        <button onClick={fetchOrders}>
+          {t("admin.metrics.refresh", { defaultValue: "Refresh" })}
+        </button>
+      </div>
+    );
+  }
 
   return (
+    <div className={styles.page}>
     <div className={styles.adminOrders}>
       <h1>{t("admin.orders.title", { defaultValue: "Order Management" })}</h1>
       <AdminNavBar />
@@ -175,7 +220,9 @@ const AdminOrders = () => {
         <tbody>
           {fetching ? (
             <tr>
-              <td colSpan={7} className={styles.loading}>{t("loading.default", { defaultValue: "Loading..." })}</td>
+              <td colSpan={7} className={styles.loading}>
+                {t("loading.default", { defaultValue: "Loading..." })}
+              </td>
             </tr>
           ) : orders.length === 0 ? (
             <tr>
@@ -184,17 +231,17 @@ const AdminOrders = () => {
               </td>
             </tr>
           ) : (
-            orders.map((order) => (
-              <OrderRow key={order._id} order={order} handleStatusChange={handleStatusChange} />
-            ))
+            orders.map((order) => <OrderRow key={order._id} order={order} />)
           )}
         </tbody>
       </table>
 
       <BottomNav />
     </div>
+    </div>
   );
 };
 
 export default AdminOrders;
+
 

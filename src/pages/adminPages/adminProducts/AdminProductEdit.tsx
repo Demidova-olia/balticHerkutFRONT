@@ -1,3 +1,4 @@
+// src/pages/adminPages/adminProducts/AdminProductEdit.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProductById, updateProduct, deleteProductImage } from "../../../services/ProductService";
@@ -5,11 +6,14 @@ import AdminProductForm from "../../../components/Admin/AdminProductForm";
 import { Product, ProductData } from "../../../types/product";
 import { toast } from "react-toastify";
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
-import styles from "./AdminProducts.module.css";
+import styles from "./AdminProductCreateAndEdit.module.css";
+import { useTranslation } from "react-i18next";
 
 const AdminProductEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation("common");
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
@@ -21,14 +25,16 @@ const AdminProductEdit: React.FC = () => {
         const fetchedProduct = await getProductById(id);
         setProduct(fetchedProduct);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error("Error fetching product:", err);
-        setError("Failed to fetch product.");
+        setError(t("admin.products.edit.toast.fetchFail", { defaultValue: "Failed to fetch product." }));
       } finally {
         setLoading(false);
       }
     };
 
     fetchProduct();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleSubmit = async (formData: FormData) => {
@@ -50,7 +56,7 @@ const AdminProductEdit: React.FC = () => {
         typeof stock !== "string" ||
         typeof category !== "string"
       ) {
-        toast.error("Invalid form data.");
+        toast.error(t("admin.products.edit.toast.invalidForm", { defaultValue: "Invalid form data." }));
         return;
       }
 
@@ -63,7 +69,6 @@ const AdminProductEdit: React.FC = () => {
         price: parseFloat(price),
         stock: parseInt(stock, 10),
         category,
-        // если подкатегория не выбрана — передадим пустую строку; сервис сам НЕ добавит поле в FormData
         subcategory: typeof subcategory === "string" ? subcategory : "",
         images,
       };
@@ -73,11 +78,12 @@ const AdminProductEdit: React.FC = () => {
       );
 
       await updateProduct(product._id, formDataObj, existingImages, removeAllImages);
-      toast.success("Product updated!");
+      toast.success(t("admin.products.edit.toast.updated", { defaultValue: "Product updated!" }));
       navigate("/admin/products");
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error("Error updating product:", err);
-      toast.error("Failed to update product.");
+      toast.error(t("admin.products.errors.fetch", { defaultValue: "Failed to load products." }));
     }
   };
 
@@ -95,15 +101,16 @@ const AdminProductEdit: React.FC = () => {
             }
           : prev
       );
-      toast.success("Image deleted");
+      toast.success(t("admin.products.edit.toast.imgDeleted", { defaultValue: "Image deleted" }));
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error("Error deleting image:", err);
-      toast.error("Failed to delete image");
+      toast.error(t("admin.products.edit.toast.imgDeleteFail", { defaultValue: "Failed to delete image" }));
     }
   };
 
   if (loading) {
-    return <div className="text-center text-lg font-semibold">Loading...</div>;
+    return <div className="text-center text-lg font-semibold">{t("loading.default", { defaultValue: "Loading..." })}</div>;
   }
 
   if (error) {
@@ -111,17 +118,19 @@ const AdminProductEdit: React.FC = () => {
   }
 
   return (
-    <div className={styles.container}>
-      <AdminNavBar />
-      <h2 className={styles.heading}>Edit Product</h2>
-      {product && (
-        <AdminProductForm
-          initialData={product}
-          submitText="Update Product"
-          onSubmit={handleSubmit}
-          onImageDelete={handleImageDelete}
-        />
-      )}
+    <div className={styles.page}>
+      <div className={styles.container}>
+        <AdminNavBar />
+        <h2 className={styles.heading}>{t("admin.products.edit.title", { defaultValue: "Edit Product" })}</h2>
+        {product && (
+          <AdminProductForm
+            initialData={product}
+            submitText={t("admin.products.edit.submit", { defaultValue: "Update Product" })}
+            onSubmit={handleSubmit}
+            onImageDelete={handleImageDelete}
+          />
+        )}
+      </div>
     </div>
   );
 };
