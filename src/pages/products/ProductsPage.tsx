@@ -1,4 +1,3 @@
-// src/pages/productsPage/ProductsPage.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -30,7 +29,9 @@ const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
 
-  const [searchTerm, setSearchTerm] = useState<string>(searchParams.get("search") || "");
+  const [searchTerm, setSearchTerm] = useState<string>(
+    searchParams.get("search") || ""
+  );
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     searchParams.get("category") || null
   );
@@ -41,14 +42,27 @@ const ProductsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /** debounced значение поиска */
+  // ——— поведение выдвижной панели (как на главной)
+  const [collapsed, setCollapsed] = useState(false);
+  const hoverRef = useRef(false);
+  useEffect(() => {
+    const onScroll = () => {
+      if (hoverRef.current) return;
+      setCollapsed(window.scrollY > 280);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // ——— дебаунс поиска
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
   useEffect(() => {
     const id = setTimeout(() => setDebouncedSearch(searchTerm), DEBOUNCE_MS);
     return () => clearTimeout(id);
   }, [searchTerm]);
 
-  /** грузим категории один раз */
+  // ——— загрузка категорий
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -66,10 +80,10 @@ const ProductsPage: React.FC = () => {
     };
   }, []);
 
-  /** seq для защиты от «догоняющих» ответов */
+  // ——— защита от «догоняющих» запросов
   const fetchSeqRef = useRef(0);
 
-  /** грузим товары при изменении фильтров/поиска (с дебаунсом) */
+  // ——— загрузка товаров при смене фильтров/поиска
   useEffect(() => {
     const seq = ++fetchSeqRef.current;
 
@@ -103,24 +117,23 @@ const ProductsPage: React.FC = () => {
         if (fetchSeqRef.current === seq) {
           console.error("Error fetching products:", err);
           setProducts([]);
-          setError(t("products.error", "An error occurred while loading products."));
+          setError(t("errors.unknown", "Unknown error"));
           setLoading(false);
         }
       }
     })();
   }, [debouncedSearch, selectedCategoryId, selectedSubcategoryId, t]);
 
-  /** синхронизируем URL c актуальными параметрами (после дебаунса) */
+  // ——— синхронизация URL
   useEffect(() => {
     const params: Record<string, string> = {};
     if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
     if (selectedCategoryId) params.category = selectedCategoryId;
     if (selectedSubcategoryId) params.subcategory = selectedSubcategoryId;
-
     setSearchParams(params, { replace: true });
   }, [debouncedSearch, selectedCategoryId, selectedSubcategoryId, setSearchParams]);
 
-  /** хэндлеры UI */
+  // ——— обработчики
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
@@ -128,11 +141,12 @@ const ProductsPage: React.FC = () => {
   const handleCategoryToggle = (categoryId: string) => {
     const newCategoryId = categoryId === selectedCategoryId ? null : categoryId;
     setSelectedCategoryId(newCategoryId);
-    setSelectedSubcategoryId(null); // сбрасываем подкатегорию при смене категории
+    setSelectedSubcategoryId(null);
   };
 
   const handleSubcategorySelect = (subcategoryId: string) => {
-    const newSubId = subcategoryId === selectedSubcategoryId ? null : subcategoryId;
+    const newSubId =
+      subcategoryId === selectedSubcategoryId ? null : subcategoryId;
     setSelectedSubcategoryId(newSubId);
   };
 
@@ -142,45 +156,80 @@ const ProductsPage: React.FC = () => {
     setSelectedCategoryId(null);
     setSelectedSubcategoryId(null);
     setSearchParams({}, { replace: true });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <>
       <NavBar />
-      <div className={styles.pageContainer}>
-        <SearchBar
-          value={searchTerm}
-          onChange={handleSearchChange}
-          isLoading={loading}
-        />
 
-        <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
-          <button onClick={handleResetFilters} className={styles.ResetFilter}>
-            {t("filters.reset", "Reset Filters")}
-          </button>
-        </div>
+      {/* Вся страница с учётом боковой панели */}
+      <div className={`${styles.page} ${collapsed ? styles.isCollapsed : ""}`}>
+        {/* Левая фиксированная панель категорий */}
+        <aside
+          className={styles.sidebar}
+          onMouseEnter={() => (hoverRef.current = true)}
+          onMouseLeave={() => (hoverRef.current = false)}
+        >
+          <div className={styles.sidebarInner}>
+            <div className={styles.sidebarTitle}>
+              {t("categories.title", "Categories")}
+            </div>
 
-        <CategoryTree
-          categories={categories}
-          selectedCategoryId={selectedCategoryId}
-          selectedSubcategoryId={selectedSubcategoryId || ""}
-          onCategoryToggle={handleCategoryToggle}
-          onSubcategorySelect={handleSubcategorySelect}
-        />
+            <CategoryTree
+              categories={categories}
+              selectedCategoryId={selectedCategoryId}
+              selectedSubcategoryId={selectedSubcategoryId}
+              onCategoryToggle={handleCategoryToggle}
+              onSubcategorySelect={handleSubcategorySelect}
+            />
+          </div>
 
-        {loading ? (
-          <Loading text={t("products.loading", "Loading products...")} className={styles.loadingText} />
-        ) : error ? (
-          <p className={styles.errorText}>{error}</p>
-        ) : products.length === 0 ? (
-          <p className={styles.errorText}>{t("products.none", "No products found.")}</p>
-        ) : (
-          <ProductGrid products={products} />
-        )}
+          {/* узкая рейка когда панель свёрнута */}
+          <div className={styles.rail} aria-hidden />
+        </aside>
+
+        {/* Правая колонка: поиск и товары */}
+        <main className={styles.main}>
+          <section className={styles.actions}>
+            <SearchBar
+              value={searchTerm}
+              onChange={handleSearchChange}
+              debounceMs={DEBOUNCE_MS}
+              onDebouncedChange={setDebouncedSearch}
+              isLoading={loading}
+            />
+            <button onClick={handleResetFilters} className={styles.resetBtn}>
+              {t("home.resetFilters", "Reset Filters")}
+            </button>
+          </section>
+
+          <section className={styles.products}>
+            <h2 className={styles.productsTitle}>
+              {t("home.ourProducts", "Our Products")}
+            </h2>
+
+            {loading ? (
+              <Loading
+                text={t("loading.default", "Loading...")}
+                className={styles.loadingText}
+              />
+            ) : error ? (
+              <p className={styles.errorText}>{error}</p>
+            ) : products.length === 0 ? (
+              <p className={styles.errorText}>
+                {t("products.none", "No products found.")}
+              </p>
+            ) : (
+              <div className={styles.productGridWrapper}>
+                <ProductGrid products={products} />
+              </div>
+            )}
+          </section>
+        </main>
       </div>
     </>
   );
 };
 
 export default ProductsPage;
-

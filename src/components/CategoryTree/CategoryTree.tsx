@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+// src/components/CategoryTree/CategoryTree.tsx
+import React, { useMemo, useRef, useState, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 import { CategoryWithSubcategories } from "../../types/category";
-import styles from './CategoryTree.module.css';
+import styles from "./CategoryTree.module.css";
 
 interface Props {
   categories: CategoryWithSubcategories[];
@@ -10,6 +13,25 @@ interface Props {
   onSubcategorySelect: (subcategoryId: string) => void;
 }
 
+type LocalizedField = { ru?: string; en?: string; fi?: string; _source?: string };
+
+function pickLocalizedName(value: unknown, lang: string): string {
+  if (!value) return "";
+  if (typeof value === "string") return value.trim();
+  const v = value as LocalizedField;
+  const short = (lang || "en").slice(0, 2) as keyof LocalizedField;
+  return (
+    (v[short] as string | undefined)?.trim() ||
+    (v._source ? (v[v._source as keyof LocalizedField] as string | undefined) : "")?.trim() ||
+    (v.en || "").trim() ||
+    (v.ru || "").trim() ||
+    (v.fi || "").trim() ||
+    ""
+  );
+}
+
+type Anchor = { top: number; left: number; right: number; bottom: number; width: number };
+
 const CategoryTree: React.FC<Props> = ({
   categories,
   selectedCategoryId,
@@ -17,63 +39,152 @@ const CategoryTree: React.FC<Props> = ({
   onCategoryToggle,
   onSubcategorySelect,
 }) => {
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const { t, i18n } = useTranslation("common");
+  const lang = (i18n.resolvedLanguage || i18n.language || "en").slice(0, 2);
 
-  const handleCategoryEnter = (categoryId: string) => {
-    setHoveredCategory(categoryId);
+  const list = useMemo(
+    () =>
+      (categories || []).map((c: any) => ({
+        ...c,
+        _name: pickLocalizedName(c.name_i18n ?? c.name, lang) || "—",
+        _subs: (c.subcategories || []).map((s: any) => ({
+          ...s,
+          _name: pickLocalizedName(s.name_i18n ?? s.name, lang) || "—",
+        })),
+      })),
+    [categories, lang]
+  );
+
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [anchor, setAnchor] = useState<Anchor | null>(null);
+
+  const itemRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  const closeTimer = useRef<number | null>(null);
+
+  const clearClose = () => {
+    if (closeTimer.current) {
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+  const scheduleClose = () => {
+    clearClose();
+    closeTimer.current = window.setTimeout(() => setOpenId(null), 150);
   };
 
-  const handleCategoryLeave = () => {
-    setHoveredCategory(null); 
+  const measure = (id: string) => {
+    const el = itemRefs.current[id];
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setAnchor({ top: r.top, left: r.left, right: r.right, bottom: r.bottom, width: r.width });
   };
 
-  const handleSubcategoryEnter = (categoryId: string) => {
-    setHoveredCategory(categoryId);
-  };
+  useLayoutEffect(() => {
+    const onUpdate = () => {
+      if (openId) measure(openId);
+    };
+    window.addEventListener("scroll", onUpdate, true);
+    window.addEventListener("resize", onUpdate);
+    return () => {
+      window.removeEventListener("scroll", onUpdate, true);
+      window.removeEventListener("resize", onUpdate);
+    };
+  }, [openId]);
 
-  const handleSubcategoryLeave = () => {
-    setHoveredCategory(null);
-  };
+  const portalTarget = typeof document !== "undefined" ? document.body : null;
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.categoriesRow}>
-        {categories.map((category) => (
-          <div key={category._id} className={styles.categoryBlock}>
-            <button
-              onClick={() => onCategoryToggle(category._id)}
-              onMouseEnter={() => handleCategoryEnter(category._id)}
-              onMouseLeave={handleCategoryLeave}
-              className={`${styles.categoryButton} ${
-                selectedCategoryId === category._id ? styles.activeCategory : ''
-              }`}
-            >
-              {category.name}
-            </button>
+    <aside className={styles.tree} aria-label={t("categories.title", { defaultValue: "Categories" })}>
+      <h3 className={styles.title}>{t("categories.title", { defaultValue: "Categories" })}</h3>
 
-            {(selectedCategoryId === category._id || hoveredCategory === category._id) && (
-              <ul
-                className={styles.subcategoryDropdown}
-                onMouseEnter={() => handleSubcategoryEnter(category._id)}
-                onMouseLeave={handleSubcategoryLeave}
+      <ul className={styles.catList} role="list">
+        {list.map((cat) => {
+          const isOpen = openId === cat._id;
+
+          let flyNode: React.ReactNode = null;
+          if (isOpen && anchor && portalTarget) {
+            const margin = 8;
+            const minWidth = 260;
+            const leftCandidate = anchor.left + Math.round(anchor.width * 0.6); 
+            const left = Math.min(leftCandidate, window.innerWidth - minWidth - margin);
+            const top = anchor.bottom + 6;
+
+            flyNode = createPortal(
+              <div
+                id={`drop-${cat._id}`}
+                className={styles.fly}
+                style={{ top, left }}
+                role="listbox"
+                aria-label={cat._name}
+                onMouseEnter={clearClose}
+                onMouseLeave={scheduleClose}
               >
-                {category.subcategories.map((subcat) => (
-                  <li
-                    key={subcat._id}
-                    onClick={() => onSubcategorySelect(subcat._id)}
-                    className={`${styles.subcategoryItem} ${
-                      selectedSubcategoryId === subcat._id ? styles.activeSubcategory : ''
-                    }`}
-                  >
-                    {subcat.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+                <div className={styles.flyArrow} />
+                {(cat._subs || []).length ? (
+                  <ul className={styles.subList} role="list">
+                    {cat._subs.map((sub: any) => (
+                      <li key={sub._id} className={styles.subItem}>
+                        <button
+                          type="button"
+                          className={`${styles.subBtn} ${
+                            selectedSubcategoryId === sub._id ? styles.subBtnActive : ""
+                          }`}
+                          onClick={() => onSubcategorySelect(sub._id)}
+                        >
+                          {sub._name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className={styles.subEmpty}>
+                    {t("categories.noSubcategories", { defaultValue: "No subcategories" })}
+                  </div>
+                )}
+              </div>,
+              portalTarget
+            );
+          }
+
+          return (
+            <li
+              key={cat._id}
+              ref={(el) => {
+                itemRefs.current[cat._id] = el;
+              }}
+              className={styles.catItem}
+              onMouseEnter={() => {
+                clearClose();
+                setOpenId(cat._id);
+                measure(cat._id);
+              }}
+              onMouseLeave={scheduleClose}
+            >
+              <button
+                type="button"
+                className={`${styles.catBtn} ${selectedCategoryId === cat._id ? styles.catBtnActive : ""}`}
+                onClick={() => {
+                  onCategoryToggle(cat._id);
+                  setOpenId(cat._id);
+                  measure(cat._id);
+                }}
+                aria-haspopup="listbox"
+                aria-expanded={isOpen}
+                aria-controls={`drop-${cat._id}`}
+                title={cat._name}
+              >
+                <span className={styles.catText}>{cat._name}</span>
+                <span className={`${styles.caret} ${isOpen ? styles.caretOpen : ""}`} aria-hidden>
+                  ▾
+                </span>
+              </button>
+
+              {flyNode}
+            </li>
+          );
+        })}
+      </ul>
+    </aside>
   );
 };
 

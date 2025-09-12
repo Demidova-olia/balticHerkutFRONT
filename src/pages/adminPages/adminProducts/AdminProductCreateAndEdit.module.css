@@ -1,0 +1,36 @@
+.container {
+  width: 100%;
+  max-width: 1120px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.heading {
+  margin: 16px 0 20px;
+  font-size: 1.6rem;
+  line-height: 1.25;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+}
+
+:global(body.adminLight) {
+  background-color: #f6f8fb;
+  background-image: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  color: #0f172a;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 16px 0 40px;
+  background-color: #eef2f7;
+}
+
+.container :global(nav) + .heading {
+  margin-top: 20px;
+}
+
+@media (max-width: 640px) {
+  .heading { font-size: 1.35rem; margin: 12px 0 16px; }
+  .container { padding: 0 12px; }
+}

@@ -1,11 +1,10 @@
-// src/components/Admin/AdminMetrics.tsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
 import axiosInstance from "../../utils/axios";
 import { useTranslation } from "react-i18next";
 import Loading from "../Loading/Loading";
-import "./AdminMetrics.module.css";
+import styles from "./AdminMetrics.module.css";
 
 type StatsResponse = {
   totalOrders?: number;
@@ -36,32 +35,31 @@ const AdminMetrics: React.FC = () => {
     [i18n.language]
   );
 
-  const fetchStats = useCallback(async (signal?: AbortSignal) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const fetchStats = useCallback(
+    async (signal?: AbortSignal) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const { data } = await axiosInstance.get<StatsResponse>("/admin/stats", {
-        signal,
-      });
+        const { data } = await axiosInstance.get<StatsResponse>("/admin/stats", { signal });
 
-      setTotalOrders(Number.isFinite(Number(data?.totalOrders)) ? Number(data?.totalOrders) : 0);
-      setRevenue(Number.isFinite(Number(data?.totalRevenue)) ? Number(data?.totalRevenue) : 0);
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        if (err.code === "ERR_CANCELED") return;
-        if (err.response?.status === 401 || err.response?.status === 403) {
-          setError(
-            t("admin.metrics.noAccess", { defaultValue: "No access to admin statistics." })
-          );
-          return;
+        setTotalOrders(Number.isFinite(Number(data?.totalOrders)) ? Number(data?.totalOrders) : 0);
+        setRevenue(Number.isFinite(Number(data?.totalRevenue)) ? Number(data?.totalRevenue) : 0);
+      } catch (err: unknown) {
+        if (axios.isAxiosError(err)) {
+          if (err.code === "ERR_CANCELED") return;
+          if (err.response?.status === 401 || err.response?.status === 403) {
+            setError(t("admin.metrics.noAccess", { defaultValue: "No access to admin statistics." }));
+            return;
+          }
         }
+        setError(t("admin.metrics.error", { defaultValue: "Failed to fetch data" }));
+      } finally {
+        if (!signal?.aborted) setLoading(false);
       }
-      setError(t("admin.metrics.error", { defaultValue: "Failed to fetch data" }));
-    } finally {
-      if (!signal?.aborted) setLoading(false);
-    }
-  }, [t]);
+    },
+    [t]
+  );
 
   useEffect(() => {
     if (!isAdmin) {
@@ -78,7 +76,6 @@ const AdminMetrics: React.FC = () => {
     fetchStats();
   };
 
-  // Не админ — ничего не рендерим (панель скрывает блок метрик)
   if (!isAdmin) return null;
 
   if (loading) {
@@ -86,26 +83,26 @@ const AdminMetrics: React.FC = () => {
   }
 
   return (
-    <div className="admin-metrics" aria-busy={loading ? "true" : "false"}>
-      <h2>{t("admin.metrics.title", { defaultValue: "Admin Statistics" })}</h2>
+    <div className={styles.wrapper} aria-busy={loading ? "true" : "false"}>
+      <h2 className={styles.title}>{t("admin.metrics.title", { defaultValue: "Admin Statistics" })}</h2>
 
       {error ? (
-        <p className="error" style={{ color: "#ef4444" }} aria-live="polite">
+        <p className={styles.error} aria-live="polite">
           {error}
         </p>
       ) : (
         <>
-          <p>
-            <strong>
-              {t("admin.metrics.orders", { defaultValue: "Total Orders" })}:{" "}
-            </strong>
-            {totalOrders}
+          <p className={styles.row}>
+            <span className={styles.label}>
+              {t("admin.metrics.orders", { defaultValue: "Total Orders" })}:
+            </span>
+            <span className={styles.value}>{totalOrders}</span>
           </p>
-          <p>
-            <strong>
-              {t("admin.metrics.revenue", { defaultValue: "Total Revenue" })}:{" "}
-            </strong>
-            {eurFmt.format(revenue)}
+          <p className={styles.row}>
+            <span className={styles.label}>
+              {t("admin.metrics.revenue", { defaultValue: "Total Revenue" })}:
+            </span>
+            <span className={styles.value}>{eurFmt.format(revenue)}</span>
           </p>
         </>
       )}
@@ -113,14 +110,7 @@ const AdminMetrics: React.FC = () => {
       <button
         type="button"
         onClick={handleRefresh}
-        style={{
-          marginTop: "0.75rem",
-          padding: "0.5rem 0.875rem",
-          borderRadius: 8,
-          border: "1px solid #e5e7eb",
-          background: "#f9fafb",
-          cursor: "pointer",
-        }}
+        className={styles.refreshBtn}
         aria-label={t("admin.metrics.refresh", { defaultValue: "Refresh" })}
       >
         {t("admin.metrics.refresh", { defaultValue: "Refresh" })}

@@ -1,5 +1,4 @@
-// src/pages/homePage/HomePage.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 
@@ -26,16 +25,16 @@ interface ProductResponse {
   totalPages: number;
   totalProducts: number;
 }
-
 function isProductResponse(obj: unknown): obj is ProductResponse {
   return !!obj && typeof obj === "object" && Array.isArray((obj as any).products);
 }
+
+const SCROLL_COLLAPSE_Y = 220; 
 
 const HomePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { t, i18n } = useTranslation("common");
 
-  // Отдельно храним "ввод" и "реальный запрос" (после дебаунса)
   const initialSearch = searchParams.get("search") || "";
   const initialCat = searchParams.get("category") || null;
   const initialSub = searchParams.get("subcategory") || "";
@@ -51,12 +50,14 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Заголовок страницы по языку
+  const [collapsed, setCollapsed] = useState(false);
+  const hoverRef = useRef(false); 
+
   useEffect(() => {
     document.title = `${t("home.title", "Home")} — Baltic Herkut`;
   }, [t, i18n.language]);
 
-  // Загрузка категорий один раз
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -72,7 +73,6 @@ const HomePage: React.FC = () => {
     };
   }, []);
 
-  // Загрузка продуктов при изменении фильтров/поиска
   useEffect(() => {
     let cancelled = false;
 
@@ -108,7 +108,7 @@ const HomePage: React.FC = () => {
           setProducts([]);
         }
         setError(null);
-      } catch (err: unknown) {
+      } catch {
         if (!cancelled) {
           setError(t("errors.unknown", "Unknown error"));
           setProducts([]);
@@ -124,15 +124,23 @@ const HomePage: React.FC = () => {
     };
   }, [searchTerm, selectedCategoryId, selectedSubcategoryId, t]);
 
-  // Обновление ввода — только локально
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY || window.pageYOffset;
+      const shouldCollapse = y > SCROLL_COLLAPSE_Y;
+      setCollapsed(shouldCollapse);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
   };
 
-  // Дебаунс завершился — фиксируем searchTerm и URL
   const handleDebouncedSearch = (value: string) => {
     setSearchTerm(value);
-
     const params: Record<string, string> = {};
     if (value) params.search = value;
     if (selectedCategoryId) params.category = selectedCategoryId;
@@ -145,7 +153,6 @@ const HomePage: React.FC = () => {
     setSelectedCategoryId(newCategoryId);
     setSelectedSubcategoryId("");
 
-    // Обновим URL, но не трогаем inputValue напрямую
     const params: Record<string, string> = {};
     if (searchTerm) params.search = searchTerm;
     if (newCategoryId) params.category = newCategoryId;
@@ -169,6 +176,7 @@ const HomePage: React.FC = () => {
     setSelectedCategoryId(null);
     setSelectedSubcategoryId("");
     setSearchParams({});
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const loadingText = useMemo(
@@ -179,69 +187,86 @@ const HomePage: React.FC = () => {
   return (
     <>
       <NavBar />
-      <div className={styles.pageContainer}>
-        <div className={styles.welcomeMessage}>
-          <div className={styles.logoWrap}>
+
+      <div className={`${styles.page} ${collapsed ? styles.isCollapsed : ""}`}>
+
+        <aside className={styles.sidebar}>
+          <div className={styles.sidebarInner}>
+            <div className={styles.sidebarTitle}>
+              {t("categories.title", "Categories")}
+            </div>
+
+            <CategoryTree
+              categories={categories}
+              selectedCategoryId={selectedCategoryId ?? null}
+              selectedSubcategoryId={selectedSubcategoryId}
+              onCategoryToggle={handleCategoryToggle}
+              onSubcategorySelect={handleSubcategorySelect}
+            />
+          </div>
+          <div className={styles.rail} aria-hidden />
+        </aside>
+
+        <main className={styles.main}>
+
+          <section className={styles.hero}>
             <img
               src="/assets/Logo.jpg"
               alt={t("home.logoAlt", "Baltic Herkut")}
-              className={styles.logoImage}
+              className={styles.heroLogo}
               loading="eager"
               decoding="async"
             />
-          </div>
+            <h1 className={styles.welcome}>
+              {t("home.welcome", "Добро пожаловать в наш магазин!")}
+            </h1>
 
-          <h2>{t("home.welcome", "Welcome to our store!")}</h2>
+            <div className={styles.carousel}>
+              <ImageCarousel />
+            </div>
+            <p className={styles.heroHint}>
+              {t("home.browse", "Смотрите наш ассортимент товаров и услуг.")}
+            </p>
 
-          <div className={styles.carouselSpacer}>
-            <ImageCarousel />
-          </div>
 
-          <p>{t("home.browse", "Browse a variety of products and services.")}</p>
-        </div>
+            <div />
+          </section>
 
-        <div className={styles.searchBarContainer}>
-          <SearchBar
-            value={inputValue}
-            onChange={handleSearchInputChange}
-            debounceMs={400}
-            onDebouncedChange={handleDebouncedSearch}
-            isLoading={loading}
-          />
-        </div>
+          <section className={`${styles.actions} ${styles.actionsSticky}`}>
+            <SearchBar
+              value={inputValue}
+              onChange={handleSearchInputChange}
+              debounceMs={400}
+              onDebouncedChange={handleDebouncedSearch}
+              isLoading={loading}
+            />
+            <button onClick={handleResetFilters} className={styles.resetBtn}>
+              {t("home.resetFilters", "Сбросить фильтры")}
+            </button>
+          </section>
 
-        <div className={styles.welcomeMessage}>
-          <p>{t("home.selectCategory", "Select a category to start exploring!")}</p>
-        </div>
+          <section className={styles.products}>
+            <h2 className={styles.productsTitle}>
+              {t("home.ourProducts", "Наши товары")}
+            </h2>
 
-        <div className={`${styles.categorySelectWrapper} px-4 mb-4`}>
-          <button onClick={handleResetFilters} className={styles.ResetFilter}>
-            {t("home.resetFilters", "Reset Filters")}
-          </button>
-        </div>
-
-        <CategoryTree
-          categories={categories}
-          selectedCategoryId={selectedCategoryId ?? null}
-          selectedSubcategoryId={selectedSubcategoryId}
-          onCategoryToggle={handleCategoryToggle}
-          onSubcategorySelect={handleSubcategorySelect}
-        />
-
-        <h2 className={styles.categorySelectTitle}>{t("home.ourProducts", "Our Products")}</h2>
-
-        {loading ? (
-          <Loading text={loadingText} className={styles.loadingText} />
-        ) : error ? (
-          <p className={styles.errorText}>{error}</p>
-        ) : (
-          <div className={styles.productGridWrapper}>
-            <ProductGrid products={products} />
-          </div>
-        )}
+            {loading ? (
+              <Loading text={loadingText} className={styles.loadingText} />
+            ) : error ? (
+              <p className={styles.errorText}>{error}</p>
+            ) : (
+              <div className={styles.productGridWrapper}>
+                <ProductGrid products={products} />
+              </div>
+            )}
+          </section>
+        </main>
       </div>
     </>
   );
 };
 
 export default HomePage;
+
+
+
