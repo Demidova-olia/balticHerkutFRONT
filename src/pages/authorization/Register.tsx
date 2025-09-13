@@ -27,23 +27,18 @@ function Register() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
-    // Жёстче ограничим телефон (только цифры)
     if (name === "phoneNumber") {
-      const digits = value.replace(/\D/g, "").slice(0, 10); // максимум 10 цифр
+      const digits = value.replace(/\D/g, "").slice(0, 10);
       setFormData((prev) => ({ ...prev, phoneNumber: digits }));
       return;
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // убираем лишние пробелы
     const payload = {
       email: formData.email.trim(),
       password: formData.password,
@@ -63,13 +58,16 @@ function Register() {
       return;
     }
 
-    // username: как на бэке — минимум 3, только латиница/цифры
     if (!/^[a-zA-Z0-9]{3,}$/.test(payload.username)) {
-      toast.error(t("register.errors.username", "Username must be at least 3 characters, Latin letters and digits only"));
+      toast.error(
+        t(
+          "register.errors.username",
+          "Username must be at least 3 characters, Latin letters and digits only"
+        )
+      );
       return;
     }
 
-    // телефон: как на бэке — ровно 10 цифр
     if (!/^\d{10}$/.test(payload.phoneNumber)) {
       toast.error(t("register.errors.phone", "Phone must contain exactly 10 digits"));
       return;
@@ -162,7 +160,7 @@ function Register() {
             onChange={handleChange}
             required
             inputMode="numeric"
-            pattern="\d{10}"
+            pattern="\\d{10}"
             minLength={10}
             maxLength={10}
             className={styles.inputField}

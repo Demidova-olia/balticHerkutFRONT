@@ -1,4 +1,38 @@
-{
+{ 
+  "register": {
+    "title": "Register",
+    "labels": {
+      "username": "Username:",
+      "email": "Email:",
+      "phone": "Phone Number:",
+      "password": "Password:",
+      "confirmPassword": "Confirm Password:"
+    },
+    "placeholders": {
+      "username": "Enter your username",
+      "email": "Enter your email",
+      "phone": "Enter your phone number (10 digits)",
+      "password": "Enter your password",
+      "confirmPassword": "Repeat your password"
+    },
+    "buttons": {
+      "submit": "Register",
+      "loading": "Registering..."
+    },
+    "haveAccount": "Already have an account?",
+    "loginLink": "Log in",
+    "returnHome": "Return to Home Page",
+    "errors": {
+      "required": "All fields are required",
+      "username": "Username must be at least 3 characters, Latin letters and digits only",
+      "phone": "Phone must contain exactly 10 digits",
+      "mismatch": "Passwords do not match"
+    },
+    "toasts": {
+      "success": "Registration successful! You can now log in.",
+      "fail": "Registration error"
+    }
+  },
   "common": {
     "yes": "Yes",
     "no": "No",
