@@ -1,4 +1,24 @@
-{ "register": {
+{ "login": {
+    "title": "Kirjaudu sisään",
+    "emailLabel": "Sähköposti",
+    "emailPlaceholder": "Syötä sähköpostisi",
+    "passwordLabel": "Salasana",
+    "passwordPlaceholder": "Syötä salasanasi",
+    "showPwd": "Näytä salasana",
+    "hidePwd": "Piilota salasana",
+    "show": "Näytä",
+    "hide": "Piilota",
+    "submit": "Kirjaudu",
+    "loading": "Kirjaudutaan...",
+    "registerLink": "Luo tili",
+    "returnHome": "Palaa etusivulle",
+    "toasts": {
+      "success": "Tervetuloa!",
+      "fail": "Kirjautumisvirhe"
+    }
+  },
+  "buttons": { "add": "Lisää", "remove": "Poista" },
+  "register": {
     "title": "Rekisteröidy",
     "labels": {
       "username": "Käyttäjänimi:",

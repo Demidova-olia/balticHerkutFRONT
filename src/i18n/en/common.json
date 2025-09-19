@@ -1,4 +1,28 @@
 { 
+  "login": {
+    "title": "Login",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "showPwd": "Show password",
+    "hidePwd": "Hide password",
+    "show": "Show",
+    "hide": "Hide",
+    "submit": "Log in",
+    "loading": "Logging in...",
+    "registerLink": "Create an account",
+    "returnHome": "Return to Home Page",
+    "toasts": {
+      "success": "Welcome!",
+      "fail": "Login error"
+    }
+  },
+
+  "buttons": {
+    "add": "Add",
+    "remove": "Remove"
+  },
   "register": {
     "title": "Register",
     "labels": {
@@ -449,4 +473,5 @@
       "confirm": { "delete": "Are you sure you want to delete this product?" }
     }
   }
+  
 }

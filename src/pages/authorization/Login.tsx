@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import styles from "./Login.module.css";
 
 function Login() {
-  // используем общий неймспейс, где лежат строки
   const { t } = useTranslation("common");
 
   const [email, setEmail] = useState("");
@@ -24,11 +23,13 @@ function Login() {
     setIsLoading(true);
     try {
       await login(email, password);
-      toast.success(t("login.toasts.success", "Вы успешно вошли"));
+      toast.success(t("login.toasts.success", "You have successfully signed in"));
       navigate("/");
     } catch (err: unknown) {
       const apiErr = err as { response?: { data?: { message?: string } } };
-      const msg = apiErr.response?.data?.message || t("login.toasts.fail", "Ошибка входа");
+      const msg =
+        apiErr.response?.data?.message ||
+        t("login.toasts.fail", "Sign-in failed");
       toast.error(msg);
       setError(msg);
     } finally {
@@ -38,75 +39,82 @@ function Login() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>{t("login.title", "Вход")}</h1>
+      <h1 className={styles.title}>{t("login.title", "Sign In")}</h1>
       {error && <div className={styles.error}>{error}</div>}
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <div>
-          {/* визуально прячем, но оставляем для доступности */}
           <label htmlFor="email" className={styles.srOnly}>
             {t("login.emailLabel", "E-mail")}
           </label>
           <input
             type="email"
             id="email"
+            name="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={isLoading}
             className={styles.inputField}
-            placeholder={t("login.emailPlaceholder", "Введите e-mail")}
+            placeholder={t("login.emailPlaceholder", "Enter your e-mail")}
             aria-label={t("login.emailLabel", "E-mail")}
           />
         </div>
 
         <div>
           <label htmlFor="password" className={styles.srOnly}>
-            {t("login.passwordLabel", "Пароль")}
+            {t("login.passwordLabel", "Password")}
           </label>
           <div className={styles.passwordWrap}>
             <input
               type={showPassword ? "text" : "password"}
               id="password"
+              name="password"
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={isLoading}
               className={styles.inputField}
-              placeholder={t("login.passwordPlaceholder", "Введите пароль")}
-              aria-label={t("login.passwordLabel", "Пароль")}
+              placeholder={t("login.passwordPlaceholder", "Enter your password")}
+              aria-label={t("login.passwordLabel", "Password")}
             />
             <button
               type="button"
               className={styles.togglePwdBtn}
               aria-label={
                 showPassword
-                  ? t("login.hidePwd", "Скрыть пароль")
-                  : t("login.showPwd", "Показать пароль")
+                  ? t("login.hidePwd", "Hide password")
+                  : t("login.showPwd", "Show password")
               }
               title={
                 showPassword
-                  ? t("login.hidePwd", "Скрыть пароль")
-                  : t("login.showPwd", "Показать пароль")
+                  ? t("login.hidePwd", "Hide password")
+                  : t("login.showPwd", "Show password")
               }
               onClick={() => setShowPassword((v) => !v)}
             >
-              {showPassword ? t("login.hide", "Скрыть") : t("login.show", "Показать")}
+              {showPassword
+                ? t("login.hide", "Hide")
+                : t("login.show", "Show")}
             </button>
           </div>
         </div>
 
         <button type="submit" disabled={isLoading} className={styles.submitButton}>
-          {isLoading ? t("login.loading", "Входим…") : t("login.submit", "Войти")}
+          {isLoading
+            ? t("login.loading", "Signing in…")
+            : t("login.submit", "Sign In")}
         </button>
       </form>
 
       <div className={styles.links}>
         <Link to="/register" className={styles.registerLink}>
-          {t("login.registerLink", "Создать аккаунт")}
+          {t("login.registerLink", "Create an account")}
         </Link>
         <Link to="/home" className={styles.returnLink}>
-          {t("login.returnHome", "На главную")}
+          {t("login.returnHome", "Back to Home")}
         </Link>
       </div>
     </div>

@@ -20,7 +20,6 @@ export interface ImageObject {
 }
 
 export type ProductImageServer = string | ImageObject;
-
 export type ProductImageInput = File | string | ExistingImage;
 
 export interface ExistingImage {
@@ -56,6 +55,9 @@ export interface Product {
   reviewsCount?: number;
   tags?: string[];
   isActive?: boolean;
+
+  /** NEW: штрих-код товара */
+  barcode?: string;
 }
 
 export interface ProductData {
@@ -66,6 +68,9 @@ export interface ProductData {
   subcategory?: string;
   stock: number;
   images: ProductImageInput[];
+
+  /** NEW: штрих-код при создании/обновлении */
+  barcode?: string;
 }
 
 export interface ProductResponse {

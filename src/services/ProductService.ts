@@ -21,7 +21,6 @@ const isCanceled = (err: unknown) =>
   (err as any)?.name === "CanceledError" ||
   (err as Error)?.message === "canceled";
 
-
 export const getProducts = async (
   searchTerm: string,
   categoryId: string,
@@ -83,6 +82,10 @@ export const createProduct = async (data: ProductData): Promise<Product> => {
 
   formData.append("stock", String(data.stock));
 
+  if (typeof (data as any).barcode !== "undefined") {
+    formData.append("barcode", (data as any).barcode ?? "");
+  }
+
   data.images.forEach((file) => {
     if (file instanceof File) {
       formData.append("images", file);
@@ -113,6 +116,10 @@ export const updateProduct = async (
 
   formData.append("removeAllImages", String(!!removeAllImages));
   formData.append("existingImages", JSON.stringify(existingImages || []));
+
+  if (typeof (data as any).barcode !== "undefined") {
+    formData.append("barcode", (data as any).barcode ?? "");
+  }
 
   data.images.forEach((file) => {
     if (file instanceof File) {
@@ -198,3 +205,4 @@ export const uploadImage = async (
   const data = await response.json();
   return { url: data.secure_url, public_id: data.public_id };
 };
+

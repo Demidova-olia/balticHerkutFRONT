@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Product, Lang, asText } from "../../types/product";
 import { Category } from "../../types/category";
 import { Subcategory } from "../../types/subcategory";
@@ -15,11 +15,13 @@ interface ProductFormProps {
 }
 
 type ExistingImg = { url: string; public_id: string };
+
 type FormState = {
   name: string;
   description: string;
   price: string;
   stock: string;
+  barcode: string; // NEW
 };
 
 const AdminProductForm: React.FC<ProductFormProps> = ({
@@ -44,29 +46,47 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
   const [removeAllImages, setRemoveAllImages] = useState(false);
 
   const [formState, setFormState] = useState<FormState>({
-    name: typeof initialData.name === "string" ? initialData.name : asText(initialData.name || "", lang),
+    name:
+      typeof initialData.name === "string"
+        ? initialData.name
+        : asText(initialData.name || "", lang),
     description:
       typeof initialData.description === "string"
         ? initialData.description
         : asText(initialData.description || "", lang),
     price: initialData.price != null ? String(initialData.price) : "",
     stock: initialData.stock != null ? String(initialData.stock) : "",
+    barcode: (initialData as any)?.barcode ?? "",
   });
 
-  const [existingImages, setExistingImages] = useState<ExistingImg[]>(
+  // ✅ ДОЛЖЕН БЫТЬ МАССИВ
+  const [existingImages, setExistingImages] = useState<ExistingImg[]>(() =>
     Array.isArray(initialData.images)
-      ? initialData.images.filter((img): img is ExistingImg => typeof img !== "string")
+      ? (initialData.images as Array<string | ExistingImg>).filter(
+          (img): img is ExistingImg => typeof img !== "string"
+        )
       : []
   );
 
-  // Load categories & subcategories
+  // хранение предыдущих ключей для аккуратной синхронизации
+  const prevInitRef = useRef<{ id?: string; lang?: Lang }>({ id: (initialData as any)?._id, lang });
+
+  // --- загрузка категорий / подкатегорий ---
   useEffect(() => {
-    getCategories().then(setCategories).catch(console.error);
-    getSubcategories().then(setAllSubcategories).catch(console.error);
+    getCategories().then(setCategories).catch((err) => console.error("getCategories error:", err));
+    getSubcategories().then(setAllSubcategories).catch((err) => console.error("getSubcategories error:", err));
   }, []);
 
-  // Sync when initialData changes (e.g. edit page)
+  // --- синхронизация при смене initialData или языка ---
   useEffect(() => {
+    const nextId = (initialData as any)?._id as string | undefined;
+    const prevId = prevInitRef.current.id;
+    const prevLang = prevInitRef.current.lang;
+
+    const shouldSyncById = !!nextId && nextId !== prevId;
+    const shouldSyncByLang = prevLang !== lang;
+    if (!shouldSyncById && !shouldSyncByLang) return;
+
     const nextName =
       typeof initialData.name === "string" ? initialData.name : asText(initialData.name || "", lang);
     const nextDesc =
@@ -74,11 +94,11 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
         ? initialData.description
         : asText(initialData.description || "", lang);
 
-    setFormState({
-      name: nextName,
-      description: nextDesc,
-      price: initialData.price != null ? String(initialData.price) : "",
-      stock: initialData.stock != null ? String(initialData.stock) : "",
+    setFormState((prev) => {
+      const price = initialData.price != null ? String(initialData.price) : prev.price;
+      const stock = initialData.stock != null ? String(initialData.stock) : prev.stock;
+      const barcode = (initialData as any)?.barcode ?? prev.barcode ?? "";
+      return { name: nextName, description: nextDesc, price, stock, barcode };
     });
 
     const catId =
@@ -91,27 +111,43 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
         ? initialData.subcategory
         : (initialData.subcategory as any)?._id || "";
 
-    setSelectedCategory(catId);
-    setSelectedSubcategory(subId);
+    setSelectedCategory((prev) => (catId !== prev ? catId : prev));
+    setSelectedSubcategory((prev) => (subId !== prev ? subId : prev));
 
-    const ex =
-      Array.isArray(initialData.images)
-        ? initialData.images.filter((img): img is ExistingImg => typeof img !== "string")
-        : [];
+    const ex: ExistingImg[] = Array.isArray(initialData.images)
+      ? (initialData.images as Array<string | ExistingImg>).filter(
+          (img): img is ExistingImg => typeof img !== "string"
+        )
+      : [];
     setExistingImages(ex);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    prevInitRef.current = { id: nextId, lang };
   }, [initialData, lang]);
 
+  // --- фильтр подкатегорий по выбранной категории ---
   const filteredSubcategories = useMemo(() => {
     if (!selectedCategory) return [];
     return allSubcategories.filter((sub) =>
-      typeof sub.parent === "string" ? sub.parent === selectedCategory : sub.parent._id === selectedCategory
+      typeof sub.parent === "string"
+        ? sub.parent === selectedCategory
+        : sub.parent._id === selectedCategory
     );
   }, [selectedCategory, allSubcategories]);
 
+  // если выбранная подкатегория не принадлежит новой категории — сбросить
+  useEffect(() => {
+    if (!selectedSubcategory) return;
+    const ok = filteredSubcategories.some((s) => s._id === selectedSubcategory);
+    if (!ok) setSelectedSubcategory("");
+  }, [filteredSubcategories, selectedSubcategory]);
+
+  // --- handlers ---
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormState((prev) => ({ ...prev, [name]: value }));
+    setFormState((prev) => {
+      if ((prev as any)[name] === value) return prev;
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,11 +163,11 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     if (!onImageDelete) return;
     try {
       await onImageDelete(publicId);
-      setExistingImages((prev) => prev.filter((img) => img.public_id !== publicId));
+      setExistingImages((prev: ExistingImg[]) =>
+        prev.filter((img: ExistingImg) => img.public_id !== publicId)
+      );
     } catch (err) {
-      // eslint-disable-next-line no-alert
       alert(t("admin.productForm.alerts.deleteImageError", { defaultValue: "Error deleting image." }));
-      // eslint-disable-next-line no-console
       console.error(err);
     }
   };
@@ -140,13 +176,11 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     e.preventDefault();
 
     if (!selectedCategory) {
-      // eslint-disable-next-line no-alert
       alert(t("admin.productForm.alerts.selectCategory", { defaultValue: "Please select a category." }));
       return;
     }
 
     if (Number(formState.price) < 0 || Number(formState.stock) < 0) {
-      // eslint-disable-next-line no-alert
       alert(t("admin.productForm.alerts.nonNegative", { defaultValue: "Price and stock cannot be negative." }));
       return;
     }
@@ -162,7 +196,12 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       formData.append("category", selectedCategory);
       if (selectedSubcategory) formData.append("subcategory", selectedSubcategory);
 
-      images.forEach((img) => formData.append("images", img));
+      // NEW: barcode (необязательное)
+      if (formState.barcode && formState.barcode.trim()) {
+        formData.append("barcode", formState.barcode.trim());
+      }
+
+      images.forEach((img: File) => formData.append("images", img));
 
       if (removeAllImages || (!images.length && !existingImages.length)) {
         formData.append("removeAllImages", "true");
@@ -170,8 +209,9 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
 
       onSubmit(formData);
 
-      if (!initialData._id) {
-        setFormState({ name: "", description: "", price: "", stock: "" });
+      // сброс только при создании
+      if (!(initialData as any)?._id) {
+        setFormState({ name: "", description: "", price: "", stock: "", barcode: "" });
         setSelectedCategory("");
         setSelectedSubcategory("");
         setImages([]);
@@ -179,7 +219,6 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
         setRemoveAllImages(false);
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error("Error submitting form:", err);
     } finally {
       setIsSubmitting(false);
@@ -245,6 +284,24 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
         />
       </div>
 
+      {/* NEW: штрих-код */}
+      <div className={styles.formField}>
+        <label className={styles.label}>
+          {t("admin.productForm.labels.barcode", { defaultValue: "Barcode" })}
+        </label>
+        <input
+          type="text"
+          name="barcode"
+          value={formState.barcode}
+          onChange={handleChange}
+          className={styles.input}
+          maxLength={32}
+          inputMode="numeric"
+          pattern="[0-9A-Za-z\\- ]{0,32}"
+          placeholder={t("admin.productForm.placeholders.barcode", { defaultValue: "e.g. 4601234567890" })}
+        />
+      </div>
+
       <div className={styles.formField}>
         <label className={styles.label}>
           {t("admin.productForm.labels.category", { defaultValue: "Category" })}
@@ -255,9 +312,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
           required
           className={styles.select}
         >
-          <option value="">
-            {t("admin.productForm.selectOption", { defaultValue: "Select" })}
-          </option>
+          <option value="">{t("admin.productForm.selectOption", { defaultValue: "Select" })}</option>
           {categories.map((cat) => (
             <option key={cat._id} value={cat._id}>
               {asText(cat.name as any, lang) || "—"}
@@ -276,9 +331,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
           disabled={!filteredSubcategories.length}
           className={styles.select}
         >
-          <option value="">
-            {t("admin.productForm.selectOption", { defaultValue: "Select" })}
-          </option>
+          <option value="">{t("admin.productForm.selectOption", { defaultValue: "Select" })}</option>
           {filteredSubcategories.map((sub) => (
             <option key={sub._id} value={sub._id}>
               {asText(sub.name as any, lang) || "—"}
@@ -306,12 +359,8 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
             {t("admin.productForm.labels.newPreview", { defaultValue: "New Images Preview:" })}
           </label>
           <div className={styles.imageGrid}>
-            {images.map((img) => (
-              <img
-                key={`${img.name}-${img.lastModified}`}
-                src={URL.createObjectURL(img)}
-                alt="preview"
-              />
+            {images.map((img: File) => (
+              <img key={`${img.name}-${img.lastModified}`} src={URL.createObjectURL(img)} alt="preview" />
             ))}
           </div>
         </div>
@@ -323,7 +372,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
             {t("admin.productForm.labels.currentImages", { defaultValue: "Current Images:" })}
           </label>
           <div className={styles.imageGrid}>
-            {existingImages.map((img) => (
+            {existingImages.map((img: ExistingImg) => (
               <div key={img.public_id} className={styles.imageItem}>
                 <img src={img.url} alt="Existing" />
                 <button

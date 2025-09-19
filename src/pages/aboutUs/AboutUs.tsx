@@ -1,41 +1,13 @@
 /* cspell:ignore gmaps */
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import NavBar from "../../components/NavBar/NavBar";
-import axiosInstance from "../../utils/axios";
-import { useAuth } from "../../hooks/useAuth";
-import styles from "./AboutUs.module.css";
 import { useTranslation } from "react-i18next";
+import NavBar from "../../components/NavBar/NavBar";
+import styles from "./AboutUs.module.css";
 
-type Localized = string | { en?: string; ru?: string; fi?: string };
-
-type AboutContent = {
-  heroImageUrl: string;
-  title: Localized;
-  subtitle: Localized;
-  storeImageUrl: string;
-  descriptionIntro: Localized;
-  descriptionMore: Localized;
-  address: Localized;
-  hours: Localized;
-  gmapsUrl: string;
-  requisitesImageUrl: string;
-  socialsHandle: Localized;
-};
-
-const ABOUT_URL = "/about";
-
-function pickText(val: Localized, lang: string) {
-  if (val && typeof val === "object") {
-    const v =
-      val[lang as "en" | "ru" | "fi"] ??
-      val.en ??
-      val.ru ??
-      val.fi ??
-      "";
-    return typeof v === "string" ? v : "";
-  }
-  return (val as string) ?? "";
-}
+import { useAuth } from "../../hooks/useAuth";
+import type { AboutContent } from "../../types/about";
+import { asText, Lang } from "../../types/i18n";
+import { getAbout, saveAbout } from "../../services/AboutService";
 
 const DEFAULT_CONTENT: AboutContent = {
   heroImageUrl: "/assets/Logo.jpg",
@@ -51,35 +23,45 @@ const DEFAULT_CONTENT: AboutContent = {
   gmapsUrl: "https://maps.google.com/?q=Limingantie+9,+Oulu",
   requisitesImageUrl: "/assets/banner_margins.jpg",
   socialsHandle: "@balticherkut",
+  reasons: [],
 };
 
-function normalize(data?: Partial<AboutContent>): AboutContent {
-  const base = { ...DEFAULT_CONTENT, ...(data || {}) } as AboutContent;
+function normalize(d?: Partial<AboutContent>): AboutContent {
+  return { ...DEFAULT_CONTENT, ...(d || {}) };
+}
+function deepEqual(a: any, b: any) {
+  try { return JSON.stringify(a) === JSON.stringify(b); } catch { return false; }
+}
+
+/** достаём «сырой» текст нужного языка БЕЗ фолбэка */
+const raw = (v: any, L: Lang): string =>
+  v && typeof v === "object" ? (v[L] ?? "") : "";
+
+/** собираем {en,ru,fi} для одного поля:
+ *  - текущий lang берём из draft
+ *  - остальные — РОВНО из БД без фолбэка (или пусто)
+ */
+function buildLoc3(
+  key: keyof AboutContent,
+  lang: Lang,
+  draft: AboutContent,
+  content: AboutContent
+) {
+  const prev = (content as any)[key];
+  const curr = asText((draft as any)[key], lang); // текст текущего языка
+
   return {
-    heroImageUrl: base.heroImageUrl ?? "",
-    title: base.title ?? "",
-    subtitle: base.subtitle ?? "",
-    storeImageUrl: base.storeImageUrl ?? "",
-    descriptionIntro: base.descriptionIntro ?? "",
-    descriptionMore: base.descriptionMore ?? "",
-    address: base.address ?? "",
-    hours: base.hours ?? "",
-    gmapsUrl: base.gmapsUrl ?? "",
-    requisitesImageUrl: base.requisitesImageUrl ?? "",
-    socialsHandle: base.socialsHandle ?? "",
+    en: lang === "en" ? curr : raw(prev, "en"),
+    ru: lang === "ru" ? curr : raw(prev, "ru"),
+    fi: lang === "fi" ? curr : raw(prev, "fi"),
+    _source: lang,
   };
 }
 
-function deepEqual(a: any, b: any) {
-  try {
-    return JSON.stringify(a) === JSON.stringify(b);
-  } catch {
-    return false;
-  }
-}
-
 const AboutUs: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation("common");
+  const lang = (i18n.resolvedLanguage || i18n.language || "en").slice(0, 2) as Lang;
+
   const { user } = useAuth() as { user?: any };
   const role = String(user?.role || user?.user?.role || "").toLowerCase();
   const isAdmin = Boolean(user?.isAdmin || role === "admin");
@@ -100,45 +82,35 @@ const AboutUs: React.FC = () => {
 
   useEffect(() => {
     document.title = `${t("about.headTitle")} — Baltic Herkut`;
-  }, [i18n.language, t]);
-
-  const fetchAbout = async () => {
-    const res = await axiosInstance.get<{ data?: Partial<AboutContent> }>(ABOUT_URL, {
-      params: { _t: Date.now() },
-      headers: { "Accept-Language": i18n.language },
-    });
-    return normalize(res?.data?.data);
-  };
+  }, [t, i18n.language]);
 
   useEffect(() => {
-    const load = async () => {
+    (async () => {
       try {
         setLoading(true);
         setError(null);
-        const serverData = await fetchAbout();
-        setContent(serverData);
-        setDraft(serverData);
-      } catch {
-        const fallback = normalize(DEFAULT_CONTENT);
-        setContent(fallback);
-        setDraft(fallback);
+        const server = await getAbout();
+        const merged = normalize(server);
+        setContent(merged);
+        setDraft(merged);
+      } catch (e: any) {
+        setContent(DEFAULT_CONTENT);
+        setDraft(DEFAULT_CONTENT);
+        setError(e?.message || "Load error");
       } finally {
         setLoading(false);
       }
-    };
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    })();
   }, []);
 
   useEffect(() => {
-    if (editMode) {
-      const n = normalize(content);
-      setDraft(n);
-      setHeroFile(null);
-      setStoreFile(null);
-      setReqFile(null);
-      setError(null);
-    }
+    if (!editMode) return;
+    const n = normalize(content);
+    setDraft(n);
+    setHeroFile(null);
+    setStoreFile(null);
+    setReqFile(null);
+    setError(null);
   }, [editMode, content]);
 
   const c = useMemo<AboutContent>(() => (editMode ? draft : content), [editMode, draft, content]);
@@ -162,31 +134,27 @@ const AboutUs: React.FC = () => {
       setSaving(true);
       setError(null);
 
-      const payload: AboutContent = normalize(draft);
-      const hasFiles = Boolean(heroFile || storeFile || reqFile);
+      const payload: AboutContent = {
+        ...normalize(draft),
+        title:            buildLoc3("title",            lang, draft, content) as any,
+        subtitle:         buildLoc3("subtitle",         lang, draft, content) as any,
+        descriptionIntro: buildLoc3("descriptionIntro", lang, draft, content) as any,
+        descriptionMore:  buildLoc3("descriptionMore",  lang, draft, content) as any,
+        address:          buildLoc3("address",          lang, draft, content) as any,
+        hours:            buildLoc3("hours",            lang, draft, content) as any,
+        socialsHandle:    buildLoc3("socialsHandle",    lang, draft, content) as any,
+        reasonsTitle:     buildLoc3("reasonsTitle",     lang, draft, content) as any,
+        requisitesTitle:  buildLoc3("requisitesTitle",  lang, draft, content) as any,
+      };
 
-      if (!hasFiles) {
-        await axiosInstance.put<{ data?: Partial<AboutContent> }>(ABOUT_URL, payload, {
-          headers: { "Accept-Language": i18n.language },
-        });
-      } else {
-        const fd = new FormData();
-        (Object.entries(payload) as [keyof AboutContent, any][])
-          .forEach(([k, v]) => fd.append(k, typeof v === "string" ? v : JSON.stringify(v)));
-        if (heroFile) fd.append("heroImage", heroFile);
-        if (storeFile) fd.append("storeImage", storeFile);
-        if (reqFile) fd.append("requisitesImage", reqFile);
+      const saved = await saveAbout(payload, {
+        heroImage: heroFile ?? undefined,
+        storeImage: storeFile ?? undefined,
+        requisitesImage: reqFile ?? undefined,
+      });
 
-        await axiosInstance.put<{ data?: Partial<AboutContent> }>(ABOUT_URL, fd, {
-          headers: { "Accept-Language": i18n.language },
-        });
-      }
-
-      let serverAfter = await fetchAbout();
-
-      if (deepEqual(serverAfter, content)) {
-        serverAfter = payload;
-      }
+      let serverAfter = normalize(saved);
+      if (deepEqual(serverAfter, content)) serverAfter = payload;
 
       setContent(serverAfter);
       setDraft(serverAfter);
@@ -198,21 +166,27 @@ const AboutUs: React.FC = () => {
       setEditMode(false);
     } catch (e: any) {
       const status = e?.response?.status;
-      if (status === 401) {
-        setError(t("about.errors.unauthorized"));
-      } else if (status === 403) {
-        setError(t("about.errors.forbidden"));
-      } else if (status === 404) {
-        setError(t("about.errors.notFound", { url: ABOUT_URL }));
-      } else {
-        setError(e?.response?.data?.message || e?.message || t("about.errors.generic"));
-      }
+      if (status === 401) setError(t("about.errors.unauthorized"));
+      else if (status === 403) setError(t("about.errors.forbidden"));
+      else if (status === 404) setError(t("about.errors.notFound", { url: "/about" }));
+      else setError(e?.response?.data?.message || e?.message || t("about.errors.generic"));
     } finally {
       setSaving(false);
     }
   };
 
-  const p = (v: Localized) => pickText(v, i18n.language);
+  if (loading) {
+    return (
+      <>
+        <NavBar />
+        <main className={styles.page}>
+          <div className={styles.loadingOverlay}>
+            <div className={styles.spinner} />
+          </div>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
@@ -223,7 +197,7 @@ const AboutUs: React.FC = () => {
           <div className={styles.heroWrap}>
             {!editMode ? (
               <img
-                src={p(c.heroImageUrl as any) || (c.heroImageUrl as string)}
+                src={c.heroImageUrl}
                 alt="Baltic Herkut"
                 className={styles.heroImg}
                 loading="eager"
@@ -235,7 +209,7 @@ const AboutUs: React.FC = () => {
                   <label className={styles.label}>{t("about.form.heroUrl")}</label>
                   <input
                     className={styles.input}
-                    value={p(draft.heroImageUrl as any) || (draft.heroImageUrl as string)}
+                    value={draft.heroImageUrl}
                     onChange={(e) => setDraft((d) => ({ ...d, heroImageUrl: e.target.value }))}
                   />
                 </div>
@@ -257,8 +231,8 @@ const AboutUs: React.FC = () => {
         <header className={styles.header}>
           {!editMode ? (
             <>
-              <h1 className={styles.title}>{p(c.title)}</h1>
-              <p className={styles.subtitle}>{p(c.subtitle)}</p>
+              <h1 className={styles.title}>{asText(c.title, lang)}</h1>
+              <p className={styles.subtitle}>{asText(c.subtitle, lang)}</p>
             </>
           ) : (
             <div className={styles.formGrid}>
@@ -266,7 +240,7 @@ const AboutUs: React.FC = () => {
                 <label className={styles.label}>{t("about.form.title")}</label>
                 <input
                   className={styles.input}
-                  value={p(draft.title)}
+                  value={asText(draft.title, lang)}
                   onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
                 />
               </div>
@@ -274,7 +248,7 @@ const AboutUs: React.FC = () => {
                 <label className={styles.label}>{t("about.form.subtitle")}</label>
                 <input
                   className={styles.input}
-                  value={p(draft.subtitle)}
+                  value={asText(draft.subtitle, lang)}
                   onChange={(e) => setDraft((d) => ({ ...d, subtitle: e.target.value }))}
                 />
               </div>
@@ -287,7 +261,7 @@ const AboutUs: React.FC = () => {
           <div className={styles.mediaWrap}>
             {!editMode ? (
               <img
-                src={p(c.storeImageUrl as any) || (c.storeImageUrl as string)}
+                src={c.storeImageUrl}
                 alt={t("about.alt.storefront")}
                 className={styles.media}
                 loading="lazy"
@@ -299,7 +273,7 @@ const AboutUs: React.FC = () => {
                   <label className={styles.label}>{t("about.form.storeUrl")}</label>
                   <input
                     className={styles.input}
-                    value={p(draft.storeImageUrl as any) || (draft.storeImageUrl as string)}
+                    value={draft.storeImageUrl}
                     onChange={(e) => setDraft((d) => ({ ...d, storeImageUrl: e.target.value }))}
                   />
                 </div>
@@ -320,21 +294,23 @@ const AboutUs: React.FC = () => {
             {!editMode ? (
               <>
                 <h2>{t("about.ourStore.title")}</h2>
-                <p>{p(c.descriptionIntro)}</p>
-                <p>{p(c.descriptionMore)}</p>
+                <p>{asText(c.descriptionIntro, lang)}</p>
+                <p>{asText(c.descriptionMore, lang)}</p>
 
                 <div className={styles.infoList}>
                   <div>
-                    <strong>{t("about.ourStore.address")}:</strong> {p(c.address)}
+                    <strong>{t("about.ourStore.address")}:</strong> {asText(c.address, lang)}
                   </div>
                   <div>
-                    <strong>{t("about.ourStore.hours")}:</strong> {p(c.hours)}
+                    <strong>{t("about.ourStore.hours")}:</strong> {asText(c.hours, lang)}
                   </div>
                 </div>
 
-                <a className={styles.mapBtn} href={c.gmapsUrl} target="_blank" rel="noreferrer">
-                  {t("about.ourStore.openInMaps")}
-                </a>
+                {c.gmapsUrl && (
+                  <a className={styles.mapBtn} href={c.gmapsUrl} target="_blank" rel="noreferrer">
+                    {t("about.ourStore.openInMaps")}
+                  </a>
+                )}
               </>
             ) : (
               <>
@@ -344,10 +320,8 @@ const AboutUs: React.FC = () => {
                   <textarea
                     className={styles.textarea}
                     rows={3}
-                    value={p(draft.descriptionIntro)}
-                    onChange={(e) =>
-                      setDraft((d) => ({ ...d, descriptionIntro: e.target.value }))
-                    }
+                    value={asText(draft.descriptionIntro, lang)}
+                    onChange={(e) => setDraft((d) => ({ ...d, descriptionIntro: e.target.value }))}
                   />
                 </div>
                 <div className={styles.fieldRow}>
@@ -355,10 +329,8 @@ const AboutUs: React.FC = () => {
                   <textarea
                     className={styles.textarea}
                     rows={4}
-                    value={p(draft.descriptionMore)}
-                    onChange={(e) =>
-                      setDraft((d) => ({ ...d, descriptionMore: e.target.value }))
-                    }
+                    value={asText(draft.descriptionMore, lang)}
+                    onChange={(e) => setDraft((d) => ({ ...d, descriptionMore: e.target.value }))}
                   />
                 </div>
 
@@ -367,7 +339,7 @@ const AboutUs: React.FC = () => {
                     <label className={styles.label}>{t("about.form.address")}</label>
                     <input
                       className={styles.input}
-                      value={p(draft.address)}
+                      value={asText(draft.address, lang)}
                       onChange={(e) => setDraft((d) => ({ ...d, address: e.target.value }))}
                     />
                   </div>
@@ -375,7 +347,7 @@ const AboutUs: React.FC = () => {
                     <label className={styles.label}>{t("about.form.hours")}</label>
                     <input
                       className={styles.input}
-                      value={p(draft.hours)}
+                      value={asText(draft.hours, lang)}
                       onChange={(e) => setDraft((d) => ({ ...d, hours: e.target.value }))}
                     />
                   </div>
@@ -405,7 +377,7 @@ const AboutUs: React.FC = () => {
                 <li>{t("about.why.point3")}</li>
               </ul>
               <p>
-                {t("about.why.follow")} <strong>{p(c.socialsHandle)}</strong>.
+                {t("about.why.follow")} <strong>{asText(c.socialsHandle, lang)}</strong>.
               </p>
             </div>
           ) : (
@@ -414,7 +386,7 @@ const AboutUs: React.FC = () => {
                 <label className={styles.label}>{t("about.form.social")}</label>
                 <input
                   className={styles.input}
-                  value={p(draft.socialsHandle)}
+                  value={asText(draft.socialsHandle, lang)}
                   onChange={(e) => setDraft((d) => ({ ...d, socialsHandle: e.target.value }))}
                 />
               </div>
@@ -427,7 +399,7 @@ const AboutUs: React.FC = () => {
           <div className={styles.mediaWrap}>
             {!editMode ? (
               <img
-                src={p(c.requisitesImageUrl as any) || (c.requisitesImageUrl as string)}
+                src={c.requisitesImageUrl}
                 alt={t("about.alt.requisites")}
                 className={styles.media}
                 loading="lazy"
@@ -439,10 +411,8 @@ const AboutUs: React.FC = () => {
                   <label className={styles.label}>{t("about.form.reqUrl")}</label>
                   <input
                     className={styles.input}
-                    value={p(draft.requisitesImageUrl as any) || (draft.requisitesImageUrl as string)}
-                    onChange={(e) =>
-                      setDraft((d) => ({ ...d, requisitesImageUrl: e.target.value }))
-                    }
+                    value={draft.requisitesImageUrl}
+                    onChange={(e) => setDraft((d) => ({ ...d, requisitesImageUrl: e.target.value }))}
                   />
                 </div>
                 <div className={styles.fieldRow}>
@@ -492,15 +462,11 @@ const AboutUs: React.FC = () => {
             {error && <div className={styles.error}>{error}</div>}
           </div>
         )}
-
-        {loading && (
-          <div className={styles.loadingOverlay}>
-            <div className={styles.spinner} />
-          </div>
-        )}
       </main>
     </>
   );
 };
 
 export default AboutUs;
+
+

@@ -1,4 +1,24 @@
-{ "register": {
+{ "login": {
+    "title": "Вход",
+    "emailLabel": "Почта",
+    "emailPlaceholder": "Введите почту",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "showPwd": "Показать пароль",
+    "hidePwd": "Скрыть пароль",
+    "show": "Показать",
+    "hide": "Скрыть",
+    "submit": "Войти",
+    "loading": "Входим...",
+    "registerLink": "Зарегистрироваться",
+    "returnHome": "На главную",
+    "toasts": {
+      "success": "Добро пожаловать!",
+      "fail": "Ошибка входа"
+    }
+  },
+  "buttons": { "add": "Добавить", "remove": "Удалить" },
+  "register": {
     "title": "Регистрация",
     "labels": {
       "username": "Имя пользователя:",
