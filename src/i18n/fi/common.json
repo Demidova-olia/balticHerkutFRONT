@@ -113,6 +113,7 @@
 
   "product": {
     "noName": "Nimetön",
+    "OutOfStock": "Loppuunmyyty",
     "noDescription": "Kuvausta ei saatavilla.",
     "priceLabel": "Hinta",
     "addToCart": "Lisää koriin",

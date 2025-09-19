@@ -117,6 +117,7 @@
   },
 
   "product": {
+    "OutOfStock": "Out of Stock",
     "noName": "No Name",
     "noDescription": "No description available.",
     "priceLabel": "Price",

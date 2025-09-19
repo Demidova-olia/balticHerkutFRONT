@@ -1,4 +1,3 @@
-// src/pages/adminPages/adminProducts/AdminProductEdit.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -29,7 +28,6 @@ const AdminProductEdit: React.FC = () => {
         const fetchedProduct = await getProductById(id);
         setProduct(fetchedProduct);
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error("Error fetching product:", err);
         setError(
           t("admin.products.edit.toast.fetchFail", {
@@ -73,21 +71,17 @@ const AdminProductEdit: React.FC = () => {
         return;
       }
 
-      // изображения, загружаемые сейчас
       const files = formData.getAll("images");
       const images = files.filter((file) => file instanceof File) as File[];
 
-      // аккуратная обработка подкатегории (пустая строка -> undefined)
       const subcategory =
         typeof subcategoryRaw === "string" && subcategoryRaw.trim()
           ? subcategoryRaw
           : undefined;
 
-      // штрих-код, если введён
+      // ── BARCODE: всегда передаём строку (даже пустую), чтобы можно было очистить на бэке
       const barcode =
-        typeof barcodeRaw === "string" && barcodeRaw.trim()
-          ? barcodeRaw.trim()
-          : undefined;
+        typeof barcodeRaw === "string" ? barcodeRaw.trim() : "";
 
       const formDataObj: ProductData = {
         name,
@@ -97,10 +91,9 @@ const AdminProductEdit: React.FC = () => {
         category,
         ...(subcategory ? { subcategory } : {}),
         images,
-        ...(barcode ? { barcode } : {}),
+        barcode, // всегда присутствует
       };
 
-      // существующие картинки (оставляем те, что не удалили)
       const existingImages = (product.images || []).filter(
         (img): img is { url: string; public_id: string } =>
           typeof img !== "string"
@@ -120,7 +113,6 @@ const AdminProductEdit: React.FC = () => {
       );
       navigate("/admin/products");
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error("Error updating product:", err);
       toast.error(
         t("admin.products.errors.fetch", {
@@ -138,8 +130,9 @@ const AdminProductEdit: React.FC = () => {
         prev
           ? {
               ...prev,
-              images: prev.images?.filter(
-                (img) => typeof img !== "string" && img.public_id !== publicId
+              // НЕ удаляем строковые URL, удаляем только объект с совпавшим public_id
+              images: prev.images?.filter((img) =>
+                typeof img === "string" ? true : img.public_id !== publicId
               ),
             }
           : prev
@@ -150,7 +143,6 @@ const AdminProductEdit: React.FC = () => {
         })
       );
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error("Error deleting image:", err);
       toast.error(
         t("admin.products.edit.toast.imgDeleteFail", {

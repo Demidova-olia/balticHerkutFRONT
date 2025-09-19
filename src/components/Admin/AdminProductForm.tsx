@@ -21,7 +21,7 @@ type FormState = {
   description: string;
   price: string;
   stock: string;
-  barcode: string; // NEW
+  barcode: string;
 };
 
 const AdminProductForm: React.FC<ProductFormProps> = ({
@@ -59,8 +59,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     barcode: (initialData as any)?.barcode ?? "",
   });
 
-  // ✅ ДОЛЖЕН БЫТЬ МАССИВ
-  const [existingImages, setExistingImages] = useState<ExistingImg[]>(() =>
+  const [existingImages, setExistingImages] = useState<ExistingImg[]>(
     Array.isArray(initialData.images)
       ? (initialData.images as Array<string | ExistingImg>).filter(
           (img): img is ExistingImg => typeof img !== "string"
@@ -68,16 +67,19 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       : []
   );
 
-  // хранение предыдущих ключей для аккуратной синхронизации
-  const prevInitRef = useRef<{ id?: string; lang?: Lang }>({ id: (initialData as any)?._id, lang });
+  // чтобы не дергать синхронизацию без надобности
+  const prevInitRef = useRef<{ id?: string; lang?: Lang }>({
+    id: (initialData as any)?._id,
+    lang,
+  });
 
-  // --- загрузка категорий / подкатегорий ---
+  // загрузка категорий/подкатегорий
   useEffect(() => {
     getCategories().then(setCategories).catch((err) => console.error("getCategories error:", err));
     getSubcategories().then(setAllSubcategories).catch((err) => console.error("getSubcategories error:", err));
   }, []);
 
-  // --- синхронизация при смене initialData или языка ---
+  // синхронизация значений формы при смене товара или языка
   useEffect(() => {
     const nextId = (initialData as any)?._id as string | undefined;
     const prevId = prevInitRef.current.id;
@@ -101,6 +103,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       return { name: nextName, description: nextDesc, price, stock, barcode };
     });
 
+    // сразу запишем ID категории/подкатегории (могут показаться позже, когда подтянутся списки)
     const catId =
       typeof initialData.category === "string"
         ? initialData.category
@@ -111,8 +114,8 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
         ? initialData.subcategory
         : (initialData.subcategory as any)?._id || "";
 
-    setSelectedCategory((prev) => (catId !== prev ? catId : prev));
-    setSelectedSubcategory((prev) => (subId !== prev ? subId : prev));
+    setSelectedCategory(catId || "");
+    setSelectedSubcategory(subId || "");
 
     const ex: ExistingImg[] = Array.isArray(initialData.images)
       ? (initialData.images as Array<string | ExistingImg>).filter(
@@ -124,7 +127,30 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     prevInitRef.current = { id: nextId, lang };
   }, [initialData, lang]);
 
-  // --- фильтр подкатегорий по выбранной категории ---
+  // ⚠️ ДОП. СИНХРОНИЗАЦИЯ: когда списки категорий/подкатегорий уже подгрузились,
+  // и у нас есть значение из initialData — выставим его в селект (если ещё не совпадает)
+  useEffect(() => {
+    const catId =
+      typeof initialData.category === "string"
+        ? initialData.category
+        : (initialData.category as any)?._id || "";
+
+    if (catId && selectedCategory !== catId) {
+      setSelectedCategory(catId);
+    }
+
+    const subId =
+      typeof initialData.subcategory === "string"
+        ? initialData.subcategory
+        : (initialData.subcategory as any)?._id || "";
+
+    if (subId && selectedSubcategory !== subId) {
+      setSelectedSubcategory(subId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories, allSubcategories]);
+
+  // фильтруем подкатегории по выбранной категории
   const filteredSubcategories = useMemo(() => {
     if (!selectedCategory) return [];
     return allSubcategories.filter((sub) =>
@@ -134,14 +160,14 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     );
   }, [selectedCategory, allSubcategories]);
 
-  // если выбранная подкатегория не принадлежит новой категории — сбросить
+  // сброс подкатегории, если она не относится к текущей категории
   useEffect(() => {
     if (!selectedSubcategory) return;
     const ok = filteredSubcategories.some((s) => s._id === selectedSubcategory);
     if (!ok) setSelectedSubcategory("");
   }, [filteredSubcategories, selectedSubcategory]);
 
-  // --- handlers ---
+  // handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormState((prev) => {
@@ -196,10 +222,8 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       formData.append("category", selectedCategory);
       if (selectedSubcategory) formData.append("subcategory", selectedSubcategory);
 
-      // NEW: barcode (необязательное)
-      if (formState.barcode && formState.barcode.trim()) {
-        formData.append("barcode", formState.barcode.trim());
-      }
+      // barcode: отправляем всегда (даже пустую строку) — это позволит очистить поле на бэке
+      formData.append("barcode", (formState.barcode || "").trim());
 
       images.forEach((img: File) => formData.append("images", img));
 
@@ -284,7 +308,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
         />
       </div>
 
-      {/* NEW: штрих-код */}
+      {/* BARCODE (только цифры, 8–14) */}
       <div className={styles.formField}>
         <label className={styles.label}>
           {t("admin.productForm.labels.barcode", { defaultValue: "Barcode" })}
@@ -295,10 +319,12 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
           value={formState.barcode}
           onChange={handleChange}
           className={styles.input}
-          maxLength={32}
           inputMode="numeric"
-          pattern="[0-9A-Za-z\\- ]{0,32}"
+          pattern="[0-9]{8,14}"
+          minLength={8}
+          maxLength={14}
           placeholder={t("admin.productForm.placeholders.barcode", { defaultValue: "e.g. 4601234567890" })}
+          title={t("admin.productForm.titles.barcode", { defaultValue: "Digits only, 8–14 length" })}
         />
       </div>
 

@@ -82,11 +82,10 @@ export const createProduct = async (data: ProductData): Promise<Product> => {
 
   formData.append("stock", String(data.stock));
 
-  if (typeof (data as any).barcode !== "undefined") {
-    formData.append("barcode", (data as any).barcode ?? "");
-  }
+  // ✅ Всегда отправляем barcode (пустая строка = очистить поле на бэке)
+  formData.append("barcode", (data as any).barcode ?? "");
 
-  data.images.forEach((file) => {
+  (data.images || []).forEach((file) => {
     if (file instanceof File) {
       formData.append("images", file);
     }
@@ -117,11 +116,10 @@ export const updateProduct = async (
   formData.append("removeAllImages", String(!!removeAllImages));
   formData.append("existingImages", JSON.stringify(existingImages || []));
 
-  if (typeof (data as any).barcode !== "undefined") {
-    formData.append("barcode", (data as any).barcode ?? "");
-  }
+  // ✅ Всегда отправляем barcode (пустая строка = очистить поле)
+  formData.append("barcode", (data as any).barcode ?? "");
 
-  data.images.forEach((file) => {
+  (data.images || []).forEach((file) => {
     if (file instanceof File) {
       formData.append("images", file);
     }
@@ -133,7 +131,9 @@ export const updateProduct = async (
 
 export const deleteProduct = async (id: string): Promise<Product> => {
   const response = await axiosInstance.delete(`/products/${id}`);
-  return response.data.data;
+  // backend returns { message, data }, но наружу возвращаем сам Product,
+  // чтобы не ломать существующие вызовы
+  return response.data.data as Product;
 };
 
 export const searchProducts = async (query: string): Promise<Product[]> => {
@@ -185,6 +185,7 @@ export const updateProductImage = async (
   return response.data;
 };
 
+// Вспомогательная загрузка прямо в Cloudinary (если используется отдельно)
 export const uploadImage = async (
   file: File
 ): Promise<{ url: string; public_id: string }> => {
@@ -205,4 +206,3 @@ export const uploadImage = async (
   const data = await response.json();
   return { url: data.secure_url, public_id: data.public_id };
 };
-
