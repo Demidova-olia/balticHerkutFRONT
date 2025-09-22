@@ -27,20 +27,29 @@ function pickLocalizedName(name: unknown, lang: string): string {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
   const { _id, name, price, images } = product;
+
   const stock = Number(product?.stock ?? 0);
   const isOutOfStock = !Number.isFinite(stock) || stock <= 0;
 
-  const { addToCart } = useCart();
-  const [quantity, setQuantity] = useState<number>(1);
+  const { addToCart, items } = useCart();
 
-  const [alreadyAdded, setAlreadyAdded] = useState<number>(0);
+  const inCartAlready = useMemo(() => {
+    const found = items.find((i) => i.id === _id);
+    return Number(found?.quantity ?? 0);
+  }, [items, _id]);
+
+  const [quantity, setQuantity] = useState<number>(1);
 
   const { t, i18n } = useTranslation("common");
 
   useEffect(() => {
-    setAlreadyAdded(0);
-    setQuantity(isOutOfStock ? 0 : 1);
-  }, [isOutOfStock, _id, stock]);
+    const remaining = Math.max(0, stock - inCartAlready);
+    if (remaining <= 0) {
+      setQuantity(0);
+    } else {
+      setQuantity((q) => Math.max(1, Math.min(q || 1, Math.min(10, remaining))));
+    }
+  }, [stock, inCartAlready]);
 
   const imageUrl = useMemo(() => {
     return typeof images?.[0] === "string"
@@ -63,51 +72,39 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
       maximumFractionDigits: 2,
     }).format(n);
 
-  const remaining = Math.max(0, stock - alreadyAdded);
+  const remaining = Math.max(0, stock - inCartAlready);
 
   const handleAddToCart = () => {
     if (remaining <= 0) {
-      toast.info(
-        t("product.noMoreStock", { defaultValue: "No more stock available." })
-      );
+      toast.info(t("product.noMoreStock", { defaultValue: "No more stock available." }));
       return;
     }
 
     const toAdd = Math.max(0, Math.min(quantity, remaining));
     if (toAdd <= 0) {
-      toast.info(
-        t("product.noMoreStock", { defaultValue: "No more stock available." })
-      );
+      toast.info(t("product.noMoreStock", { defaultValue: "No more stock available." }));
       return;
     }
 
     if (onAddToCart) {
       onAddToCart(toAdd);
     } else {
+
       addToCart({
         id: _id,
         name: localizedName,
         price: numericPrice,
         quantity: toAdd,
         image: imageUrl,
+        stock: Number.isFinite(stock) ? stock : undefined,
       });
-    }
-
-    setAlreadyAdded((prev) => prev + toAdd);
-
-    const nextRemaining = remaining - toAdd;
-    if (nextRemaining <= 0) {
-
-    } else if (quantity > nextRemaining) {
-      setQuantity(nextRemaining);
     }
   };
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = parseInt(e.target.value, 10);
     if (!Number.isFinite(val)) return;
-
-    const clamped = Math.max(1, Math.min(val, Math.max(1, remaining)));
+    const clamped = Math.max(1, Math.min(val, Math.min(10, remaining)));
     setQuantity(clamped);
   };
 

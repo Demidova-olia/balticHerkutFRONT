@@ -2,6 +2,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
 
 import NavBar from "../../components/NavBar/NavBar";
 import FavoriteList from "../../components/Favorite/FavoriteList";
@@ -15,6 +16,30 @@ const CartPage: React.FC = () => {
 
   const handleCheckout = () => {
     navigate("/checkout");
+  };
+
+  const dec = (id: string, currentQty: number) => {
+
+    const next = Math.max(1, currentQty - 1);
+    if (next !== currentQty) updateQuantity(id, next);
+  };
+
+  const inc = (id: string, currentQty: number, stock?: number) => {
+    const hasStock = Number.isFinite(Number(stock));
+    if (hasStock) {
+      const hardLimit = Number(stock);
+      if (hardLimit <= 0) return;
+      if (currentQty >= hardLimit) {
+        toast.info(
+          t("cart.maxReached", { defaultValue: "Max stock reached" }),
+          { autoClose: 1500 }
+        );
+        return;
+      }
+      updateQuantity(id, Math.min(currentQty + 1, hardLimit));
+      return;
+    }
+    updateQuantity(id, currentQty + 1);
   };
 
   return (
@@ -31,52 +56,97 @@ const CartPage: React.FC = () => {
           </p>
         ) : (
           <div className={styles.cartItems}>
-            {items.map((item) => (
-              <div key={item.id} className={styles.cartItem}>
-                <img
-                  src={item.image || "/images/no-image.png"}
-                  alt={item.name || t("product.noName", "No Name")}
-                  className={styles.itemImage}
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = "/images/no-image.png";
-                  }}
-                />
-                <div className={styles.itemDetails}>
-                  <h4 className={styles.itemName}>
-                    {item.name || t("product.noName", "No Name")}
-                  </h4>
+            {items.map((item) => {
 
-                  <p className={styles.itemPrice}>
-                    {(item.price ?? 0).toFixed(2)} €
-                  </p>
+              const rawStock = (item as any)?.stock;
+              const hasStock = Number.isFinite(Number(rawStock));
+              const stock: number | undefined = hasStock ? Number(rawStock) : undefined;
+              const isOutOfStock = hasStock && stock === 0;
 
-                  <div className={styles.itemQuantity}>
-                    <label htmlFor={`quantity-${item.id}`}>
-                      {t("cart.quantity", "Quantity")}:
-                    </label>
-                    <select
-                      id={`quantity-${item.id}`}
-                      value={item.quantity}
-                      onChange={(e) => updateQuantity(item.id, parseInt(e.target.value))}
+              const hitMax = hasStock ? item.quantity >= (stock as number) : false;
+
+              return (
+                <div key={item.id} className={styles.cartItem}>
+                  <img
+                    src={item.image || "/images/no-image.png"}
+                    alt={item.name || t("product.noName", "No Name")}
+                    className={styles.itemImage}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = "/images/no-image.png";
+                    }}
+                  />
+
+                  <div className={styles.itemDetails}>
+                    <h4 className={styles.itemName}>
+                      {item.name || t("product.noName", "No Name")}
+                    </h4>
+
+                    <p className={styles.itemPrice}>
+                      {(item.price ?? 0).toFixed(2)} €
+                    </p>
+
+                    <div className={styles.itemQuantity}>
+                      <span className={styles.qtyLabel}>
+                        {t("cart.quantity", "Quantity")}:
+                      </span>
+
+                      <div className={styles.qtyControls}>
+                        <button
+                          type="button"
+                          className={styles.qtyBtn}
+                          onClick={() => dec(item.id, item.quantity)}
+                          disabled={isOutOfStock || item.quantity <= 1}
+                          aria-label={t("cart.decrease", "Decrease quantity")}
+                          title={t("cart.decrease", "Decrease quantity")}
+                        >
+                          –
+                        </button>
+
+                        <span className={styles.qtyValue} aria-live="polite">
+                          {isOutOfStock ? 0 : item.quantity}
+                        </span>
+
+                        <button
+                          type="button"
+                          className={styles.qtyBtn}
+                          onClick={() => inc(item.id, item.quantity, stock)}
+                          disabled={isOutOfStock || hitMax}
+                          aria-label={t("cart.increase", "Increase quantity")}
+                          title={
+                            isOutOfStock
+                              ? t("product.outOfStock", "Out of stock")
+                              : hitMax
+                              ? t("cart.maxReached", "Max stock reached")
+                              : t("cart.increase", "Increase quantity")
+                          }
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      {isOutOfStock && (
+                        <div className={styles.outOfStockNote} aria-live="polite">
+                          {t("product.outOfStock", "Out of stock")}
+                        </div>
+                      )}
+                      {!isOutOfStock && hasStock && (
+                        <div className={styles.stockHint}>
+                          {t("cart.inStock", "In stock")}: {stock}
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      className={styles.removeButton}
+                      onClick={() => removeFromCart(item.id)}
+                      aria-label={t("cart.remove", "Remove")}
                     >
-                      {[...Array(10)].map((_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                          {i + 1}
-                        </option>
-                      ))}
-                    </select>
+                      {t("cart.remove", "Remove")}
+                    </button>
                   </div>
-
-                  <button
-                    className={styles.removeButton}
-                    onClick={() => removeFromCart(item.id)}
-                    aria-label={t("cart.remove", "Remove")}
-                  >
-                    {t("cart.remove", "Remove")}
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -101,5 +171,3 @@ const CartPage: React.FC = () => {
 };
 
 export default CartPage;
-
-
