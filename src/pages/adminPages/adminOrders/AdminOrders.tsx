@@ -1,5 +1,5 @@
 // src/pages/admin/orders/AdminOrders.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import axiosInstance from "../../../utils/axios";
 import { toast } from "react-toastify";
@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 
 type Product = {
   _id: string;
-  name: unknown;      
+  name: unknown;
   price?: number;
   image?: string;
 };
@@ -42,12 +42,10 @@ function pickLocalized(value: unknown, lang: string): string {
   if (typeof value === "string") return value.trim();
   const v = value as Record<string, any>;
   const short = (lang || "en").slice(0, 2);
-
   if (typeof v[short] === "string" && v[short].trim()) return v[short].trim();
   if (typeof v._source === "string" && typeof v[v._source] === "string" && v[v._source].trim()) {
     return v[v._source].trim();
   }
-
   if (typeof v.en === "string" && v.en.trim()) return v.en.trim();
   if (typeof v.ru === "string" && v.ru.trim()) return v.ru.trim();
   if (typeof v.fi === "string" && v.fi.trim()) return v.fi.trim();
@@ -60,6 +58,8 @@ const AdminOrders = () => {
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { t, i18n } = useTranslation("common");
+
+  const lang = i18n.resolvedLanguage || i18n.language || "en";
 
   const isAdmin = useMemo(() => {
     const role = String(user?.role ?? user?.user?.role ?? "").trim().toLowerCase();
@@ -78,22 +78,53 @@ const AdminOrders = () => {
     [t]
   );
 
-  const fetchOrders = async () => {
+  const errorTimerRef = useRef<number | null>(null);
+  const controllerRef = useRef<AbortController | null>(null);
+
+  const clearErrorTimer = () => {
+    if (errorTimerRef.current) {
+      clearTimeout(errorTimerRef.current);
+      errorTimerRef.current = null;
+    }
+  };
+
+  const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+  const fetchOrders = async (attempt = 1) => {
+
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
+
+    setFetching(true);
+    clearErrorTimer();
+    setError(null);
+
     try {
-      setFetching(true);
-      setError(null);
-      const { data } = await axiosInstance.get<Order[]>("/admin/orders");
+      const { data } = await axiosInstance.get<Order[]>("/admin/orders", {
+        signal: controller.signal,
+        timeout: 20000, // 20s
+      });
       setOrders(Array.isArray(data) ? data : []);
     } catch (e: any) {
+      if (e?.code === "ERR_CANCELED" || e?.name === "CanceledError" || /canceled/i.test(String(e?.message))) {
+        return;
+      }
+
+      if (attempt < 3) {
+        await delay(attempt === 1 ? 1200 : 2500);
+        return fetchOrders(attempt + 1);
+      }
+
       const s = e?.response?.status;
-      setError(
+      const msg =
         s === 401
           ? t("admin.orders.errors.unauthorized", { defaultValue: "Unauthorized (401): check your auth." })
           : s === 403
           ? t("admin.orders.errors.forbidden", { defaultValue: "Forbidden (403): no rights to view orders." })
-          : t("admin.orders.errors.fetch", { defaultValue: "Failed to fetch orders from the server" })
-      );
-      setOrders([]);
+          : t("admin.orders.errors.fetch", { defaultValue: "Failed to fetch orders from the server" });
+
+      errorTimerRef.current = window.setTimeout(() => setError(msg), 3000);
     } finally {
       setFetching(false);
     }
@@ -101,6 +132,11 @@ const AdminOrders = () => {
 
   useEffect(() => {
     if (!loading && isAdmin) fetchOrders();
+    return () => {
+      controllerRef.current?.abort();
+      clearErrorTimer();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, isAdmin]);
 
   const handleStatusChange = async (orderId: string, newStatus: Order["status"]) => {
@@ -119,8 +155,6 @@ const AdminOrders = () => {
       );
     }
   };
-
-  const lang = i18n.resolvedLanguage || i18n.language || "en";
 
   const OrderRow = ({ order }: { order: Order }) => (
     <tr>
@@ -175,73 +209,56 @@ const AdminOrders = () => {
     </tr>
   );
 
-  if (loading) {
-    return <div className={styles.loading}>{t("loading.default", { defaultValue: "Loading..." })}</div>;
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className={styles.adminError}>
-        {t("admin.orders.permissionDenied", { defaultValue: "You do not have permission to view this page." })}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={styles.error}>
-        {error}{" "}
-        <button onClick={fetchOrders}>
-          {t("admin.metrics.refresh", { defaultValue: "Refresh" })}
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.page}>
-    <div className={styles.adminOrders}>
-      <h1>{t("admin.orders.title", { defaultValue: "Order Management" })}</h1>
-      <AdminNavBar />
+      <div className={styles.adminOrders}>
+        <h1>{t("admin.orders.title", { defaultValue: "Order Management" })}</h1>
+        <AdminNavBar />
 
-      <table className={styles.ordersTable}>
-        <thead>
-          <tr>
-            <th>{t("admin.orders.table.orderId", { defaultValue: "Order ID" })}</th>
-            <th>{t("admin.orders.table.userEmail", { defaultValue: "User Email" })}</th>
-            <th>{t("admin.orders.table.products", { defaultValue: "Products" })}</th>
-            <th>{t("admin.orders.table.total", { defaultValue: "Total" })}</th>
-            <th>{t("admin.orders.table.address", { defaultValue: "Address" })}</th>
-            <th>{t("admin.orders.table.status", { defaultValue: "Status" })}</th>
-            <th>{t("admin.orders.table.date", { defaultValue: "Date" })}</th>
-          </tr>
-        </thead>
+        {/* баннер ошибки показываем ТОЛЬКО когда уже не грузимся и после задержки */}
+        {!fetching && error && (
+          <div className={styles.error} style={{ marginBottom: 12 }}>
+            {error}{" "}
+            <button onClick={() => fetchOrders()}>{t("admin.metrics.refresh", { defaultValue: "Refresh" })}</button>
+          </div>
+        )}
 
-        <tbody>
-          {fetching ? (
+        <table className={styles.ordersTable}>
+          <thead>
             <tr>
-              <td colSpan={7} className={styles.loading}>
-                {t("loading.default", { defaultValue: "Loading..." })}
-              </td>
+              <th>{t("admin.orders.table.orderId", { defaultValue: "Order ID" })}</th>
+              <th>{t("admin.orders.table.userEmail", { defaultValue: "User Email" })}</th>
+              <th>{t("admin.orders.table.products", { defaultValue: "Products" })}</th>
+              <th>{t("admin.orders.table.total", { defaultValue: "Total" })}</th>
+              <th>{t("admin.orders.table.address", { defaultValue: "Address" })}</th>
+              <th>{t("admin.orders.table.status", { defaultValue: "Status" })}</th>
+              <th>{t("admin.orders.table.date", { defaultValue: "Date" })}</th>
             </tr>
-          ) : orders.length === 0 ? (
-            <tr>
-              <td colSpan={7} className={styles.noOrders}>
-                {t("admin.orders.empty", { defaultValue: "No orders yet." })}
-              </td>
-            </tr>
-          ) : (
-            orders.map((order) => <OrderRow key={order._id} order={order} />)
-          )}
-        </tbody>
-      </table>
+          </thead>
 
-      <BottomNav />
-    </div>
+          <tbody>
+            {fetching ? (
+              <tr>
+                <td colSpan={7} className={styles.loading}>
+                  {t("loading.default", { defaultValue: "Loading..." })}
+                </td>
+              </tr>
+            ) : orders.length === 0 ? (
+              <tr>
+                <td colSpan={7} className={styles.noOrders}>
+                  {t("admin.orders.empty", { defaultValue: "No orders yet." })}
+                </td>
+              </tr>
+            ) : (
+              orders.map((order) => <OrderRow key={order._id} order={order} />)
+            )}
+          </tbody>
+        </table>
+
+        <BottomNav />
+      </div>
     </div>
   );
 };
 
 export default AdminOrders;
-
-

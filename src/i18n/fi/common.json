@@ -1,4 +1,57 @@
-{
+{ "login": {
+    "title": "Kirjaudu sisään",
+    "emailLabel": "Sähköposti",
+    "emailPlaceholder": "Syötä sähköpostisi",
+    "passwordLabel": "Salasana",
+    "passwordPlaceholder": "Syötä salasanasi",
+    "showPwd": "Näytä salasana",
+    "hidePwd": "Piilota salasana",
+    "show": "Näytä",
+    "hide": "Piilota",
+    "submit": "Kirjaudu",
+    "loading": "Kirjaudutaan...",
+    "registerLink": "Luo tili",
+    "returnHome": "Palaa etusivulle",
+    "toasts": {
+      "success": "Tervetuloa!",
+      "fail": "Kirjautumisvirhe"
+    }
+  },
+  "buttons": { "add": "Lisää", "remove": "Poista" },
+  "register": {
+    "title": "Rekisteröidy",
+    "labels": {
+      "username": "Käyttäjänimi:",
+      "email": "Sähköposti:",
+      "phone": "Puhelinnumero:",
+      "password": "Salasana:",
+      "confirmPassword": "Vahvista salasana:"
+    },
+    "placeholders": {
+      "username": "Syötä käyttäjänimi",
+      "email": "Syötä sähköposti",
+      "phone": "Syötä puhelinnumero (10 numeroa)",
+      "password": "Syötä salasana",
+      "confirmPassword": "Toista salasana"
+    },
+    "buttons": {
+      "submit": "Rekisteröidy",
+      "loading": "Rekisteröidään…"
+    },
+    "haveAccount": "Onko sinulla jo tili?",
+    "loginLink": "Kirjaudu sisään",
+    "returnHome": "Palaa etusivulle",
+    "errors": {
+      "required": "Kaikki kentät ovat pakollisia",
+      "username": "Käyttäjänimi vähintään 3 merkkiä, vain latinalaiset kirjaimet ja numerot",
+      "phone": "Puhelinnumerossa täytyy olla tarkalleen 10 numeroa",
+      "mismatch": "Salasanat eivät täsmää"
+    },
+    "toasts": {
+      "success": "Rekisteröinti onnistui! Voit nyt kirjautua.",
+      "fail": "Rekisteröintivirhe"
+    }
+  },
   "common": {
     "yes": "Kyllä",
     "no": "Ei",
@@ -60,6 +113,7 @@
 
   "product": {
     "noName": "Nimetön",
+    "OutOfStock": "Loppuunmyyty",
     "noDescription": "Kuvausta ei saatavilla.",
     "priceLabel": "Hinta",
     "addToCart": "Lisää koriin",

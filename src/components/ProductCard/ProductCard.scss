@@ -6,7 +6,26 @@
     padding: 20px;
     align-items: flex-start;
 }
-  
+
+.add-to-cart[disabled],
+.add-to-cart.out-of-stock {
+  background-color: #e5e7eb;  
+  color: #6b7280;           
+  cursor: not-allowed;
+  box-shadow: none;
+  border: 1px solid #d1d5db;  
+  transform: none;
+}
+
+.add-to-cart[disabled]:hover,
+.add-to-cart[disabled]:active,
+.add-to-cart.out-of-stock:hover,
+.add-to-cart.out-of-stock:active {
+  background-color: #e5e7eb;
+  color: #6b7280;
+  transform: none;
+}
+
 
 .product-card {
     border: 1px solid #ddd;

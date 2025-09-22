@@ -12,24 +12,35 @@ declare module "axios" {
   }
 }
 
-// Базовый URL: сперва Vite env, затем origin + /api, и запасной дефолт
 const getBaseURL = () => {
   const viteEnv =
     (typeof import.meta !== "undefined" && (import.meta as any).env) || {};
-  if (viteEnv?.VITE_API_URL) return viteEnv.VITE_API_URL as string;
+  if (viteEnv?.VITE_API_URL) {
+    return String(viteEnv.VITE_API_URL).replace(/\/$/, "");
+  }
 
   if (typeof window !== "undefined") {
     const origin = window.location.origin.replace(/\/$/, "");
-    return `${origin}/api`;
+    const isLocalVite =
+      /^http:\/\/(localhost|127\.0\.0\.1):5173$/i.test(origin) ||
+      /^http:\/\/(?:192\.168|10)\.\d+\.\d+:5173$/i.test(origin);
+
+    if (!isLocalVite) {
+      return `${origin}/api`;
+    }
   }
+
   return "https://balticherkutback.onrender.com/api";
 };
 
-// нормализуем язык до en/ru/fi
+// normalize Accept-Language до en/ru/fi
 const normalizeLang = (raw?: string) => {
   const v = (raw || "").toLowerCase();
   const short = v.split(",")[0].trim().slice(0, 2);
-  return (["en", "ru", "fi"].includes(short) ? short : "en") as "en" | "ru" | "fi";
+  return (["en", "ru", "fi"].includes(short) ? short : "en") as
+    | "en"
+    | "ru"
+    | "fi";
 };
 
 const getCurrentLang = (): "en" | "ru" | "fi" => {
@@ -52,7 +63,7 @@ const getCurrentLang = (): "en" | "ru" | "fi" => {
 const axiosInstance = axios.create({
   baseURL: getBaseURL(),
   timeout: 15000,
-  withCredentials: true, // можно оставить включенным
+  withCredentials: true,
 });
 
 const pendingMap = new Map<string, AbortController>();
@@ -70,7 +81,8 @@ const getDefaultReqKey = (config: InternalAxiosRequestConfig): string => {
   const method = (config.method || "get").toLowerCase();
   const url = config.url || "";
   const paramsStr = stableStringify(config.params);
-  const isFD = typeof FormData !== "undefined" && config.data instanceof FormData;
+  const isFD =
+    typeof FormData !== "undefined" && config.data instanceof FormData;
   const dataStr = isFD ? "" : stableStringify(config.data);
   return [method, url, paramsStr, dataStr].join("&");
 };
@@ -100,22 +112,22 @@ const removePending = (config?: InternalAxiosRequestConfig) => {
   if (pendingMap.has(key)) pendingMap.delete(key);
 };
 
+// ===== Interceptors =====
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // auth
-    const token =
+    const rawToken =
       typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token =
+      rawToken && !/^(\s*|null|undefined)$/i.test(rawToken) ? rawToken : null;
+
     if (token && config.headers) {
       (config.headers as any).Authorization = `Bearer ${token}`;
     }
 
-    // локализация: только Accept-Language (без X-Client-Lang, чтобы не триггерить preflight)
     if (config.headers && !(config.headers as any)["Accept-Language"]) {
-      const lang = getCurrentLang();
-      (config.headers as any)["Accept-Language"] = lang;
+      (config.headers as any)["Accept-Language"] = getCurrentLang();
     }
 
-    // FormData — пусть axios сам выставит boundary
     const isFD =
       typeof FormData !== "undefined" && config.data instanceof FormData;
     if (isFD && config.headers) {
@@ -143,6 +155,7 @@ axiosInstance.interceptors.response.use(
     ) {
       return Promise.reject(error);
     }
+
 
     const skip = (error.config as any)?.skipAuthRedirect;
     if (error.response?.status === 401 && !skip) {

@@ -1,4 +1,57 @@
-{
+{ "login": {
+    "title": "Вход",
+    "emailLabel": "Почта",
+    "emailPlaceholder": "Введите почту",
+    "passwordLabel": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "showPwd": "Показать пароль",
+    "hidePwd": "Скрыть пароль",
+    "show": "Показать",
+    "hide": "Скрыть",
+    "submit": "Войти",
+    "loading": "Входим...",
+    "registerLink": "Зарегистрироваться",
+    "returnHome": "На главную",
+    "toasts": {
+      "success": "Добро пожаловать!",
+      "fail": "Ошибка входа"
+    }
+  },
+  "buttons": { "add": "Добавить", "remove": "Удалить" },
+  "register": {
+    "title": "Регистрация",
+    "labels": {
+      "username": "Имя пользователя:",
+      "email": "E-mail:",
+      "phone": "Номер телефона:",
+      "password": "Пароль:",
+      "confirmPassword": "Подтверждение пароля:"
+    },
+    "placeholders": {
+      "username": "Введите имя пользователя",
+      "email": "Введите e-mail",
+      "phone": "Введите номер телефона (10 цифр)",
+      "password": "Введите пароль",
+      "confirmPassword": "Повторите пароль"
+    },
+    "buttons": {
+      "submit": "Зарегистрироваться",
+      "loading": "Регистрация…"
+    },
+    "haveAccount": "Уже есть аккаунт?",
+    "loginLink": "Войти",
+    "returnHome": "Вернуться на главную",
+    "errors": {
+      "required": "Заполните все поля",
+      "username": "Имя пользователя: минимум 3 символа, только латиница и цифры",
+      "phone": "Телефон должен содержать ровно 10 цифр",
+      "mismatch": "Пароли не совпадают"
+    },
+    "toasts": {
+      "success": "Регистрация прошла успешно! Теперь вы можете войти.",
+      "fail": "Ошибка регистрации"
+    }
+  },
   "common": {
     "yes": "Да",
     "no": "Нет",
@@ -60,6 +113,7 @@
 
   "product": {
     "noName": "Без названия",
+    "OutOfStock": "Нет в наличии",
     "noDescription": "Описание отсутствует.",
     "priceLabel": "Цена",
     "addToCart": "В корзину",

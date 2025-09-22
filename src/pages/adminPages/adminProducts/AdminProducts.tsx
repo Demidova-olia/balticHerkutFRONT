@@ -1,3 +1,4 @@
+// src/pages/adminPages/adminProducts/AdminProducts.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as ProductService from "../../../services/ProductService";
@@ -24,7 +25,6 @@ const AdminProducts: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-
       const res = await ProductService.getProducts("", "", "", 1, 100);
       setProducts(Array.isArray(res?.products) ? res.products : []);
     } catch {
@@ -37,6 +37,7 @@ const AdminProducts: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDelete = async (id: string) => {
@@ -110,6 +111,7 @@ const AdminProducts: React.FC = () => {
             <th>{t("admin.products.table.name", { defaultValue: "Name" })}</th>
             <th>{t("admin.products.table.category", { defaultValue: "Category" })}</th>
             <th>{t("admin.products.table.subcategory", { defaultValue: "Subcategory" })}</th>
+            <th>{t("admin.products.table.barcode", { defaultValue: "Barcode" })}</th>
             <th>{t("admin.products.table.price", { defaultValue: "Price" })}</th>
             <th>{t("admin.products.table.stock", { defaultValue: "Stock" })}</th>
             <th>{t("admin.products.table.active", { defaultValue: "Active" })}</th>
@@ -138,6 +140,11 @@ const AdminProducts: React.FC = () => {
 
             const imagesArr = (Array.isArray(product.images) ? product.images : []) as any[];
             const hasImages = imagesArr.length > 0;
+
+            const barcode =
+              typeof (product as any).barcode === "string" && (product as any).barcode.trim()
+                ? (product as any).barcode.trim()
+                : "—";
 
             return (
               <tr key={product._id}>
@@ -170,6 +177,7 @@ const AdminProducts: React.FC = () => {
                 <td>{nameText}</td>
                 <td>{categoryName}</td>
                 <td>{subcategoryName}</td>
+                <td title={barcode}>{barcode}</td>
                 <td>€{price}</td>
                 <td>{product.stock ?? 0}</td>
                 <td>
