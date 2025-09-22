@@ -19,36 +19,53 @@ const CartPage: React.FC = () => {
   };
 
   const dec = (id: string, currentQty: number) => {
-
     const next = Math.max(1, currentQty - 1);
     if (next !== currentQty) updateQuantity(id, next);
   };
 
-  const inc = (id: string, currentQty: number, stock?: number) => {
-    const hasStock = Number.isFinite(Number(stock));
-    if (hasStock) {
-      const hardLimit = Number(stock);
-      if (hardLimit <= 0) return;
-      if (currentQty >= hardLimit) {
+
+  const getHardLimit = (item: any): number | undefined => {
+    const candidates = [
+      item?.stock,
+      item?.max,
+      item?.available,
+      item?.limit,
+    ];
+    for (const v of candidates) {
+      const n = Number(v);
+      if (Number.isFinite(n)) return n;
+    }
+    return undefined;
+  };
+
+  const inc = (id: string, currentQty: number, itemRef: any) => {
+    const hardLimit = getHardLimit(itemRef);
+
+    if (Number.isFinite(Number(hardLimit))) {
+      const limit = Number(hardLimit);
+      const remaining = Math.max(0, limit - currentQty);
+      if (remaining <= 0) {
         toast.info(
           t("cart.maxReached", { defaultValue: "Max stock reached" }),
           { autoClose: 1500 }
         );
         return;
       }
-      updateQuantity(id, Math.min(currentQty + 1, hardLimit));
+      updateQuantity(id, currentQty + 1);
       return;
     }
-    updateQuantity(id, currentQty + 1);
+
+    toast.info(
+      t("cart.maxReached", { defaultValue: "Max stock reached" }),
+      { autoClose: 1200 }
+    );
   };
 
   return (
     <>
       <NavBar />
       <div className={styles.cartPage}>
-        <h2 className={styles.cartTitle}>
-          {t("cart.title", "Your Cart")}
-        </h2>
+        <h2 className={styles.cartTitle}>{t("cart.title", "Your Cart")}</h2>
 
         {items.length === 0 ? (
           <p className={styles.emptyMessage}>
@@ -57,13 +74,17 @@ const CartPage: React.FC = () => {
         ) : (
           <div className={styles.cartItems}>
             {items.map((item) => {
+             
+              const hardLimit = getHardLimit(item);
+              const hasStock = Number.isFinite(Number(hardLimit));
+              const stock = hasStock ? Number(hardLimit) : undefined;
 
-              const rawStock = (item as any)?.stock;
-              const hasStock = Number.isFinite(Number(rawStock));
-              const stock: number | undefined = hasStock ? Number(rawStock) : undefined;
               const isOutOfStock = hasStock && stock === 0;
+              const remaining = hasStock
+                ? Math.max(0, (stock as number) - item.quantity)
+                : 0;
 
-              const hitMax = hasStock ? item.quantity >= (stock as number) : false;
+              const disablePlus = isOutOfStock || remaining <= 0;
 
               return (
                 <div key={item.id} className={styles.cartItem}>
@@ -72,7 +93,8 @@ const CartPage: React.FC = () => {
                     alt={item.name || t("product.noName", "No Name")}
                     className={styles.itemImage}
                     onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = "/images/no-image.png";
+                      (e.currentTarget as HTMLImageElement).src =
+                        "/images/no-image.png";
                     }}
                   />
 
@@ -109,13 +131,13 @@ const CartPage: React.FC = () => {
                         <button
                           type="button"
                           className={styles.qtyBtn}
-                          onClick={() => inc(item.id, item.quantity, stock)}
-                          disabled={isOutOfStock || hitMax}
+                          onClick={() => inc(item.id, item.quantity, item)}
+                          disabled={disablePlus}
                           aria-label={t("cart.increase", "Increase quantity")}
                           title={
                             isOutOfStock
                               ? t("product.outOfStock", "Out of stock")
-                              : hitMax
+                              : disablePlus
                               ? t("cart.maxReached", "Max stock reached")
                               : t("cart.increase", "Increase quantity")
                           }
@@ -125,7 +147,10 @@ const CartPage: React.FC = () => {
                       </div>
 
                       {isOutOfStock && (
-                        <div className={styles.outOfStockNote} aria-live="polite">
+                        <div
+                          className={styles.outOfStockNote}
+                          aria-live="polite"
+                        >
                           {t("product.outOfStock", "Out of stock")}
                         </div>
                       )}

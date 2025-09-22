@@ -61,6 +61,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  color: #2c3e50; /* fixed (была кириллическая "с") */
 }
 
 .itemQuantity label,
@@ -74,7 +75,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-left: 0; 
+  margin-left: 0;
 }
 
 .qtyBtn {
@@ -86,8 +87,15 @@
   cursor: pointer;
   font-size: 18px;
   line-height: 1;
-  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease, color 0.2s ease;
   user-select: none;
+
+  /* ключевое: видим символ и центрируем */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #111827;         /* тёмный текст */
+  font-weight: 700;
 }
 
 .qtyBtn:hover:not(:disabled) {
@@ -102,6 +110,9 @@
 .qtyBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  background: #f3f4f6;
+  color: #9ca3af;         /* чтобы знак тоже был видим, но «приглушён» */
+  box-shadow: none;
 }
 
 .qtyValue {
@@ -121,7 +132,6 @@
   font-size: 0.85rem;
 }
 
-/* Удаление */
 .removeButton {
   background-color: #e74c3c;
   color: white;
