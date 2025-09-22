@@ -89,7 +89,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
     if (onAddToCart) {
       onAddToCart(toAdd);
     } else {
-
       addToCart({
         id: _id,
         name: localizedName,
@@ -109,10 +108,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
   };
 
   const btnClass = `add-to-cart ${remaining <= 0 ? "out-of-stock" : ""}`;
+  const cardClass = `product-card ${remaining <= 0 ? "product-card--oos" : ""}`;
 
   return (
-    <div className="product-card">
-      <Link to={`/product/${_id}`}>
+    <div className={cardClass}>
+      <Link to={`/product/${_id}`} className="media" aria-label={localizedName}>
         <img
           className="product-image"
           src={imageUrl}
@@ -122,9 +122,26 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
             target.src = "/images/no-image.png";
           }}
         />
-        <h4>{localizedName}</h4>
-        <p>{fmtEUR(numericPrice)}</p>
+        {remaining <= 0 && (
+          <span className="badge badge--oos">
+            {t("product.outOfStock", { defaultValue: "Out of stock" })}
+          </span>
+        )}
       </Link>
+
+      <div className="body">
+        <h4 title={localizedName}>{localizedName}</h4>
+        <div className="price">{fmtEUR(numericPrice)}</div>
+        {remaining > 0 ? (
+          <div className="muted">
+            {t("product.inStock", { defaultValue: "In stock" })}: {remaining}
+          </div>
+        ) : (
+          <div className="muted">
+            {t("product.outOfStock", { defaultValue: "Out of stock" })}
+          </div>
+        )}
+      </div>
 
       {remaining > 0 ? (
         <div className="quantity-selector">
@@ -142,31 +159,26 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
               </option>
             ))}
           </select>
-          <small aria-live="polite" style={{ display: "block", marginTop: 6 }}>
-            {t("product.remaining", { defaultValue: "Remaining" })}: {remaining}
-          </small>
         </div>
-      ) : (
-        <div className="quantity-selector" aria-live="polite">
-          {t("product.outOfStock", { defaultValue: "Out of stock" })}
-        </div>
-      )}
+      ) : null}
 
-      <button
-        className={btnClass}
-        onClick={handleAddToCart}
-        disabled={remaining <= 0}
-        aria-disabled={remaining <= 0}
-        title={
-          remaining <= 0
+      <div className="footer">
+        <button
+          className={btnClass}
+          onClick={handleAddToCart}
+          disabled={remaining <= 0}
+          aria-disabled={remaining <= 0}
+          title={
+            remaining <= 0
+              ? t("product.outOfStock", { defaultValue: "Out of stock" })
+              : t("product.addToCart", { defaultValue: "Add to cart" })
+          }
+        >
+          {remaining <= 0
             ? t("product.outOfStock", { defaultValue: "Out of stock" })
-            : t("product.addToCart", { defaultValue: "Add to cart" })
-        }
-      >
-        {remaining <= 0
-          ? t("product.outOfStock", { defaultValue: "Out of stock" })
-          : t("product.addToCart", { defaultValue: "Add to cart" })}
-      </button>
+            : t("product.addToCart", { defaultValue: "Add to cart" })}
+        </button>
+      </div>
     </div>
   );
 };
