@@ -1,3 +1,4 @@
+// src/utils/axios.ts
 import axios, {
   AxiosError,
   AxiosResponse,
@@ -10,25 +11,20 @@ declare module "axios" {
     requestKey?: string;
     skipAuthRedirect?: boolean;
     maxRetries?: number;
-    public?: boolean;
+    public?: boolean; 
   }
 }
 
 const getBaseURL = () => {
   const viteEnv =
     (typeof import.meta !== "undefined" && (import.meta as any).env) || {};
-  if (viteEnv?.VITE_API_URL) return String(viteEnv.VITE_API_URL).replace(/\/$/, "");
-
-  if (typeof window !== "undefined") {
-    const origin = window.location.origin.replace(/\/$/, "");
-    const isLocalVite =
-      /^http:\/\/(localhost|127\.0\.0\.1):5173$/i.test(origin) ||
-      /^http:\/\/(?:192\.168|10)\.\d+\.\d+:5173$/i.test(origin);
-    if (!isLocalVite) return `${origin}/api`;
+  if (viteEnv?.VITE_API_URL) {
+    return String(viteEnv.VITE_API_URL).replace(/\/$/, "");
   }
-  return "https://balticherkutback.onrender.com/api";
+  return "/api";
 };
 
+/** ========= i18n helpers ========= */
 const normalizeLang = (raw?: string) => {
   const v = (raw || "").toLowerCase();
   const short = v.split(",")[0].trim().slice(0, 2);
@@ -52,9 +48,10 @@ const getCurrentLang = (): "en" | "ru" | "fi" => {
 const axiosInstance = axios.create({
   baseURL: getBaseURL(),
   timeout: 30000,
-  withCredentials: true,
+  withCredentials: false,
 });
 
+/** ========= de-dupe ========= */
 const pendingMap = new Map<string, AbortController>();
 
 const stableStringify = (obj: any): string => {
@@ -79,14 +76,17 @@ const isIdempotent = (m?: string) =>
 const shouldDedupe = (config: InternalAxiosRequestConfig) =>
   isIdempotent(config.method) || (config as any).dedupe === true;
 
-
 const PUBLIC_PATHS = [
-  /^\/?orders\/email$/i,         
+  /^\/?orders\/email$/i,
+  /^\/?products(\/.*)?$/i,
+  /^\/?categories(\/.*)?$/i,
+  /^\/?subcategories(\/.*)?$/i,
+  /^\/?reviews(\/.*)?$/i,
+  /^\/?about(\/.*)?$/i,
 ];
 
 const isPublicByPath = (url?: string) => {
   if (!url) return false;
-
   const clean = url.replace(/^\/?api\/?/, "").replace(/^\//, "");
   return PUBLIC_PATHS.some((re) => re.test(clean));
 };
@@ -111,6 +111,7 @@ const removePending = (config?: InternalAxiosRequestConfig) => {
   if (pendingMap.has(key)) pendingMap.delete(key);
 };
 
+/** ========= retry helpers ========= */
 const parseRetryAfter = (hdr?: string | null) => {
   if (!hdr) return 0;
   const s = Number(hdr);
@@ -139,25 +140,26 @@ const shouldRetry = (
   return false;
 };
 
+/** ========= interceptors ========= */
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig & { public?: boolean }) => {
-    const isPublic = Boolean(config.public) || isPublicByPath(config.url);
 
     if (config.headers && !(config.headers as any)["Accept-Language"]) {
       (config.headers as any)["Accept-Language"] = getCurrentLang();
     }
 
+    const isPublic = Boolean(config.public) || isPublicByPath(config.url);
+
     if (!isPublic) {
-      const rawToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      const token = rawToken && !/^(\s*|null|undefined)$/i.test(rawToken) ? rawToken : null;
+      const rawToken =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const token =
+        rawToken && !/^(\s*|null|undefined)$/i.test(rawToken) ? rawToken : null;
       if (token && config.headers) {
         (config.headers as any).Authorization = `Bearer ${token}`;
       }
-    } else {
-      if (config.headers && (config.headers as any).Authorization) {
-        delete (config.headers as any).Authorization;
-      }
-      (config as any).withCredentials = false;
+    } else if (config.headers && (config.headers as any).Authorization) {
+      delete (config.headers as any).Authorization;
     }
 
     const isFD = typeof FormData !== "undefined" && config.data instanceof FormData;
@@ -203,7 +205,9 @@ axiosInstance.interceptors.response.use(
       const max = cfg.maxRetries ?? 2;
 
       if (cfg.__retryCount <= max) {
-        const retryAfterHeader = error.response?.headers?.["retry-after"] as string | undefined;
+        const retryAfterHeader = error.response?.headers?.["retry-after"] as
+          | string
+          | undefined;
         const retryAfterMs = parseRetryAfter(retryAfterHeader ?? null);
 
         const backoff = retryAfterMs || Math.min(1500, 400 * 2 ** (cfg.__retryCount - 1));
@@ -215,6 +219,7 @@ axiosInstance.interceptors.response.use(
       }
     }
 
+   
     const skip = cfg?.skipAuthRedirect;
     if (error.response?.status === 401 && !skip && typeof window !== "undefined") {
       localStorage.removeItem("token");
