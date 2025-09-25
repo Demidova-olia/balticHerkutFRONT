@@ -1,10 +1,9 @@
-// src/components/ProductGrid/ProductGrid.tsx
 import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { Product } from "../../types/product";
 import FavoriteIcon from "../Favorite/FavoriteIcon";
-import ProductCard from "../ProductCard/ProductCard"; 
+import ProductCard from "../ProductCard/ProductCard";
 import styles from "./ProductGrid.module.css";
 
 interface Props {
@@ -25,22 +24,18 @@ const ProductGrid: React.FC<Props> = ({ products }) => {
           <div key={product._id} className={styles.productItem}>
             <ProductCard
               product={product}
+              accessory={
+                <span
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  <FavoriteIcon productId={product._id} />
+                </span>
+              }
             />
-
-            <div className={styles.actions}>
-              <span
-                className={styles.favWrapper}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                }}
-              >
-                <FavoriteIcon productId={product._id} />
-              </span>
-            </div>
           </div>
         ))}
       </div>

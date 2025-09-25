@@ -9,38 +9,30 @@ declare module "axios" {
     dedupe?: boolean;
     requestKey?: string;
     skipAuthRedirect?: boolean;
+    maxRetries?: number;
+    public?: boolean;
   }
 }
 
 const getBaseURL = () => {
   const viteEnv =
     (typeof import.meta !== "undefined" && (import.meta as any).env) || {};
-  if (viteEnv?.VITE_API_URL) {
-    return String(viteEnv.VITE_API_URL).replace(/\/$/, "");
-  }
+  if (viteEnv?.VITE_API_URL) return String(viteEnv.VITE_API_URL).replace(/\/$/, "");
 
   if (typeof window !== "undefined") {
     const origin = window.location.origin.replace(/\/$/, "");
     const isLocalVite =
       /^http:\/\/(localhost|127\.0\.0\.1):5173$/i.test(origin) ||
       /^http:\/\/(?:192\.168|10)\.\d+\.\d+:5173$/i.test(origin);
-
-    if (!isLocalVite) {
-      return `${origin}/api`;
-    }
+    if (!isLocalVite) return `${origin}/api`;
   }
-
   return "https://balticherkutback.onrender.com/api";
 };
 
-// normalize Accept-Language до en/ru/fi
 const normalizeLang = (raw?: string) => {
   const v = (raw || "").toLowerCase();
   const short = v.split(",")[0].trim().slice(0, 2);
-  return (["en", "ru", "fi"].includes(short) ? short : "en") as
-    | "en"
-    | "ru"
-    | "fi";
+  return (["en", "ru", "fi"].includes(short) ? short : "en") as "en" | "ru" | "fi";
 };
 
 const getCurrentLang = (): "en" | "ru" | "fi" => {
@@ -48,12 +40,9 @@ const getCurrentLang = (): "en" | "ru" | "fi" => {
     if (typeof window !== "undefined") {
       const fromStorage = localStorage.getItem("i18nextLng");
       if (fromStorage) return normalizeLang(fromStorage);
-
       const htmlLang = document?.documentElement?.lang;
       if (htmlLang) return normalizeLang(htmlLang);
-
-      const navLang =
-        (navigator as any)?.language || (navigator as any)?.languages?.[0];
+      const navLang = (navigator as any)?.language || (navigator as any)?.languages?.[0];
       if (navLang) return normalizeLang(navLang);
     }
   } catch {}
@@ -62,7 +51,7 @@ const getCurrentLang = (): "en" | "ru" | "fi" => {
 
 const axiosInstance = axios.create({
   baseURL: getBaseURL(),
-  timeout: 15000,
+  timeout: 30000,
   withCredentials: true,
 });
 
@@ -71,25 +60,35 @@ const pendingMap = new Map<string, AbortController>();
 const stableStringify = (obj: any): string => {
   if (obj == null) return "";
   if (typeof obj !== "object") return String(obj);
-  const keys = new Set<string>();
-  JSON.stringify(obj, (k, v) => (keys.add(k), v));
-  const sorted = Array.from(keys).sort();
-  return JSON.stringify(obj, sorted);
+  const keys = Object.keys(obj).sort();
+  return JSON.stringify(obj, keys);
 };
 
 const getDefaultReqKey = (config: InternalAxiosRequestConfig): string => {
   const method = (config.method || "get").toLowerCase();
   const url = config.url || "";
   const paramsStr = stableStringify(config.params);
-  const isFD =
-    typeof FormData !== "undefined" && config.data instanceof FormData;
+  const isFD = typeof FormData !== "undefined" && config.data instanceof FormData;
   const dataStr = isFD ? "" : stableStringify(config.data);
   return [method, url, paramsStr, dataStr].join("&");
 };
 
-const shouldDedupe = (config: InternalAxiosRequestConfig) => {
-  const method = (config.method || "get").toLowerCase();
-  return method === "get" || (config as any).dedupe === true;
+const isIdempotent = (m?: string) =>
+  ["get", "head", "options"].includes((m || "get").toLowerCase());
+
+const shouldDedupe = (config: InternalAxiosRequestConfig) =>
+  isIdempotent(config.method) || (config as any).dedupe === true;
+
+
+const PUBLIC_PATHS = [
+  /^\/?orders\/email$/i,         
+];
+
+const isPublicByPath = (url?: string) => {
+  if (!url) return false;
+
+  const clean = url.replace(/^\/?api\/?/, "").replace(/^\//, "");
+  return PUBLIC_PATHS.some((re) => re.test(clean));
 };
 
 const addPending = (config: InternalAxiosRequestConfig) => {
@@ -112,27 +111,63 @@ const removePending = (config?: InternalAxiosRequestConfig) => {
   if (pendingMap.has(key)) pendingMap.delete(key);
 };
 
-// ===== Interceptors =====
-axiosInstance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const rawToken =
-      typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    const token =
-      rawToken && !/^(\s*|null|undefined)$/i.test(rawToken) ? rawToken : null;
+const parseRetryAfter = (hdr?: string | null) => {
+  if (!hdr) return 0;
+  const s = Number(hdr);
+  return Number.isFinite(s) ? Math.max(0, s * 1000) : 0;
+};
 
-    if (token && config.headers) {
-      (config.headers as any).Authorization = `Bearer ${token}`;
-    }
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+const isNetworkTimeout = (err: AxiosError) =>
+  err.code === "ECONNABORTED" || /timeout/i.test(err.message);
+
+const isNetworkError = (err: AxiosError) =>
+  !err.response || err.code === "ERR_NETWORK";
+
+const isRetriableStatus = (status?: number) =>
+  status === 429 || status === 503 || status === 504;
+
+const shouldRetry = (
+  error: AxiosError,
+  cfg: InternalAxiosRequestConfig & { __retryCount?: number }
+) => {
+  const status = error.response?.status;
+  if (!isIdempotent(cfg.method)) return false;
+  if (isNetworkTimeout(error) || isNetworkError(error)) return true;
+  if (isRetriableStatus(status)) return true;
+  return false;
+};
+
+axiosInstance.interceptors.request.use(
+  (config: InternalAxiosRequestConfig & { public?: boolean }) => {
+    const isPublic = Boolean(config.public) || isPublicByPath(config.url);
 
     if (config.headers && !(config.headers as any)["Accept-Language"]) {
       (config.headers as any)["Accept-Language"] = getCurrentLang();
     }
 
-    const isFD =
-      typeof FormData !== "undefined" && config.data instanceof FormData;
-    if (isFD && config.headers) {
-      delete (config.headers as any)["Content-Type"];
+    if (!isPublic) {
+      const rawToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const token = rawToken && !/^(\s*|null|undefined)$/i.test(rawToken) ? rawToken : null;
+      if (token && config.headers) {
+        (config.headers as any).Authorization = `Bearer ${token}`;
+      }
+    } else {
+      if (config.headers && (config.headers as any).Authorization) {
+        delete (config.headers as any).Authorization;
+      }
+      (config as any).withCredentials = false;
     }
+
+    const isFD = typeof FormData !== "undefined" && config.data instanceof FormData;
+    if (isFD && config.headers) delete (config.headers as any)["Content-Type"];
+
+    if (!isFD && isPublic) {
+      (config.headers as any)["Content-Type"] = "application/json";
+    }
+
+    (config as any).maxRetries ??= 2;
 
     addPending(config);
     return config;
@@ -145,8 +180,15 @@ axiosInstance.interceptors.response.use(
     removePending(response.config as InternalAxiosRequestConfig);
     return response;
   },
-  (error: AxiosError) => {
-    removePending(error.config as InternalAxiosRequestConfig);
+  async (error: AxiosError) => {
+    const cfg = (error.config || {}) as InternalAxiosRequestConfig & {
+      __retryCount?: number;
+      maxRetries?: number;
+      skipAuthRedirect?: boolean;
+      public?: boolean;
+    };
+
+    removePending(cfg);
 
     if (
       (error as any).code === "ERR_CANCELED" ||
@@ -156,15 +198,27 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    if (shouldRetry(error, cfg)) {
+      cfg.__retryCount = (cfg.__retryCount || 0) + 1;
+      const max = cfg.maxRetries ?? 2;
 
-    const skip = (error.config as any)?.skipAuthRedirect;
-    if (error.response?.status === 401 && !skip) {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("token");
-        if (window.location.pathname !== "/login") {
-          window.location.href = "/login";
-        }
+      if (cfg.__retryCount <= max) {
+        const retryAfterHeader = error.response?.headers?.["retry-after"] as string | undefined;
+        const retryAfterMs = parseRetryAfter(retryAfterHeader ?? null);
+
+        const backoff = retryAfterMs || Math.min(1500, 400 * 2 ** (cfg.__retryCount - 1));
+        const jitter = Math.floor(Math.random() * 120);
+        await sleep(backoff + jitter);
+
+        addPending(cfg);
+        return axiosInstance.request(cfg);
       }
+    }
+
+    const skip = cfg?.skipAuthRedirect;
+    if (error.response?.status === 401 && !skip && typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      if (window.location.pathname !== "/login") window.location.href = "/login";
     }
 
     return Promise.reject(error);

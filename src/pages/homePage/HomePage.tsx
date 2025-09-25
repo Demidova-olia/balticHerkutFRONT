@@ -1,3 +1,4 @@
+// src/pages/homePage/HomePage.tsx
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -29,7 +30,7 @@ function isProductResponse(obj: unknown): obj is ProductResponse {
   return !!obj && typeof obj === "object" && Array.isArray((obj as any).products);
 }
 
-const SCROLL_COLLAPSE_Y = 220; 
+const SCROLL_COLLAPSE_Y = 220;
 
 const HomePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -51,12 +52,11 @@ const HomePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [collapsed, setCollapsed] = useState(false);
-  const hoverRef = useRef(false); 
+  const hoverRef = useRef(false);
 
   useEffect(() => {
     document.title = `${t("home.title", "Home")} — Baltic Herkut`;
   }, [t, i18n.language]);
-
 
   useEffect(() => {
     let cancelled = false;
@@ -189,7 +189,6 @@ const HomePage: React.FC = () => {
       <NavBar />
 
       <div className={`${styles.page} ${collapsed ? styles.isCollapsed : ""}`}>
-
         <aside className={styles.sidebar}>
           <div className={styles.sidebarInner}>
             <div className={styles.sidebarTitle}>
@@ -208,7 +207,6 @@ const HomePage: React.FC = () => {
         </aside>
 
         <main className={styles.main}>
-
           <section className={styles.hero}>
             <img
               src="/assets/Logo.jpg"
@@ -227,7 +225,6 @@ const HomePage: React.FC = () => {
             <p className={styles.heroHint}>
               {t("home.browse", "Смотрите наш ассортимент товаров и услуг.")}
             </p>
-
 
             <div />
           </section>
@@ -267,6 +264,3 @@ const HomePage: React.FC = () => {
 };
 
 export default HomePage;
-
-
-

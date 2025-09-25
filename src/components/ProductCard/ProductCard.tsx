@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../hooks/useCart";
 import { useEffect, useMemo, useState } from "react";
 import "./ProductCard.scss";
@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 type ProductCardProps = {
   product: Product;
   onAddToCart?: (qty?: number) => void;
+  accessory?: React.ReactNode; // сердечко и т.п.
 };
 
 function pickLocalizedName(name: unknown, lang: string): string {
@@ -25,7 +26,9 @@ function pickLocalizedName(name: unknown, lang: string): string {
   );
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, accessory }) => {
+  const navigate = useNavigate();
+
   const { _id, name, price, images } = product;
 
   const stock = Number(product?.stock ?? 0);
@@ -107,16 +110,41 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
     setQuantity(clamped);
   };
 
+  // Клик по карточке -> переход на страницу товара (кроме кликов по интерактивным элементам)
+  const onCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("button, a, select, input, textarea, [role='button'], .footer-accessory")) {
+      return;
+    }
+    navigate(`/product/id/${_id}`);
+  };
+
+  const onCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      navigate(`/product/id/${_id}`);
+    }
+  };
+
   const btnClass = `add-to-cart ${remaining <= 0 ? "out-of-stock" : ""}`;
   const cardClass = `product-card ${remaining <= 0 ? "product-card--oos" : ""}`;
 
   return (
-    <div className={cardClass}>
-      <Link to={`/product/${_id}`} className="media" aria-label={localizedName}>
+    <div
+      className={cardClass}
+      onClick={onCardClick}
+      role="link"
+      tabIndex={0}
+      onKeyDown={onCardKeyDown}
+      aria-label={localizedName}
+    >
+      <Link to={`/product/id/${_id}`} className="media" aria-label={localizedName}>
         <img
           className="product-image"
           src={imageUrl}
           alt={localizedName}
+          loading="lazy"
+          decoding="async"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = "/images/no-image.png";
@@ -178,6 +206,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
             ? t("product.outOfStock", { defaultValue: "Out of stock" })
             : t("product.addToCart", { defaultValue: "Add to cart" })}
         </button>
+
+        {accessory ? <span className="footer-accessory">{accessory}</span> : null}
       </div>
     </div>
   );
