@@ -1,70 +1,191 @@
-.navbar {
-  background-color: #1f2937;
-  color: white;
-  padding: 1rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+
+.header {
   position: sticky;
   top: 0;
   z-index: 1000;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  padding: 10px 12px;
+  background-color: #111827; 
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,.25);
 }
 
+.brand {
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: .2px;
+  text-decoration: none;
+  color: #fff;
+  font-size: 16px;
+}
+
+.headerRight {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.cartBox { display: inline-flex; }
+
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06);
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.iconBtn:hover { background: rgba(255,255,255,.12); }
+
+.burger,
+.close {
+  position:fixed;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  color: #fff;
+}
+.burger::before,
+.burger::after,
+.close::before,
+.close::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+}
+.burger::before { top: -6px; }
+.burger::after  { top:  6px; }
+
+.close { background: transparent; }
+.close::before { transform: rotate(45deg); }
+.close::after  { transform: rotate(-45deg); }
+
+.desktopNav {
+  display: none;
+  background: #1f2937;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
 .navList {
   display: flex;
-  flex-wrap: wrap;
   gap: 1.2rem;
   align-items: center;
   justify-content: center;
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 10px 12px;
 }
 
 .link {
   color: white;
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.3s ease;
+  transition: color .2s ease;
 }
-
-.link:hover {
-  color: rgb(71, 116, 253);
-}
-
-.active {
-  color: rgb(71, 116, 253);
-  font-weight: 600;
-}
+.link:hover { color: rgb(71,116,253); }
+.active { color: rgb(71,116,253); font-weight: 600; }
 
 .logoutButton {
-  margin-left: 1rem;
-  padding: 0.5rem 1rem;
+  padding: 8px 12px;
   background-color: rgb(190, 190, 190);
   color: #ef4444;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color .2s ease;
+}
+.logoutButton:hover { background-color: #dc262669; }
+
+.langInline { margin-left: 12px; }
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, .45);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
 }
 
-.logoutButton:hover {
-  background-color: #dc262669;
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(82vw, 340px);
+  background: #0f172a;
+  color: #e5e7eb;
+  transform: translateX(-100%);
+  transition: transform .25s ease;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+}
+.drawerOpen { transform: translateX(0); }
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.drawerTitle { font-weight: 700; color: #fff; }
+
+.drawerList {
+  list-style: none;
+  margin: 0;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+.drawerList a,
+.logoutMobile {
+  display: block;
+  padding: 12px 12px;
+  border-radius: 10px;
+  color: #e5e7eb;
+  text-decoration: none;
+  font-size: 16px;
+  background: transparent;
+  border: none;
+  text-align: left;
+}
+.drawerList a:hover,
+.logoutMobile:hover {
+  background: rgba(255,255,255,.08);
+  color: #fff;
 }
 
-@media (max-width: 615px) {
-  .navList {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
+.logoutMobile {
+  color: #fecaca;
+}
 
-  .link,
-  .logoutButton {
-    width: 100%;
-    text-align: left;
-    padding: 0.75rem 1rem;
-  }
+.drawerFooter {
+  margin-top: auto;
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  display: grid;
+  gap: 12px;
+}
 
-  .navbar {
-    padding: 1.2rem;
-  }
+.cartInDrawer {
+  border: 1px dashed rgba(255,255,255,.15);
+  border-radius: 12px;
+  padding: 8px;
+}
+
+@media (min-width: 900px) {
+  .header { display: none; }
+  .desktopNav { display: block; position: sticky; top: 0; z-index: 900; }
+  
 }
