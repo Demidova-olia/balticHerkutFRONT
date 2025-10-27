@@ -1,3 +1,5 @@
+/* src/components/Admin/AdminNavBar.module.css */
+
 .adminNavbar {
   background-color: #343a40;
   padding: 10px 14px;
@@ -8,37 +10,29 @@
   z-index: 1000;
   box-shadow: 0 8px 20px rgba(0,0,0,.18);
   border-radius: 10px;
+  max-width: 1200px;
 }
 
 .navList {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 14px 18px;    
   list-style: none;
   padding: 0;
   margin: 0;
 
-  white-space: nowrap;
-  overflow-x: auto;
-  -ms-overflow-style: none;      /* IE/Edge */
-  scrollbar-width: none;         /* Firefox */
-}
-.navList::-webkit-scrollbar {    /* Chrome/Safari */
-  display: none;
+  flex-wrap: wrap; 
 }
 
 .navItem {
   display: flex;
   align-items: center;
   line-height: 1;
-  flex: 0 0 auto;     
+  flex: 0 0 auto;
 }
 
-.langItem > * {
-  display: inline-flex;
-  align-items: center;
-}
+.langItem > * { display: inline-flex; align-items: center; }
 
 .link {
   color: #ffffff;
@@ -48,19 +42,20 @@
   padding: 8px 10px;
   border-radius: 8px;
   transition: color .15s ease, background .15s ease;
+  word-break: keep-all; 
 }
-.link:hover {
-  color: rgb(147, 197, 253);     /* blue-300 */
-  background: rgba(255,255,255,.08);
-}
+.link:hover { color: rgb(147, 197, 253); background: rgba(255,255,255,.08); }
 
-.active {
-  font-weight: 600;
-  color: rgb(96, 165, 250);      /* blue-400 */
-  background: rgba(255,255,255,.12);
-}
-
-@media (max-width: 630px) {
+.active { font-weight: 600; color: rgb(96, 165, 250); background: rgba(255,255,255,.12); }
+@media (max-width: 560px) {
   .adminNavbar { padding: 8px 10px; }
-  .navList { gap: 14px; }
+  .navList {
+    flex-wrap: nowrap;    
+    white-space: nowrap;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .navList::-webkit-scrollbar { display: none; }
+  .link { font-size: 14px; padding: 6px 8px; }
 }
