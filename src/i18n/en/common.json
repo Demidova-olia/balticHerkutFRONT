@@ -302,7 +302,7 @@
   "admin": {
     "panel": {
       
-      "dashboard": "Панель",
+      "dashboard": "Dashboard",
       "title": "Administration Page",
       "buttons": {
         "products": "Manage Products",
