@@ -1,25 +1,42 @@
+// src/api/products.ts
 import axios from "axios";
 import axiosInstance from "../utils/axios";
-import { ProductsListResponse, Product, ProductData } from "../types/product";
+import {
+  ProductsListResponse,
+  Product,
+  CreateProductPayload,
+  UpdateProductPayload,
+  ProductByIdResponse,
+} from "../types/product";
 
 const appendLocalized = (
   fd: FormData,
   key: string,
-  value: string | Record<string, unknown>
+  value?: string | Record<string, unknown>
 ) => {
+  if (value === undefined || value === null) return;
   if (typeof value === "string") {
     fd.append(key, value);
-  } else if (value && typeof value === "object") {
-    fd.append(key, JSON.stringify(value));
   } else {
-    fd.append(key, "");
+    fd.append(key, JSON.stringify(value));
   }
+};
+
+const appendIfDefined = (fd: FormData, key: string, value: unknown) => {
+  if (value === undefined || value === null || value === "") return;
+  fd.append(key, String(value));
+};
+
+const appendBoolean = (fd: FormData, key: string, value?: boolean) => {
+  if (typeof value === "boolean") fd.append(key, String(value));
 };
 
 const isCanceled = (err: unknown) =>
   (err as any)?.code === "ERR_CANCELED" ||
   (err as any)?.name === "CanceledError" ||
   (err as Error)?.message === "canceled";
+
+/* ================== READ ================== */
 
 export const getProducts = async (
   searchTerm: string,
@@ -53,7 +70,7 @@ export const getProducts = async (
 
 export const getProductById = async (id: string): Promise<Product> => {
   try {
-    const response = await axiosInstance.get<{ data: Product }>(`/products/id/${id}`, {
+    const response = await axiosInstance.get<ProductByIdResponse>(`/products/id/${id}`, {
       dedupe: false,
       requestKey: `product-${id}-${Date.now()}`,
     });
@@ -68,26 +85,34 @@ export const getProductById = async (id: string): Promise<Product> => {
   }
 };
 
-export const createProduct = async (data: ProductData): Promise<Product> => {
+/* ================== CREATE ================== */
+
+export const createProduct = async (data: CreateProductPayload): Promise<Product> => {
   const formData = new FormData();
 
   appendLocalized(formData, "name", data.name);
   appendLocalized(formData, "description", data.description);
   formData.append("price", String(data.price));
   formData.append("category", data.category);
+  formData.append("stock", String(data.stock));
 
   if (data.subcategory && data.subcategory !== "undefined" && data.subcategory !== "null") {
     formData.append("subcategory", data.subcategory);
   }
+  appendIfDefined(formData, "brand", data.brand);
+  appendIfDefined(formData, "discount", data.discount);
+  appendBoolean(formData, "isFeatured", data.isFeatured);
+  appendBoolean(formData, "isActive", data.isActive);
 
-  formData.append("stock", String(data.stock));
-
-  // ✅ Всегда отправляем barcode (пустая строка = очистить поле на бэке)
   formData.append("barcode", (data as any).barcode ?? "");
 
-  (data.images || []).forEach((file) => {
-    if (file instanceof File) {
-      formData.append("images", file);
+  (data.images || []).forEach((item) => {
+    if (item instanceof File) {
+      formData.append("images", item);
+    } else if (typeof item === "string") {
+      formData.append("images", item);
+    } else if (item && typeof item === "object" && "url" in item) {
+      formData.append("images", JSON.stringify(item));
     }
   });
 
@@ -95,9 +120,11 @@ export const createProduct = async (data: ProductData): Promise<Product> => {
   return response.data.data;
 };
 
+/* ================== UPDATE ================== */
+
 export const updateProduct = async (
   id: string,
-  data: ProductData,
+  data: UpdateProductPayload,
   existingImages: { url: string; public_id: string }[] = [],
   removeAllImages = false
 ): Promise<Product> => {
@@ -105,23 +132,35 @@ export const updateProduct = async (
 
   appendLocalized(formData, "name", data.name);
   appendLocalized(formData, "description", data.description);
-  formData.append("price", String(data.price));
-  formData.append("stock", String(data.stock));
-  formData.append("category", data.category);
+  if (typeof data.price === "number") formData.append("price", String(data.price));
+  if (typeof data.stock === "number") formData.append("stock", String(data.stock));
+  appendIfDefined(formData, "category", data.category);
 
-  if (data.subcategory && data.subcategory !== "undefined" && data.subcategory !== "null") {
+  if (typeof data.subcategory === "string" && data.subcategory) {
     formData.append("subcategory", data.subcategory);
   }
 
+  appendIfDefined(formData, "brand", data.brand);
+  appendIfDefined(formData, "discount", data.discount);
+  appendBoolean(formData, "isFeatured", data.isFeatured);
+  appendBoolean(formData, "isActive", data.isActive);
+
+  if ("barcode" in data) {
+    formData.append("barcode", (data as any).barcode ?? "");
+  }
+
   formData.append("removeAllImages", String(!!removeAllImages));
-  formData.append("existingImages", JSON.stringify(existingImages || []));
+  if (existingImages?.length) {
+    formData.append("existingImages", JSON.stringify(existingImages));
+  }
 
-  // ✅ Всегда отправляем barcode (пустая строка = очистить поле)
-  formData.append("barcode", (data as any).barcode ?? "");
-
-  (data.images || []).forEach((file) => {
-    if (file instanceof File) {
-      formData.append("images", file);
+  (data.images || []).forEach((item) => {
+    if (item instanceof File) {
+      formData.append("images", item);
+    } else if (typeof item === "string") {
+      formData.append("images", item);
+    } else if (item && typeof item === "object" && "url" in item) {
+      formData.append("images", JSON.stringify(item));
     }
   });
 
@@ -129,11 +168,11 @@ export const updateProduct = async (
   return response.data.data;
 };
 
-export const deleteProduct = async (id: string): Promise<Product> => {
+/* ================== DELETE / SEARCH / FILTERS ================== */
+
+export const deleteProduct = async (id: string): Promise<{ _id: string }> => {
   const response = await axiosInstance.delete(`/products/${id}`);
-  // backend returns { message, data }, но наружу возвращаем сам Product,
-  // чтобы не ломать существующие вызовы
-  return response.data.data as Product;
+  return response.data.data as { _id: string };
 };
 
 export const searchProducts = async (query: string): Promise<Product[]> => {
@@ -164,10 +203,12 @@ export const getProductsByCategoryAndSubcategory = async (
   return response.data.data;
 };
 
+/* ================== IMAGE OPS ================== */
+
 export const deleteProductImage = async (
   productId: string,
   publicId: string
-): Promise<{ message: string; data: unknown }> => {
+): Promise<{ message: string; data: { _id: string; public_id: string } }> => {
   const encodedId = encodeURIComponent(publicId);
   const response = await axiosInstance.delete(`/products/${productId}/images/${encodedId}`);
   return response.data;
@@ -177,7 +218,7 @@ export const updateProductImage = async (
   productId: string,
   publicId: string,
   image: File
-): Promise<{ message: string; data: unknown }> => {
+): Promise<{ message: string; data: { _id: string; public_id: string; url: string } }> => {
   const formData = new FormData();
   formData.append("image", image);
   const encodedId = encodeURIComponent(publicId);
@@ -185,20 +226,45 @@ export const updateProductImage = async (
   return response.data;
 };
 
-// Вспомогательная загрузка прямо в Cloudinary (если используется отдельно)
+/* ================== ERPLY endpoints ================== */
+
+export const ensureByBarcode = async (barcode: string): Promise<Product> => {
+  const response = await axiosInstance.get(`/products/ensure-by-barcode/${barcode}`, {
+    dedupe: false,
+    requestKey: `ensure:${barcode}`,
+  });
+  return response.data.data;
+};
+
+export const importFromErplyById = async (erplyId: string): Promise<Product> => {
+  const response = await axiosInstance.post(`/products/import/erply/${erplyId}`);
+  return response.data.data;
+};
+
+export const importFromErplyByBarcode = async (barcode: string): Promise<Product> => {
+  const response = await axiosInstance.post(`/products/import-by-barcode/${barcode}`);
+  return response.data.data;
+};
+
+export const syncPriceStock = async (
+  productId: string
+): Promise<{ message: string; data: unknown }> => {
+  const response = await axiosInstance.put(`/products/${productId}/sync-erply-light`);
+  return response.data;
+};
+
+/* ================== Cloudinary direct (optional) ================== */
+
 export const uploadImage = async (
   file: File
 ): Promise<{ url: string; public_id: string }> => {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("upload_preset", "your_upload_preset");
+  formData.append("upload_preset", "baltic_uploads");
 
   const response = await fetch(
-    "https://api.cloudinary.com/v1_1/your_cloud_name/image/upload",
-    {
-      method: "POST",
-      body: formData,
-    }
+    "https://api.cloudinary.com/v1_1/diw6ugcy3/image/upload",
+    { method: "POST", body: formData }
   );
 
   if (!response.ok) throw new Error("Image upload failed");

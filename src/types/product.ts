@@ -17,6 +17,7 @@ export type LocalizedField = string | LocalizedString;
 export interface ImageObject {
   url: string;
   public_id: string;
+  sourceUrl?: string;
 }
 
 export type ProductImageServer = string | ImageObject;
@@ -39,7 +40,7 @@ export interface Product {
   price: number;
 
   category: string | Category;
-  subcategory: string | Subcategory;
+  subcategory?: string | Subcategory;
 
   stock: number;
   averageRating?: number;
@@ -52,31 +53,50 @@ export interface Product {
   brand?: string;
   isFeatured?: boolean;
   discount?: number;
-  reviewsCount?: number;
-  tags?: string[];
   isActive?: boolean;
 
-  /** NEW: штрих-код товара */
+  reviewsCount?: number;
+  tags?: string[];
+
   barcode?: string;
+
+  erplyId?: string;
+  erplySKU?: string;
+  erpSource?: "erply" | "manual";
+  erplySyncedAt?: string;
+  erplyHash?: string;
 }
 
-export interface ProductData {
+export interface CreateProductPayload {
   name: string | Partial<LocalizedString>;
   description: string | Partial<LocalizedString>;
   price: number;
   category: string;
   subcategory?: string;
   stock: number;
-  images: ProductImageInput[];
-
-  /** NEW: штрих-код при создании/обновлении */
+  images?: ProductImageInput[];
+  brand?: string;
+  discount?: number;
+  isFeatured?: boolean;
+  isActive?: boolean;
   barcode?: string;
 }
 
-export interface ProductResponse {
-  products: Product[];
-  totalPages: number;
-  totalProducts: number;
+export interface UpdateProductPayload {
+  name?: string | Partial<LocalizedString>;
+  description?: string | Partial<LocalizedString>;
+  price?: number;
+  category?: string;
+  subcategory?: string | null;
+  stock?: number;
+  images?: ProductImageInput[];
+  removeAllImages?: boolean;
+  existingImages?: ExistingImage[] | string;
+  brand?: string;
+  discount?: number;
+  isFeatured?: boolean;
+  isActive?: boolean;
+  barcode?: string;
 }
 
 export interface ProductsListResponse {
@@ -86,6 +106,31 @@ export interface ProductsListResponse {
     totalPages: number;
     totalProducts: number;
   };
+}
+
+export interface ProductByIdResponse {
+  message: string;
+  data: Product;
+}
+
+export interface EnsureByBarcodeResponse {
+  message: "OK";
+  data: Product;
+}
+
+export interface ImportFromErplyResponse {
+  message: "Imported from Erply" | "Product created from Erply";
+  data: Product;
+}
+
+export interface DeleteImageResponse {
+  message: "Image deleted";
+  data: { _id: string; public_id: string };
+}
+
+export interface DeleteProductResponse {
+  message: "Product deleted";
+  data: { _id: string };
 }
 
 export const getCurrentLang = (): Lang => {
@@ -98,7 +143,9 @@ export const getCurrentLang = (): Lang => {
       const navLang = (navigator as any).language || ((navigator as any).languages || [])[0];
       if (navLang) return (String(navLang).slice(0, 2).toLowerCase() as Lang) || "en";
     }
-  } catch {}
+  } catch {
+    /* no-op */
+  }
   return "en";
 };
 

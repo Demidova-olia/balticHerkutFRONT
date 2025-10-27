@@ -5,6 +5,7 @@ import "./ProductCard.scss";
 import { Product } from "../../types/product";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
+import emailjs from "emailjs-com";
 
 type ProductCardProps = {
   product: Product;
@@ -26,23 +27,24 @@ function pickLocalizedName(name: unknown, lang: string): string {
   );
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, accessory }) => {
+const ProductCard: React.FC<ProductCardProps> = ({
+  product,
+  onAddToCart,
+  accessory,
+}) => {
   const navigate = useNavigate();
-
   const { _id, name, price, images } = product;
 
   const stock = Number(product?.stock ?? 0);
   const isOutOfStock = !Number.isFinite(stock) || stock <= 0;
 
   const { addToCart, items } = useCart();
-
   const inCartAlready = useMemo(() => {
     const found = items.find((i) => i.id === _id);
     return Number(found?.quantity ?? 0);
   }, [items, _id]);
 
   const [quantity, setQuantity] = useState<number>(1);
-
   const { t, i18n } = useTranslation("common");
 
   useEffect(() => {
@@ -77,15 +79,48 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, accesso
 
   const remaining = Math.max(0, stock - inCartAlready);
 
+  // ====== Добавлено: обработка "Интересует товар" ======
+  const handleInterest = async () => {
+    try {
+      await emailjs.send(
+        "your_service_id", // ⚙️ вставь свой Service ID из EmailJS
+        "your_template_id", // ⚙️ вставь Template ID
+        {
+          product_name: localizedName,
+          product_id: _id,
+          message: `User is interested in "${localizedName}" (ID: ${_id}).`,
+        },
+        "your_public_key" // ⚙️ вставь свой Public Key из EmailJS
+      );
+      toast.success(
+        t("product.interestSent", {
+          defaultValue: "Your request has been sent!",
+        })
+      );
+    } catch (err) {
+      console.error("Email send failed:", err);
+      toast.error(
+        t("product.interestFail", {
+          defaultValue: "Failed to send interest message.",
+        })
+      );
+    }
+  };
+  // =====================================================
+
   const handleAddToCart = () => {
     if (remaining <= 0) {
-      toast.info(t("product.noMoreStock", { defaultValue: "No more stock available." }));
+      toast.info(
+        t("product.noMoreStock", { defaultValue: "No more stock available." })
+      );
       return;
     }
 
     const toAdd = Math.max(0, Math.min(quantity, remaining));
     if (toAdd <= 0) {
-      toast.info(t("product.noMoreStock", { defaultValue: "No more stock available." }));
+      toast.info(
+        t("product.noMoreStock", { defaultValue: "No more stock available." })
+      );
       return;
     }
 
@@ -110,10 +145,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, accesso
     setQuantity(clamped);
   };
 
-  // Клик по карточке -> переход на страницу товара (кроме кликов по интерактивным элементам)
   const onCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
-    if (target.closest("button, a, select, input, textarea, [role='button'], .footer-accessory")) {
+    if (
+      target.closest(
+        "button, a, select, input, textarea, [role='button'], .footer-accessory"
+      )
+    ) {
       return;
     }
     navigate(`/product/id/${_id}`);
@@ -181,31 +219,41 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, accesso
             value={Math.min(quantity, remaining)}
             onChange={handleQuantityChange}
           >
-            {Array.from({ length: Math.min(10, remaining) }, (_, i) => i + 1).map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
+            {Array.from({ length: Math.min(10, remaining) }, (_, i) => i + 1).map(
+              (n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              )
+            )}
           </select>
         </div>
       ) : null}
 
       <div className="footer">
-        <button
-          className={btnClass}
-          onClick={handleAddToCart}
-          disabled={remaining <= 0}
-          aria-disabled={remaining <= 0}
-          title={
-            remaining <= 0
-              ? t("product.outOfStock", { defaultValue: "Out of stock" })
-              : t("product.addToCart", { defaultValue: "Add to cart" })
-          }
-        >
-          {remaining <= 0
-            ? t("product.outOfStock", { defaultValue: "Out of stock" })
-            : t("product.addToCart", { defaultValue: "Add to cart" })}
-        </button>
+        {remaining <= 0 ? (
+          <button
+            className="interest-btn"
+            onClick={handleInterest}
+            title={t("product.notifyInterest", {
+              defaultValue: "Notify me when available",
+            })}
+          >
+            {t("product.notifyInterest", {
+              defaultValue: "Notify me when available",
+            })}
+          </button>
+        ) : (
+          <button
+            className={btnClass}
+            onClick={handleAddToCart}
+            disabled={remaining <= 0}
+            aria-disabled={remaining <= 0}
+            title={t("product.addToCart", { defaultValue: "Add to cart" })}
+          >
+            {t("product.addToCart", { defaultValue: "Add to cart" })}
+          </button>
+        )}
 
         {accessory ? <span className="footer-accessory">{accessory}</span> : null}
       </div>
