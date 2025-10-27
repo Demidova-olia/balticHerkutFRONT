@@ -145,7 +145,8 @@ h2 {
   background-color: rgb(71, 116, 253);
   color: white;
 }
-
+.syncBtn { background-color: #10b981; }
+.syncBtn:hover { background-color: #059669; }
 
 @media (max-width: 768px) {
   .productTable thead {

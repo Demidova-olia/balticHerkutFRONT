@@ -59,6 +59,15 @@ const AdminProducts: React.FC = () => {
 
   const handleEdit = (id: string) => navigate(`/admin/products/edit/${id}`);
 
+  const handleSync = async (id: string) => {
+    try {
+      await ProductService.syncPriceStock(id);
+      await fetchProducts();
+    } catch {
+      setError(t("admin.products.errors.sync", { defaultValue: "Sync failed." }));
+    }
+  };
+
   const sorted = useMemo(
     () =>
       products
@@ -96,10 +105,7 @@ const AdminProducts: React.FC = () => {
       )}
 
       <div className={styles.topBar}>
-        <button
-          onClick={() => navigate("/admin/products/create")}
-          className={styles.addProductBtn}
-        >
+        <button onClick={() => navigate("/admin/products/create")} className={styles.addProductBtn}>
           {t("admin.products.buttons.addNew", { defaultValue: "Add New Product" })}
         </button>
       </div>
@@ -111,9 +117,12 @@ const AdminProducts: React.FC = () => {
             <th>{t("admin.products.table.name", { defaultValue: "Name" })}</th>
             <th>{t("admin.products.table.category", { defaultValue: "Category" })}</th>
             <th>{t("admin.products.table.subcategory", { defaultValue: "Subcategory" })}</th>
+            <th>{t("admin.products.table.brand", { defaultValue: "Brand" })}</th>
+            <th>{t("admin.products.table.discount", { defaultValue: "Discount" })}</th>
             <th>{t("admin.products.table.barcode", { defaultValue: "Barcode" })}</th>
             <th>{t("admin.products.table.price", { defaultValue: "Price" })}</th>
             <th>{t("admin.products.table.stock", { defaultValue: "Stock" })}</th>
+            <th>{t("admin.products.table.featured", { defaultValue: "Featured" })}</th>
             <th>{t("admin.products.table.active", { defaultValue: "Active" })}</th>
             <th>{t("admin.products.table.actions", { defaultValue: "Actions" })}</th>
           </tr>
@@ -141,51 +150,56 @@ const AdminProducts: React.FC = () => {
             const imagesArr = (Array.isArray(product.images) ? product.images : []) as any[];
             const hasImages = imagesArr.length > 0;
 
+            const firstImgUrl = hasImages
+              ? (typeof imagesArr[0] === "string" ? imagesArr[0] : imagesArr[0]?.url) || "/images/no-image.png"
+              : "/images/no-image.png";
+
             const barcode =
               typeof (product as any).barcode === "string" && (product as any).barcode.trim()
                 ? (product as any).barcode.trim()
                 : "—";
 
+            const brand = product.brand || "—";
+            const discount = product.discount != null ? `${product.discount}%` : "—";
+            const featured = product.isFeatured
+              ? t("common.yes", { defaultValue: "Yes" })
+              : t("common.no", { defaultValue: "No" });
+            const active = product.isActive !== false
+              ? t("common.yes", { defaultValue: "Yes" })
+              : t("common.no", { defaultValue: "No" });
+
             return (
               <tr key={product._id}>
                 <td>
-                  {hasImages ? (
-                    <div className={styles.imageGallery}>
-                      {imagesArr.map((image, index) => {
-                        const imgUrl =
-                          typeof image === "string"
-                            ? image
-                            : image?.url || "/images/no-image.png";
-                        return (
-                          <img
-                            key={`${product._id}-${index}`}
-                            src={imgUrl}
-                            alt={`${nameText} ${index + 1}`}
-                            className={styles.productImage}
-                            onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).src = "/images/no-image.png";
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    t("admin.products.noImage", { defaultValue: "No image" })
-                  )}
+                  <img
+                    src={firstImgUrl}
+                    alt={nameText}
+                    className={styles.productImage}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = "/images/no-image.png";
+                    }}
+                  />
                 </td>
-
                 <td>{nameText}</td>
                 <td>{categoryName}</td>
                 <td>{subcategoryName}</td>
+                <td>{brand}</td>
+                <td>{discount}</td>
                 <td title={barcode}>{barcode}</td>
                 <td>€{price}</td>
                 <td>{product.stock ?? 0}</td>
+                <td>{featured}</td>
+                <td>{active}</td>
                 <td>
-                  {product.isActive
-                    ? t("common.yes", { defaultValue: "Yes" })
-                    : t("common.no", { defaultValue: "No" })}
-                </td>
-                <td>
+                  {product.erplyId && (
+                    <button
+                      onClick={() => handleSync(product._id)}
+                      className={`${styles.button} ${styles.syncBtn}`}
+                      title={t("admin.products.buttons.sync", { defaultValue: "Sync price & stock from ERP" })}
+                    >
+                      {t("admin.products.buttons.sync", { defaultValue: "Sync" })}
+                    </button>
+                  )}
                   <button
                     onClick={() => handleEdit(product._id)}
                     className={`${styles.button} ${styles.editBtn}`}

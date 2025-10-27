@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AdminProductForm from "../../../components/Admin/AdminProductForm";
 import { createProduct } from "../../../services/ProductService";
 import { toast } from "react-toastify";
-import { ProductData } from "../../../types/product";
+import { CreateProductPayload } from "../../../types/product";
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
 import styles from "./AdminProductCreateAndEdit.module.css";
 import { useTranslation } from "react-i18next";
@@ -19,16 +19,30 @@ const AdminProductCreate: React.FC = () => {
         .getAll("images")
         .filter((f): f is File => f instanceof File);
 
-      // аккуратно берём подкатегорию: пустую строку не отправляем
       const subRaw = formData.get("subcategory");
       const subcategory =
         typeof subRaw === "string" && subRaw.trim() ? subRaw : undefined;
 
-      // ⬇️ добавляем barcode (пустая строка допустима — значит «нет штрих-кода»)
       const bcRaw = formData.get("barcode");
       const barcode = typeof bcRaw === "string" ? bcRaw.trim() : "";
 
-      const productData: ProductData = {
+      const brandRaw = formData.get("brand");
+      const brand =
+        typeof brandRaw === "string" && brandRaw.trim() ? brandRaw.trim() : undefined;
+
+      const discountRaw = formData.get("discount");
+      const discount =
+        typeof discountRaw === "string" && discountRaw.trim()
+          ? parseFloat(discountRaw)
+          : undefined;
+
+      const featuredRaw = formData.get("isFeatured");
+      const isFeatured = featuredRaw === "true" || featuredRaw === "on";
+
+      const activeRaw = formData.get("isActive");
+      const isActive = activeRaw === "true" || activeRaw === "on";
+
+      const productData: CreateProductPayload = {
         name: formData.get("name") as string,
         description: formData.get("description") as string,
         price: parseFloat(formData.get("price") as string),
@@ -36,16 +50,20 @@ const AdminProductCreate: React.FC = () => {
         ...(subcategory ? { subcategory } : {}),
         stock: parseInt(formData.get("stock") as string, 10),
         images: files,
-        barcode, // <<< важно: теперь уходит на бэкенд
+        barcode,
+        ...(brand ? { brand } : {}),
+        ...(discount !== undefined ? { discount } : {}),
+        isFeatured,
+        isActive,
       };
 
       await createProduct(productData);
+
       toast.success(
         t("admin.products.create.toast.success", { defaultValue: "Product created!" })
       );
       navigate("/admin/products");
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error("Error creating product:", err);
       toast.error(
         t("admin.products.create.toast.fail", { defaultValue: "Failed to create product." })

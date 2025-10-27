@@ -217,6 +217,23 @@
   color: #94a3b8;
 }
 
+.interest-btn {
+  background-color: #f59e0b;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 100%;
+}
+
+.interest-btn:hover {
+  background-color: #fbbf24;
+}
+
+
 @media (max-width: 768px) {
   .product-grid { gap: 14px; }
   .product-card { border-radius: 12px; }

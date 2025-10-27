@@ -1,3 +1,4 @@
+// src/pages/adminPages/adminProducts/AdminProductEdit.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -6,7 +7,7 @@ import {
   deleteProductImage,
 } from "../../../services/ProductService";
 import AdminProductForm from "../../../components/Admin/AdminProductForm";
-import { Product, ProductData } from "../../../types/product";
+import { Product, UpdateProductPayload } from "../../../types/product";
 import { toast } from "react-toastify";
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
 import styles from "./AdminProductCreateAndEdit.module.css";
@@ -56,6 +57,11 @@ const AdminProductEdit: React.FC = () => {
       const removeAllImages = formData.get("removeAllImages") === "true";
       const barcodeRaw = formData.get("barcode");
 
+      const brandRaw = formData.get("brand");
+      const discountRaw = formData.get("discount");
+      const isFeaturedRaw = formData.get("isFeatured");
+      const isActiveRaw = formData.get("isActive");
+
       if (
         typeof name !== "string" ||
         typeof description !== "string" ||
@@ -79,32 +85,40 @@ const AdminProductEdit: React.FC = () => {
           ? subcategoryRaw
           : undefined;
 
-      // ── BARCODE: всегда передаём строку (даже пустую), чтобы можно было очистить на бэке
-      const barcode =
-        typeof barcodeRaw === "string" ? barcodeRaw.trim() : "";
+      // barcode: всегда строкой (даже пустой) — чтобы можно было очистить поле
+      const barcode = typeof barcodeRaw === "string" ? barcodeRaw.trim() : "";
 
-      const formDataObj: ProductData = {
+      const brand =
+        typeof brandRaw === "string" && brandRaw.trim() ? brandRaw.trim() : undefined;
+
+      const discount =
+        typeof discountRaw === "string" && discountRaw.trim() !== ""
+          ? parseFloat(discountRaw)
+          : undefined;
+
+      const isFeatured = isFeaturedRaw === "true" || isFeaturedRaw === "on";
+      const isActive = isActiveRaw === "true" || isActiveRaw === "on";
+
+      const payload: UpdateProductPayload = {
         name,
         description,
         price: parseFloat(price),
         stock: parseInt(stock, 10),
         category,
         ...(subcategory ? { subcategory } : {}),
-        images,
-        barcode, // всегда присутствует
+        images, // новые файлы
+        barcode,
+        ...(brand !== undefined ? { brand } : {}),
+        ...(discount !== undefined ? { discount } : {}),
+        isFeatured,
+        isActive,
       };
 
       const existingImages = (product.images || []).filter(
-        (img): img is { url: string; public_id: string } =>
-          typeof img !== "string"
+        (img): img is { url: string; public_id: string } => typeof img !== "string"
       );
 
-      await updateProduct(
-        product._id,
-        formDataObj,
-        existingImages,
-        removeAllImages
-      );
+      await updateProduct(product._id, payload, existingImages, removeAllImages);
 
       toast.success(
         t("admin.products.edit.toast.updated", {
@@ -115,8 +129,8 @@ const AdminProductEdit: React.FC = () => {
     } catch (err) {
       console.error("Error updating product:", err);
       toast.error(
-        t("admin.products.errors.fetch", {
-          defaultValue: "Failed to load products.",
+        t("admin.products.edit.toast.updateFail", {
+          defaultValue: "Failed to update product.",
         })
       );
     }
@@ -130,7 +144,6 @@ const AdminProductEdit: React.FC = () => {
         prev
           ? {
               ...prev,
-              // НЕ удаляем строковые URL, удаляем только объект с совпавшим public_id
               images: prev.images?.filter((img) =>
                 typeof img === "string" ? true : img.public_id !== publicId
               ),
