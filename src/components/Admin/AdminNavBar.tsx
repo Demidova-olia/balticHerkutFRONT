@@ -1,9 +1,13 @@
+// src/components/Admin/AdminNavBar.tsx
 import React from "react";
 import { NavLink } from "react-router-dom";
 import styles from "./AdminNavBar.module.css";
 import LanguageSwitcher from "../NavBar/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 export const AdminNavBar: React.FC = () => {
+  const { t } = useTranslation("common");
+
   return (
     <nav className={styles.adminNavbar}>
       <ul className={styles.navList}>
@@ -14,7 +18,7 @@ export const AdminNavBar: React.FC = () => {
               isActive ? `${styles.link} ${styles.active}` : styles.link
             }
           >
-            Dashboard
+            {t("admin.panel.dashboard", { defaultValue: "Dashboard" })}
           </NavLink>
         </li>
 
@@ -25,7 +29,7 @@ export const AdminNavBar: React.FC = () => {
               isActive ? `${styles.link} ${styles.active}` : styles.link
             }
           >
-            Categories
+            {t("admin.panel.buttons.categories", { defaultValue: "Categories" })}
           </NavLink>
         </li>
 
@@ -36,7 +40,7 @@ export const AdminNavBar: React.FC = () => {
               isActive ? `${styles.link} ${styles.active}` : styles.link
             }
           >
-            Subcategories
+            {t("admin.panel.buttons.subcategories", { defaultValue: "Subcategories" })}
           </NavLink>
         </li>
 
@@ -47,7 +51,7 @@ export const AdminNavBar: React.FC = () => {
               isActive ? `${styles.link} ${styles.active}` : styles.link
             }
           >
-            Products
+            {t("admin.panel.buttons.products", { defaultValue: "Products" })}
           </NavLink>
         </li>
 
@@ -58,7 +62,7 @@ export const AdminNavBar: React.FC = () => {
               isActive ? `${styles.link} ${styles.active}` : styles.link
             }
           >
-            Orders
+            {t("admin.panel.buttons.orders", { defaultValue: "Orders" })}
           </NavLink>
         </li>
 

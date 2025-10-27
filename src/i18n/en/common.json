@@ -65,7 +65,9 @@
     "save": "Save",
     "saving": "Saving...",
     "cancel": "Cancel",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "goBack": "Go Back",
+    "goHome": "Go to Main Menu"
   },
 
   "nav": {
@@ -117,12 +119,17 @@
   },
 
   "product": {
+    "inStock": "In stock",
     "OutOfStock": "Out of Stock",
     "noName": "No Name",
     "noDescription": "No description available.",
     "priceLabel": "Price",
     "addToCart": "Add to cart",
-    "quantity": "Quantity:"
+    "quantity": "Quantity:",
+    "noMoreStock": "No more stock available.",
+    "notifyInterest": "Notify me when available",
+    "interestSent": "Your request has been sent!",
+    "interestFail": "Failed to send interest message."
   },
 
   "products": {
@@ -294,6 +301,8 @@
 
   "admin": {
     "panel": {
+      
+      "dashboard": "Панель",
       "title": "Administration Page",
       "buttons": {
         "products": "Manage Products",
@@ -318,8 +327,20 @@
         "upload": "Upload New Images",
         "newPreview": "New Images Preview:",
         "currentImages": "Current Images:",
-        "removeAll": "Remove all images"
+        "removeAll": "Remove all images",
+        "barcode": "Barcode",
+        "brand": "Brand",
+        "discount": "Discount, %",
+        "isFeatured": "Featured",
+        "isActive": "Active"
       },
+       "placeholders": {
+        "barcode": "e.g. 4601234567890"
+      },
+      "titles": {
+        "barcode": "Digits only, length 8–14"
+      },
+      
       "selectOption": "Select",
       "buttons": {
         "submitting": "Submitting..."
@@ -429,6 +450,7 @@
     },
 
     "products": {
+      
        "create": {
         "title": "Create New Product",
         "submit": "Create Product",
@@ -452,7 +474,8 @@
       "buttons": {
         "addNew": "Add New Product",
         "edit": "Edit",
-        "delete": "Delete"
+        "delete": "Delete",
+        "sync": "Sync"
       },
       "table": {
         "images": "Images",
@@ -462,13 +485,18 @@
         "price": "Price",
         "stock": "Stock",
         "active": "Active",
-        "actions": "Actions"
+        "actions": "Actions",
+        "brand": "Brand",
+        "discount": "Discount",
+        "barcode": "Barcode",
+        "featured": "Featured"
       },
       "flags": { "yes": "Yes", "no": "No" },
       "noImage": "No image",
       "errors": {
         "fetch": "Failed to load products.",
-        "delete": "Failed to delete product."
+        "delete": "Failed to delete product.",
+        "sync": "Sync failed."
       },
       "confirmDelete": "Are you sure you want to delete this product?",
       "confirm": { "delete": "Are you sure you want to delete this product?" }
