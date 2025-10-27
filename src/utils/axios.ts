@@ -11,7 +11,7 @@ declare module "axios" {
     requestKey?: string;
     skipAuthRedirect?: boolean;
     maxRetries?: number;
-    public?: boolean; 
+    public?: boolean;
   }
 }
 
@@ -76,19 +76,46 @@ const isIdempotent = (m?: string) =>
 const shouldDedupe = (config: InternalAxiosRequestConfig) =>
   isIdempotent(config.method) || (config as any).dedupe === true;
 
-const PUBLIC_PATHS = [
-  /^\/?orders\/email$/i,
-  /^\/?products(\/.*)?$/i,
-  /^\/?categories(\/.*)?$/i,
-  /^\/?subcategories(\/.*)?$/i,
-  /^\/?reviews(\/.*)?$/i,
-  /^\/?about(\/.*)?$/i,
-];
+/** ==== ГРАНУЛЯРНО: какие запросы публичные (без токена) ==== */
+const cleanUrl = (u?: string) =>
+  (u || "").replace(/^\/?api\/?/, "").replace(/^\//, "");
 
-const isPublicByPath = (url?: string) => {
-  if (!url) return false;
-  const clean = url.replace(/^\/?api\/?/, "").replace(/^\//, "");
-  return PUBLIC_PATHS.some((re) => re.test(clean));
+const isPublicRequest = (config: InternalAxiosRequestConfig & { public?: boolean }) => {
+  if (config.public) return true;
+
+  const method = (config.method || "get").toLowerCase();
+  const url = cleanUrl(config.url);
+
+  // Публичные только отдельные GET:
+  if (method === "get") {
+    // товары: список, поиск, id, категории, ensure-by-barcode
+    if (
+      /^products$/.test(url) ||
+      /^products\/id\/[^/]+$/.test(url) ||
+      /^products\/search/.test(url) ||
+      /^products\/ensure-by-barcode\/[^/]+$/.test(url) ||
+      // категории / подкатегории (GET)
+      /^categories(\/.*)?$/.test(url) ||
+      /^subcategories(\/.*)?$/.test(url) ||
+      // страница "about"
+      /^about(\/.*)?$/.test(url) ||
+      // отзывы (если у тебя публичные GET)
+      /^reviews(\/.*)?$/.test(url) ||
+      // товары по категориям
+      /^products\/[^/]+$/.test(url) ||
+      /^products\/[^/]+\/[^/]+$/.test(url)
+    ) {
+      return true;
+    }
+  }
+
+  // Пример публичного POST (если есть, оставь/убери по ситуации):
+  if (method === "post" && /^orders\/email$/.test(url)) {
+    return true;
+  }
+
+  // Всё остальное — НЕ публичное (нужен токен)
+  return false;
 };
 
 const addPending = (config: InternalAxiosRequestConfig) => {
@@ -143,14 +170,13 @@ const shouldRetry = (
 /** ========= interceptors ========= */
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig & { public?: boolean }) => {
-
     if (config.headers && !(config.headers as any)["Accept-Language"]) {
       (config.headers as any)["Accept-Language"] = getCurrentLang();
     }
 
-    const isPublic = Boolean(config.public) || isPublicByPath(config.url);
+    const publicReq = isPublicRequest(config);
 
-    if (!isPublic) {
+    if (!publicReq) {
       const rawToken =
         typeof window !== "undefined" ? localStorage.getItem("token") : null;
       const token =
@@ -164,8 +190,7 @@ axiosInstance.interceptors.request.use(
 
     const isFD = typeof FormData !== "undefined" && config.data instanceof FormData;
     if (isFD && config.headers) delete (config.headers as any)["Content-Type"];
-
-    if (!isFD && isPublic) {
+    if (!isFD && publicReq) {
       (config.headers as any)["Content-Type"] = "application/json";
     }
 
@@ -219,9 +244,7 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-   
-    const skip = cfg?.skipAuthRedirect;
-    if (error.response?.status === 401 && !skip && typeof window !== "undefined") {
+    if (error.response?.status === 401 && !cfg?.skipAuthRedirect && typeof window !== "undefined") {
       localStorage.removeItem("token");
       if (window.location.pathname !== "/login") window.location.href = "/login";
     }
