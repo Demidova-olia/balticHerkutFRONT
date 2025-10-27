@@ -306,10 +306,10 @@
       "dashboard": "Панель",
       "title": "Страница администрирования",
       "buttons": {
-        "products": "Управление товарами",
-        "orders": "Управление заказами",
-        "categories": "Управление категориями",
-        "subcategories": "Управление подкатегориями"
+        "products": "Товары",
+        "orders": "Заказы",
+        "categories": "Категории",
+        "subcategories": "Подкатегории"
       },
       "backHome": "На главную",
       "welcome": {
