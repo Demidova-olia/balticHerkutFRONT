@@ -1,12 +1,13 @@
 // src/pages/adminPages/adminProducts/AdminProducts.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import * as ProductService from "../../../services/ProductService";
+import * as ProductApi from "../../../services/ProductService";
 import { Product, Lang, asText } from "../../../types/product";
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
 import styles from "./AdminProducts.module.css";
 import BottomNav from "../../../components/Admin/BottomNav";
 import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
 
 const AdminProducts: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -25,7 +26,7 @@ const AdminProducts: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await ProductService.getProducts("", "", "", 1, 100);
+      const res = await ProductApi.getProducts("", "", "", 1, 100);
       setProducts(Array.isArray(res?.products) ? res.products : []);
     } catch {
       setError(t("admin.products.errors.fetch", { defaultValue: "Failed to load products." }));
@@ -50,7 +51,7 @@ const AdminProducts: React.FC = () => {
     )
       return;
     try {
-      await ProductService.deleteProduct(id);
+      await ProductApi.deleteProduct(id);
       setProducts((prev) => prev.filter((p) => p._id !== id));
     } catch {
       setError(t("admin.products.errors.delete", { defaultValue: "Failed to delete product." }));
@@ -61,10 +62,59 @@ const AdminProducts: React.FC = () => {
 
   const handleSync = async (id: string) => {
     try {
-      await ProductService.syncPriceStock(id);
+      await ProductApi.syncPriceStock(id);
       await fetchProducts();
+      toast.success(t("admin.products.buttons.sync", { defaultValue: "Sync" }));
     } catch {
       setError(t("admin.products.errors.sync", { defaultValue: "Sync failed." }));
+    }
+  };
+
+  const handleImportByBarcode = async () => {
+    const bc =
+      (window.prompt(
+        t("admin.products.prompt.barcode", { defaultValue: "Enter barcode (8–14 digits):" })
+      ) || "").trim();
+
+    if (!bc) return;
+    if (!/^\d{8,14}$/.test(bc)) {
+      toast.error(
+        t("admin.products.errors.barcode", {
+          defaultValue: "Invalid barcode: digits only, length 8–14.",
+        })
+      );
+      return;
+    }
+
+    try {
+      await ProductApi.ensureByBarcode(bc);
+      await fetchProducts();
+      toast.success(
+        t("admin.products.toast.imported", { defaultValue: "Imported from Erply (by barcode)!" })
+      );
+    } catch (e) {
+      console.error(e);
+      toast.error(t("admin.products.errors.import", { defaultValue: "Import from Erply failed." }));
+    }
+  };
+
+  const handleImportByErplyId = async () => {
+    const erplyId =
+      (window.prompt(
+        t("admin.products.prompt.erplyId", { defaultValue: "Enter Erply product ID:" })
+      ) || "").trim();
+
+    if (!erplyId) return;
+
+    try {
+      await ProductApi.importFromErplyById(erplyId);
+      await fetchProducts();
+      toast.success(
+        t("admin.products.toast.importedId", { defaultValue: "Imported from Erply (by ID)!" })
+      );
+    } catch (e) {
+      console.error(e);
+      toast.error(t("admin.products.errors.import", { defaultValue: "Import from Erply failed." }));
     }
   };
 
@@ -107,6 +157,13 @@ const AdminProducts: React.FC = () => {
       <div className={styles.topBar}>
         <button onClick={() => navigate("/admin/products/create")} className={styles.addProductBtn}>
           {t("admin.products.buttons.addNew", { defaultValue: "Add New Product" })}
+        </button>
+
+        <button onClick={handleImportByBarcode} className={`${styles.button} ${styles.syncBtn}`}>
+          {t("admin.products.buttons.importBarcode", { defaultValue: "Import by barcode" })}
+        </button>
+        <button onClick={handleImportByErplyId} className={`${styles.button} ${styles.syncBtn}`}>
+          {t("admin.products.buttons.importId", { defaultValue: "Import by Erply ID" })}
         </button>
       </div>
 
@@ -151,7 +208,8 @@ const AdminProducts: React.FC = () => {
             const hasImages = imagesArr.length > 0;
 
             const firstImgUrl = hasImages
-              ? (typeof imagesArr[0] === "string" ? imagesArr[0] : imagesArr[0]?.url) || "/images/no-image.png"
+              ? (typeof imagesArr[0] === "string" ? imagesArr[0] : imagesArr[0]?.url) ||
+                "/images/no-image.png"
               : "/images/no-image.png";
 
             const barcode =
@@ -164,9 +222,10 @@ const AdminProducts: React.FC = () => {
             const featured = product.isFeatured
               ? t("common.yes", { defaultValue: "Yes" })
               : t("common.no", { defaultValue: "No" });
-            const active = product.isActive !== false
-              ? t("common.yes", { defaultValue: "Yes" })
-              : t("common.no", { defaultValue: "No" });
+            const active =
+              product.isActive !== false
+                ? t("common.yes", { defaultValue: "Yes" })
+                : t("common.no", { defaultValue: "No" });
 
             return (
               <tr key={product._id}>
@@ -195,7 +254,9 @@ const AdminProducts: React.FC = () => {
                     <button
                       onClick={() => handleSync(product._id)}
                       className={`${styles.button} ${styles.syncBtn}`}
-                      title={t("admin.products.buttons.sync", { defaultValue: "Sync price & stock from ERP" })}
+                      title={t("admin.products.buttons.sync", {
+                        defaultValue: "Sync price & stock from ERP",
+                      })}
                     >
                       {t("admin.products.buttons.sync", { defaultValue: "Sync" })}
                     </button>

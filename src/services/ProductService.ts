@@ -1,4 +1,4 @@
-// src/api/products.ts
+// src/services/ProductService.ts
 import axios from "axios";
 import axiosInstance from "../utils/axios";
 import {
@@ -15,11 +15,8 @@ const appendLocalized = (
   value?: string | Record<string, unknown>
 ) => {
   if (value === undefined || value === null) return;
-  if (typeof value === "string") {
-    fd.append(key, value);
-  } else {
-    fd.append(key, JSON.stringify(value));
-  }
+  if (typeof value === "string") fd.append(key, value);
+  else fd.append(key, JSON.stringify(value));
 };
 
 const appendIfDefined = (fd: FormData, key: string, value: unknown) => {
@@ -57,7 +54,6 @@ export const getProducts = async (
       dedupe: false,
       requestKey: `products:${page}:${limit}:${searchTerm}:${categoryId}:${subcategoryId}`,
     });
-
     return response.data.data;
   } catch (error) {
     if (isCanceled(error)) {
@@ -107,13 +103,10 @@ export const createProduct = async (data: CreateProductPayload): Promise<Product
   formData.append("barcode", (data as any).barcode ?? "");
 
   (data.images || []).forEach((item) => {
-    if (item instanceof File) {
-      formData.append("images", item);
-    } else if (typeof item === "string") {
-      formData.append("images", item);
-    } else if (item && typeof item === "object" && "url" in item) {
+    if (item instanceof File) formData.append("images", item);
+    else if (typeof item === "string") formData.append("images", item);
+    else if (item && typeof item === "object" && "url" in item)
       formData.append("images", JSON.stringify(item));
-    }
   });
 
   const response = await axiosInstance.post("/products", formData);
@@ -155,13 +148,10 @@ export const updateProduct = async (
   }
 
   (data.images || []).forEach((item) => {
-    if (item instanceof File) {
-      formData.append("images", item);
-    } else if (typeof item === "string") {
-      formData.append("images", item);
-    } else if (item && typeof item === "object" && "url" in item) {
+    if (item instanceof File) formData.append("images", item);
+    else if (typeof item === "string") formData.append("images", item);
+    else if (item && typeof item === "object" && "url" in item)
       formData.append("images", JSON.stringify(item));
-    }
   });
 
   const response = await axiosInstance.put(`/products/${id}`, formData);
@@ -262,10 +252,10 @@ export const uploadImage = async (
   formData.append("file", file);
   formData.append("upload_preset", "baltic_uploads");
 
-  const response = await fetch(
-    "https://api.cloudinary.com/v1_1/diw6ugcy3/image/upload",
-    { method: "POST", body: formData }
-  );
+  const response = await fetch("https://api.cloudinary.com/v1_1/diw6ugcy3/image/upload", {
+    method: "POST",
+    body: formData,
+  });
 
   if (!response.ok) throw new Error("Image upload failed");
 
