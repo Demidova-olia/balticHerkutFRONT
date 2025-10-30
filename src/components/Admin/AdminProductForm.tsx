@@ -1,4 +1,3 @@
-// src/components/admin/AdminProductForm.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Product, Lang, asText } from "../../types/product";
 import { Category } from "../../types/category";
@@ -51,7 +50,10 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
   const [removeAllImages, setRemoveAllImages] = useState(false);
 
   const [formState, setFormState] = useState<FormState>({
-    name: typeof initialData.name === "string" ? initialData.name : asText(initialData.name || "", lang),
+    name:
+      typeof initialData.name === "string"
+        ? initialData.name
+        : asText(initialData.name || "", lang),
     description:
       typeof initialData.description === "string"
         ? initialData.description
@@ -79,8 +81,12 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
   });
 
   useEffect(() => {
-    getCategories().then(setCategories).catch((err) => console.error("getCategories error:", err));
-    getSubcategories().then(setAllSubcategories).catch((err) => console.error("getSubcategories error:", err));
+    getCategories()
+      .then(setCategories)
+      .catch((err) => console.error("getCategories error:", err));
+    getSubcategories()
+      .then(setAllSubcategories)
+      .catch((err) => console.error("getSubcategories error:", err));
   }, []);
 
   useEffect(() => {
@@ -90,9 +96,14 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
 
     if (!((!!nextId && nextId !== prevId) || prevLang !== lang)) return;
 
-    const nextName = typeof initialData.name === "string" ? initialData.name : asText(initialData.name || "", lang);
+    const nextName =
+      typeof initialData.name === "string"
+        ? initialData.name
+        : asText(initialData.name || "", lang);
     const nextDesc =
-      typeof initialData.description === "string" ? initialData.description : asText(initialData.description || "", lang);
+      typeof initialData.description === "string"
+        ? initialData.description
+        : asText(initialData.description || "", lang);
 
     setFormState((prev) => ({
       ...prev,
@@ -102,7 +113,10 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       stock: initialData.stock != null ? String(initialData.stock) : prev.stock,
       barcode: (initialData as any)?.barcode ?? prev.barcode ?? "",
       brand: initialData.brand ?? prev.brand ?? "",
-      discount: initialData.discount != null ? String(initialData.discount) : prev.discount,
+      discount:
+        initialData.discount != null
+          ? String(initialData.discount)
+          : prev.discount,
       isFeatured: initialData.isFeatured ?? prev.isFeatured,
       isActive: initialData.isActive === false ? false : true,
     }));
@@ -150,20 +164,29 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
   const filteredSubcategories = useMemo(() => {
     if (!selectedCategory) return [];
     return allSubcategories.filter((sub) =>
-      typeof sub.parent === "string" ? sub.parent === selectedCategory : sub.parent._id === selectedCategory
+      typeof sub.parent === "string"
+        ? sub.parent === selectedCategory
+        : sub.parent._id === selectedCategory
     );
   }, [selectedCategory, allSubcategories]);
 
   useEffect(() => {
     if (!selectedSubcategory) return;
-    const ok = filteredSubcategories.some((s) => s._id === selectedSubcategory);
+    const ok = filteredSubcategories.some(
+      (s) => s._id === selectedSubcategory
+    );
     if (!ok) setSelectedSubcategory("");
   }, [filteredSubcategories, selectedSubcategory]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value, type } = e.target as HTMLInputElement;
     if (type === "checkbox") {
-      setFormState((prev) => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
+      setFormState((prev) => ({
+        ...prev,
+        [name]: (e.target as HTMLInputElement).checked,
+      }));
       return;
     }
     setFormState((prev) => ({ ...prev, [name]: value }));
@@ -182,9 +205,15 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     if (!onImageDelete) return;
     try {
       await onImageDelete(publicId);
-      setExistingImages((prev) => prev.filter((img) => img.public_id !== publicId));
+      setExistingImages((prev) =>
+        prev.filter((img) => img.public_id !== publicId)
+      );
     } catch (err) {
-      alert(t("admin.productForm.alerts.deleteImageError", { defaultValue: "Error deleting image." }));
+      alert(
+        t("admin.productForm.alerts.deleteImageError", {
+          defaultValue: "Error deleting image.",
+        })
+      );
       console.error(err);
     }
   };
@@ -193,11 +222,19 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
     e.preventDefault();
 
     if (!selectedCategory) {
-      alert(t("admin.productForm.alerts.selectCategory", { defaultValue: "Please select a category." }));
+      alert(
+        t("admin.productForm.alerts.selectCategory", {
+          defaultValue: "Please select a category.",
+        })
+      );
       return;
     }
     if (Number(formState.price) < 0 || Number(formState.stock) < 0) {
-      alert(t("admin.productForm.alerts.nonNegative", { defaultValue: "Price and stock cannot be negative." }));
+      alert(
+        t("admin.productForm.alerts.nonNegative", {
+          defaultValue: "Price and stock cannot be negative.",
+        })
+      );
       return;
     }
 
@@ -256,29 +293,66 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className={styles.formContainer}>
       <div className={styles.formField}>
-        <label className={styles.label}>{t("admin.productForm.labels.name", { defaultValue: "Name" })}</label>
-        <input type="text" name="name" value={formState.name} onChange={handleChange} required className={styles.input} />
+        <label className={styles.label}>
+          {t("admin.productForm.labels.name", { defaultValue: "Name" })}
+        </label>
+        <input
+          type="text"
+          name="name"
+          value={formState.name}
+          onChange={handleChange}
+          required
+          className={styles.input}
+        />
       </div>
 
       <div className={styles.formField}>
         <label className={styles.label}>
           {t("admin.productForm.labels.description", { defaultValue: "Description" })}
         </label>
-        <textarea name="description" value={formState.description} onChange={handleChange} required className={styles.textarea} />
+        <textarea
+          name="description"
+          value={formState.description}
+          onChange={handleChange}
+          required
+          className={styles.textarea}
+        />
       </div>
 
       <div className={styles.formField}>
-        <label className={styles.label}>{t("admin.productForm.labels.price", { defaultValue: "Price" })}</label>
-        <input type="number" name="price" value={formState.price} onChange={handleChange} required className={styles.input} min={0} />
+        <label className={styles.label}>
+          {t("admin.productForm.labels.price", { defaultValue: "Price" })}
+        </label>
+        <input
+          type="number"
+          name="price"
+          value={formState.price}
+          onChange={handleChange}
+          required
+          className={styles.input}
+          min={0}
+        />
       </div>
 
       <div className={styles.formField}>
-        <label className={styles.label}>{t("admin.productForm.labels.stock", { defaultValue: "Stock" })}</label>
-        <input type="number" name="stock" value={formState.stock} onChange={handleChange} required className={styles.input} min={0} />
+        <label className={styles.label}>
+          {t("admin.productForm.labels.stock", { defaultValue: "Stock" })}
+        </label>
+        <input
+          type="number"
+          name="stock"
+          value={formState.stock}
+          onChange={handleChange}
+          required
+          className={styles.input}
+          min={0}
+        />
       </div>
 
       <div className={styles.formField}>
-        <label className={styles.label}>{t("admin.productForm.labels.barcode", { defaultValue: "Barcode" })}</label>
+        <label className={styles.label}>
+          {t("admin.productForm.labels.barcode", { defaultValue: "Barcode" })}
+        </label>
         <input
           type="text"
           name="barcode"
@@ -286,22 +360,44 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
           onChange={handleChange}
           className={styles.input}
           inputMode="numeric"
-          pattern="[0-9]{8,14}"
-          minLength={8}
+          pattern="[0-9]{4,14}"           
+          minLength={4}
           maxLength={14}
-          placeholder={t("admin.productForm.placeholders.barcode", { defaultValue: "e.g. 4601234567890" })}
-          title={t("admin.productForm.titles.barcode", { defaultValue: "Digits only, 8–14 length" })}
+          placeholder={t("admin.productForm.placeholders.barcode", {
+            defaultValue: "e.g. 104743 or 4840008018364",
+          })}
+          title={t("admin.productForm.titles.barcode", {
+            defaultValue: "Digits only, 4–14 length",
+          })}
         />
       </div>
 
       <div className={styles.formField}>
-        <label className={styles.label}>{t("admin.productForm.labels.brand", { defaultValue: "Brand" })}</label>
-        <input type="text" name="brand" value={formState.brand} onChange={handleChange} className={styles.input} />
+        <label className={styles.label}>
+          {t("admin.productForm.labels.brand", { defaultValue: "Brand" })}
+        </label>
+        <input
+          type="text"
+          name="brand"
+          value={formState.brand}
+          onChange={handleChange}
+          className={styles.input}
+        />
       </div>
 
       <div className={styles.formField}>
-        <label className={styles.label}>{t("admin.productForm.labels.discount", { defaultValue: "Discount, %" })}</label>
-        <input type="number" name="discount" value={formState.discount} onChange={handleChange} className={styles.input} min={0} max={100} />
+        <label className={styles.label}>
+          {t("admin.productForm.labels.discount", { defaultValue: "Discount, %" })}
+        </label>
+        <input
+          type="number"
+          name="discount"
+          value={formState.discount}
+          onChange={handleChange}
+          className={styles.input}
+          min={0}
+          max={100}
+        />
       </div>
 
       <div className={styles.formField}>
@@ -319,9 +415,18 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       </div>
 
       <div className={styles.formField}>
-        <label className={styles.label}>{t("admin.productForm.labels.category", { defaultValue: "Category" })}</label>
-        <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} required className={styles.select}>
-          <option value="">{t("admin.productForm.selectOption", { defaultValue: "Select" })}</option>
+        <label className={styles.label}>
+          {t("admin.productForm.labels.category", { defaultValue: "Category" })}
+        </label>
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          required
+          className={styles.select}
+        >
+          <option value="">
+            {t("admin.productForm.selectOption", { defaultValue: "Select" })}
+          </option>
           {categories.map((cat) => (
             <option key={cat._id} value={cat._id}>
               {asText(cat.name as any, lang) || "—"}
@@ -331,14 +436,18 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       </div>
 
       <div className={styles.formField}>
-        <label className={styles.label}>{t("admin.productForm.labels.subcategory", { defaultValue: "Subcategory" })}</label>
+        <label className={styles.label}>
+          {t("admin.productForm.labels.subcategory", { defaultValue: "Subcategory" })}
+        </label>
         <select
           value={selectedSubcategory}
           onChange={(e) => setSelectedSubcategory(e.target.value)}
           disabled={!filteredSubcategories.length}
           className={styles.select}
         >
-          <option value="">{t("admin.productForm.selectOption", { defaultValue: "Select" })}</option>
+          <option value="">
+            {t("admin.productForm.selectOption", { defaultValue: "Select" })}
+          </option>
           {filteredSubcategories.map((sub) => (
             <option key={sub._id} value={sub._id}>
               {asText(sub.name as any, lang) || "—"}
@@ -348,13 +457,23 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       </div>
 
       <div className={styles.formField}>
-        <label className={styles.label}>{t("admin.productForm.labels.upload", { defaultValue: "Upload New Images" })}</label>
-        <input type="file" multiple accept="image/*" onChange={handleImageChange} className={styles.fileInput} />
+        <label className={styles.label}>
+          {t("admin.productForm.labels.upload", { defaultValue: "Upload New Images" })}
+        </label>
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleImageChange}
+          className={styles.fileInput}
+        />
       </div>
 
       {images.length > 0 && (
         <div className={styles.imagePreview}>
-          <label className={styles.label}>{t("admin.productForm.labels.newPreview", { defaultValue: "New Images Preview:" })}</label>
+          <label className={styles.label}>
+            {t("admin.productForm.labels.newPreview", { defaultValue: "New Images Preview:" })}
+          </label>
           <div className={styles.imageGrid}>
             {images.map((img) => (
               <img key={`${img.name}-${img.lastModified}`} src={URL.createObjectURL(img)} alt="preview" />
@@ -365,12 +484,18 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
 
       {existingImages.length > 0 && (
         <div className={styles.imagePreview}>
-          <label className={styles.label}>{t("admin.productForm.labels.currentImages", { defaultValue: "Current Images:" })}</label>
+          <label className={styles.label}>
+            {t("admin.productForm.labels.currentImages", { defaultValue: "Current Images:" })}
+          </label>
           <div className={styles.imageGrid}>
             {existingImages.map((img) => (
               <div key={img.public_id} className={styles.imageItem}>
                 <img src={img.url} alt="Existing" />
-                <button type="button" onClick={() => handleImageDelete(img.public_id)} className={styles.button}>
+                <button
+                  type="button"
+                  onClick={() => handleImageDelete(img.public_id)}
+                  className={styles.button}
+                >
                   {t("admin.products.buttons.delete", { defaultValue: "Delete" })}
                 </button>
               </div>
@@ -382,7 +507,11 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       {existingImages.length > 0 && (
         <div className={styles.formField}>
           <label className={styles.label} style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-            <input type="checkbox" checked={removeAllImages} onChange={(e) => setRemoveAllImages(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={removeAllImages}
+              onChange={(e) => setRemoveAllImages(e.target.checked)}
+            />
             {t("admin.productForm.labels.removeAll", { defaultValue: "Remove all images" })}
           </label>
         </div>
