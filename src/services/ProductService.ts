@@ -1,6 +1,13 @@
 // src/services/ProductService.ts
 import axios from "axios";
 import axiosInstance from "../utils/axios";
+const withApiPrefix = (u: string) => {
+  const base = String(axiosInstance.defaults.baseURL || "");
+
+  if (/\/api\/?$/.test(base)) return u;
+
+  return `/api${u.startsWith("/") ? "" : "/"}${u.replace(/^\//, "")}`;
+};
 import {
   ProductsListResponse,
   Product,
@@ -227,15 +234,16 @@ export const ensureByBarcode = async (barcode: string): Promise<Product> => {
 };
 
 export const importFromErplyById = async (erplyId: string): Promise<Product> => {
-  const response = await axiosInstance.post(`/products/import/erply/${erplyId}`);
+  const url = withApiPrefix(`/products/import/erply/${erplyId}`);
+  const response = await axiosInstance.post(url);
   return response.data.data;
 };
 
 export const importFromErplyByBarcode = async (barcode: string): Promise<Product> => {
-  const response = await axiosInstance.post(`/products/import-by-barcode/${barcode}`);
+  const url = withApiPrefix(`/products/import-by-barcode/${barcode}`);
+  const response = await axiosInstance.post(url);
   return response.data.data;
 };
-
 export const syncPriceStock = async (
   productId: string
 ): Promise<{ message: string; data: unknown }> => {
