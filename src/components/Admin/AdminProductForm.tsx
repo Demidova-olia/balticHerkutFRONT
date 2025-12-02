@@ -331,6 +331,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
           required
           className={styles.input}
           min={0}
+          step="0.01"        
         />
       </div>
 
@@ -360,7 +361,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
           onChange={handleChange}
           className={styles.input}
           inputMode="numeric"
-          pattern="[0-9]{4,14}"           
+          pattern="[0-9]{4,14}"
           minLength={4}
           maxLength={14}
           placeholder={t("admin.productForm.placeholders.barcode", {
@@ -397,6 +398,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
           className={styles.input}
           min={0}
           max={100}
+          step="0.01"      
         />
       </div>
 

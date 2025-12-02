@@ -27,7 +27,8 @@ const AdminProducts: React.FC = () => {
       setError(null);
       const res = await ProductApi.getProducts("", "", "", 1, 100);
       setProducts(Array.isArray(res?.products) ? res.products : []);
-    } catch {
+    } catch (e) {
+      console.error("[fetchProducts] failed:", e);
       setError(
         t("admin.products.errors.fetch", { defaultValue: "Failed to load products." })
       );
@@ -54,7 +55,8 @@ const AdminProducts: React.FC = () => {
     try {
       await ProductApi.deleteProduct(id);
       setProducts((prev) => prev.filter((p) => p._id !== id));
-    } catch {
+    } catch (e) {
+      console.error("[deleteProduct] failed:", e);
       setError(
         t("admin.products.errors.delete", { defaultValue: "Failed to delete product." })
       );
@@ -68,12 +70,14 @@ const AdminProducts: React.FC = () => {
       await ProductApi.syncPriceStock(id);
       await fetchProducts();
       toast.success(t("admin.products.buttons.sync", { defaultValue: "Sync" }));
-    } catch {
+    } catch (e) {
+      console.error("[syncPriceStock] failed:", e);
       setError(t("admin.products.errors.sync", { defaultValue: "Sync failed." }));
     }
   };
 
   const handleImportByBarcode = async () => {
+    console.log("[UI] click: Import by barcode");
     const bc =
       (window.prompt(
         t("admin.products.prompt.barcode", {
@@ -81,8 +85,18 @@ const AdminProducts: React.FC = () => {
         })
       ) || "").trim();
 
-    if (!bc) return;
+    console.log("[UI] barcode input:", bc);
+    if (!bc) {
+      console.warn("[UI] empty barcode -> return");
+      toast.info(
+        t("admin.products.errors.barcodeEmpty", {
+          defaultValue: "Barcode is empty.",
+        })
+      );
+      return;
+    }
     if (!/^\d{4,14}$/.test(bc)) {
+      console.warn("[UI] barcode fails regex");
       toast.error(
         t("admin.products.errors.barcode", {
           defaultValue: "Invalid code: digits only, length 4–14.",
@@ -92,6 +106,7 @@ const AdminProducts: React.FC = () => {
     }
 
     try {
+      console.log("[UI] calling ensureByBarcode...");
       await ProductApi.ensureByBarcode(bc);
       await fetchProducts();
       toast.success(
@@ -100,7 +115,7 @@ const AdminProducts: React.FC = () => {
         })
       );
     } catch (e) {
-      console.error(e);
+      console.error("[ensureByBarcode] failed:", e);
       toast.error(
         t("admin.products.errors.import", { defaultValue: "Import from Erply failed." })
       );
@@ -108,14 +123,25 @@ const AdminProducts: React.FC = () => {
   };
 
   const handleImportByErplyId = async () => {
+    console.log("[UI] click: Import by Erply ID");
     const erplyId =
       (window.prompt(
         t("admin.products.prompt.erplyId", { defaultValue: "Enter Erply product ID:" })
       ) || "").trim();
 
-    if (!erplyId) return;
+    console.log("[UI] erplyId input:", erplyId);
+    if (!erplyId) {
+      console.warn("[UI] empty erplyId -> return");
+      toast.info(
+        t("admin.products.errors.erplyIdEmpty", {
+          defaultValue: "Erply ID is empty.",
+        })
+      );
+      return;
+    }
 
     try {
+      console.log("[UI] calling importFromErplyById...");
       await ProductApi.importFromErplyById(erplyId);
       await fetchProducts();
       toast.success(
@@ -124,7 +150,7 @@ const AdminProducts: React.FC = () => {
         })
       );
     } catch (e) {
-      console.error(e);
+      console.error("[importFromErplyById] failed:", e);
       toast.error(
         t("admin.products.errors.import", { defaultValue: "Import from Erply failed." })
       );
