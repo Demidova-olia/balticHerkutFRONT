@@ -2,17 +2,27 @@
 import { Category } from "./category";
 import { Subcategory } from "./subcategory";
 
+/* ============================================================================
+ * i18n
+ * ========================================================================== */
+
 export type Lang = "en" | "ru" | "fi";
 
 export interface LocalizedString {
   ru?: string;
   en?: string;
   fi?: string;
+  /** исходный язык, из которого делали переводы */
   _source?: Lang;
+  /** отметки, какие языки машинно переведены и т.п. */
   _mt?: Record<string, boolean>;
 }
 
 export type LocalizedField = string | LocalizedString;
+
+/* ============================================================================
+ * Images
+ * ========================================================================== */
 
 export interface ImageObject {
   url: string;
@@ -27,6 +37,10 @@ export interface ExistingImage {
   url: string;
   public_id: string;
 }
+
+/* ============================================================================
+ * Product
+ * ========================================================================== */
 
 export interface Product {
   _id: string;
@@ -67,6 +81,10 @@ export interface Product {
   erplyHash?: string;
 }
 
+/* ============================================================================
+ * Payloads
+ * ========================================================================== */
+
 export interface CreateProductPayload {
   name: string | Partial<LocalizedString>;
   description: string | Partial<LocalizedString>;
@@ -99,6 +117,10 @@ export interface UpdateProductPayload {
   barcode?: string;
 }
 
+/* ============================================================================
+ * API responses (raw)
+ * ========================================================================== */
+
 export interface ProductsListResponse {
   message: string;
   data: {
@@ -113,11 +135,11 @@ export interface ProductByIdResponse {
   data: Product;
 }
 
-export interface EnsureByBarcodeResponse {
-  message: "OK";
-  data: Product;
-}
-
+/**
+ * Импорт из Erply через отдельные эндпоинты:
+ *  - POST /products/import/erply/:erplyId
+ *  - POST /products/import-by-barcode/:barcode
+ */
 export interface ImportFromErplyResponse {
   message: "Imported from Erply" | "Product created from Erply";
   data: Product;
@@ -133,15 +155,53 @@ export interface DeleteProductResponse {
   data: { _id: string };
 }
 
+/* ============================================================================
+ * High-level frontend result для ensureByBarcode()
+ * ========================================================================== */
+
+/**
+ * Обёртка над бекенд-эндпоинтом GET /products/ensure-by-barcode/:barcode
+ * после обработки в ProductService.ensureByBarcode().
+ *
+ * ok:
+ *   true  -> был создан новый продукт на основе Erply (201)
+ *   false -> либо уже существует, либо не найден, либо ошибка Erply/сети
+ */
+export interface EnsureByBarcodeResult {
+  ok: boolean;
+  status: number;
+  message: string;
+  data?: Product;
+  /** 409 — товар с таким штрихкодом уже есть в локальной базе */
+  alreadyExists?: boolean;
+  /** 404 — в Erply не найден товар по этому штрихкоду */
+  notFound?: boolean;
+  /** 500/502/504/0 — проблемы на стороне Erply или сети */
+  erplyError?: boolean;
+}
+
+/* ============================================================================
+ * Helpers
+ * ========================================================================== */
+
 export const getCurrentLang = (): Lang => {
   try {
     if (typeof window !== "undefined") {
       const fromStorage = localStorage.getItem("i18nextLng");
-      if (fromStorage) return (fromStorage.slice(0, 2).toLowerCase() as Lang) || "en";
+      if (fromStorage) {
+        return (fromStorage.slice(0, 2).toLowerCase() as Lang) || "en";
+      }
+
       const htmlLang = document.documentElement.lang;
-      if (htmlLang) return (htmlLang.slice(0, 2).toLowerCase() as Lang) || "en";
-      const navLang = (navigator as any).language || ((navigator as any).languages || [])[0];
-      if (navLang) return (String(navLang).slice(0, 2).toLowerCase() as Lang) || "en";
+      if (htmlLang) {
+        return (htmlLang.slice(0, 2).toLowerCase() as Lang) || "en";
+      }
+
+      const navLang =
+        (navigator as any).language || ((navigator as any).languages || [])[0];
+      if (navLang) {
+        return (String(navLang).slice(0, 2).toLowerCase() as Lang) || "en";
+      }
     }
   } catch {
     /* no-op */
