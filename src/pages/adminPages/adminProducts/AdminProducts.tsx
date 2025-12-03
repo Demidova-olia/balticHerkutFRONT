@@ -25,7 +25,8 @@ const AdminProducts: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await ProductApi.getProducts("", "", "", 1, 100);
+      // ВАЖНО: последний аргумент = true => includeUncategorized=true в запросе
+      const res = await ProductApi.getProducts("", "", "", 1, 100, true);
       setProducts(Array.isArray(res?.products) ? res.products : []);
     } catch (e) {
       console.error("[fetchProducts] failed:", e);
@@ -114,11 +115,15 @@ const AdminProducts: React.FC = () => {
           defaultValue: "Imported from Erply (by barcode)!",
         })
       );
-    } catch (e) {
+    } catch (e: any) {
       console.error("[ensureByBarcode] failed:", e);
-      toast.error(
-        t("admin.products.errors.import", { defaultValue: "Import from Erply failed." })
-      );
+
+      // если бэк вернул локализованное сообщение, показываем его
+      const serverMsg =
+        e?.response?.data?.message ||
+        t("admin.products.errors.import", { defaultValue: "Import from Erply failed." });
+
+      toast.error(serverMsg);
     }
   };
 
@@ -149,11 +154,14 @@ const AdminProducts: React.FC = () => {
           defaultValue: "Imported from Erply (by ID)!",
         })
       );
-    } catch (e) {
+    } catch (e: any) {
       console.error("[importFromErplyById] failed:", e);
-      toast.error(
-        t("admin.products.errors.import", { defaultValue: "Import from Erply failed." })
-      );
+
+      const serverMsg =
+        e?.response?.data?.message ||
+        t("admin.products.errors.import", { defaultValue: "Import from Erply failed." });
+
+      toast.error(serverMsg);
     }
   };
 
@@ -221,7 +229,9 @@ const AdminProducts: React.FC = () => {
             <th>{t("admin.products.table.images", { defaultValue: "Images" })}</th>
             <th>{t("admin.products.table.name", { defaultValue: "Name" })}</th>
             <th>{t("admin.products.table.category", { defaultValue: "Category" })}</th>
-            <th>{t("admin.products.table.subcategory", { defaultValue: "Subcategory" })}</th>
+            <th>
+              {t("admin.products.table.subcategory", { defaultValue: "Subcategory" })}
+            </th>
             <th>{t("admin.products.table.brand", { defaultValue: "Brand" })}</th>
             <th>{t("admin.products.table.discount", { defaultValue: "Discount" })}</th>
             <th>{t("admin.products.table.barcode", { defaultValue: "Barcode" })}</th>
@@ -341,3 +351,4 @@ const AdminProducts: React.FC = () => {
 };
 
 export default AdminProducts;
+
