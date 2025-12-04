@@ -9,14 +9,17 @@ import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
 import styles from "./AdminProductCreateAndEdit.module.css";
 import { useTranslation } from "react-i18next";
 
+type LocationState = {
+  initialProduct?: Partial<Product>;
+} | null;
+
 const AdminProductCreate: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation("common");
 
-  // черновик, который мы пробросим со страницы списка / кнопки "add by barcode"
-  const initialDataFromState =
-    (location.state as any)?.initialProduct as Partial<Product> | undefined;
+  const state = location.state as LocationState;
+  const initialDataFromState = state?.initialProduct;
 
   const handleSubmit = async (formData: FormData) => {
     try {
@@ -98,4 +101,3 @@ const AdminProductCreate: React.FC = () => {
 };
 
 export default AdminProductCreate;
-

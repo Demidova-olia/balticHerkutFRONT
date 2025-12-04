@@ -1,3 +1,4 @@
+// src/pages/adminPages/adminProducts/AdminProducts.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as ProductApi from "../../../services/ProductService";
@@ -71,7 +72,7 @@ const AdminProducts: React.FC = () => {
       await fetchProducts();
       toast.success(
         t("admin.products.toast.syncSuccess", {
-          defaultValue: "Stock synced from Erply.",
+          defaultValue: "Stock & price synced from Erply.",
         })
       );
     } catch (e) {
@@ -80,7 +81,6 @@ const AdminProducts: React.FC = () => {
     }
   };
 
-  // ADD / CREATE by barcode
   const handleImportByBarcode = async () => {
     const bc =
       (window.prompt(
@@ -123,15 +123,20 @@ const AdminProducts: React.FC = () => {
         return;
       }
 
-      if (res.alreadyExists && res.data && (res.data as any)._id) {
-        const id = (res.data as any)._id as string;
-        toast.info(
-          t("admin.products.toast.alreadyExists", {
-            defaultValue: "Product with this barcode already exists. Opening editor.",
-          })
-        );
-        navigate(`/admin/products/edit/${id}`);
-        return;
+      if (res.alreadyExists && res.data) {
+        const id =
+          res.existingId ||
+          (res.data as any)._id;
+
+        if (id) {
+          toast.info(
+            t("admin.products.toast.alreadyExists", {
+              defaultValue: "Product with this barcode already exists. Opening editor.",
+            })
+          );
+          navigate(`/admin/products/edit/${id}`);
+          return;
+        }
       }
 
       if (res.notFound) {
@@ -161,7 +166,6 @@ const AdminProducts: React.FC = () => {
     }
   };
 
-  // IMPORT by Erply ID
   const handleImportByErplyId = async () => {
     const erplyId =
       (window.prompt(
@@ -268,7 +272,6 @@ const AdminProducts: React.FC = () => {
         </button>
       </div>
 
-      {/* ВАЖНО: .productTable — это ОБЁРТКА, а внутри обычный <table> */}
       <div className={styles.productTable}>
         <table>
           <thead>
@@ -483,3 +486,4 @@ const AdminProducts: React.FC = () => {
 };
 
 export default AdminProducts;
+

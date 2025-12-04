@@ -87,7 +87,6 @@ export const getProductById = async (id: string): Promise<Product | null> => {
 export const createProduct = async (data: CreateProductPayload): Promise<Product> => {
   const fd = new FormData();
 
-  // name / description — всегда строки на текущем языке UI
   appendIfDefined(fd, "name", data.name);
   appendIfDefined(fd, "description", data.description);
 
@@ -129,9 +128,7 @@ export const updateProduct = async (
   appendBoolean(fd, "isFeatured", data.isFeatured);
   appendBoolean(fd, "isActive", data.isActive);
 
-  // barcode: важно уметь и ставить, и очищать
   if ("barcode" in data) {
-    // даже пустую строку отправляем — бэк тогда очистит штрихкод
     fd.append("barcode", (data.barcode ?? "").trim());
   }
 
@@ -214,7 +211,7 @@ export const updateProductImage = async (
 };
 
 /* ============================================================================
- * ERPLY — ensureByBarcode ПРЕДЗАПОЛНЯЕТ форму
+ * ERPLY — ensureByBarcode
  * ========================================================================== */
 
 export const ensureByBarcode = async (
@@ -224,11 +221,11 @@ export const ensureByBarcode = async (
   status: number;
   message: string;
   data?: Partial<Product>;
-  // доп. флаги для удобства UI
   erplyDraft?: boolean;
   alreadyExists?: boolean;
   notFound?: boolean;
   erplyError?: boolean;
+  existingId?: string;
 }> => {
   try {
     const res = await axiosInstance.get(`/products/ensure-by-barcode/${barcode}`, {
@@ -239,27 +236,29 @@ export const ensureByBarcode = async (
     });
 
     const status = res.status;
-    const message = res.data?.message || "Unknown";
+    const body = res.data || {};
+    const message = body.message || "Unknown";
 
-    // 200 — черновик из Erply (НЕ создан в Mongo)
     if (status === 200) {
       return {
         ok: true,
         status,
         message,
-        data: res.data.data,
+        data: body.data,
         erplyDraft: true,
+        alreadyExists: body.alreadyExists ?? false,
       };
     }
 
-    // 409 — товар уже есть в Mongo, бэк тоже отдаёт data
     if (status === 409) {
+      const existing = body.existing;
       return {
         ok: false,
         status,
         message,
         alreadyExists: true,
-        data: res.data?.data, // здесь будет существующий продукт с _id
+        data: existing || body.data,
+        existingId: existing?._id,
       };
     }
 
@@ -286,7 +285,10 @@ export const ensureByBarcode = async (
   }
 };
 
-// Жёсткий импорт напрямую в базу (создаёт/обновляет продукт в Mongo)
+/* ============================================================================
+ * ERPLY — жёсткий импорт и синк
+ * ========================================================================== */
+
 export const importFromErplyById = async (erplyId: string): Promise<Product> => {
   const res = await axiosInstance.post(`/products/import/erply/${erplyId}`);
   return res.data.data;
@@ -323,4 +325,3 @@ export const uploadImage = async (
   const data = await res.json();
   return { url: data.secure_url, public_id: data.public_id };
 };
-
