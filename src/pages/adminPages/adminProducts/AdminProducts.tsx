@@ -25,7 +25,6 @@ const AdminProducts: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      // ВАЖНО: последний аргумент = true => includeUncategorized=true в запросе
       const res = await ProductApi.getProducts("", "", "", 1, 100, true);
       setProducts(Array.isArray(res?.products) ? res.products : []);
     } catch (e) {
@@ -70,25 +69,27 @@ const AdminProducts: React.FC = () => {
     try {
       await ProductApi.syncPriceStock(id);
       await fetchProducts();
-      toast.success(t("admin.products.buttons.sync", { defaultValue: "Sync" }));
+      toast.success(
+        t("admin.products.toast.syncSuccess", {
+          defaultValue: "Stock synced from Erply.",
+        })
+      );
     } catch (e) {
       console.error("[syncPriceStock] failed:", e);
       setError(t("admin.products.errors.sync", { defaultValue: "Sync failed." }));
     }
   };
 
+  // ADD / CREATE by barcode
   const handleImportByBarcode = async () => {
-    console.log("[UI] click: Import by barcode");
     const bc =
       (window.prompt(
         t("admin.products.prompt.barcode", {
-          defaultValue: "Enter code / barcode (4–14 digits):",
+          defaultValue: "Enter barcode (4–14 digits):",
         })
       ) || "").trim();
 
-    console.log("[UI] barcode input:", bc);
     if (!bc) {
-      console.warn("[UI] empty barcode -> return");
       toast.info(
         t("admin.products.errors.barcodeEmpty", {
           defaultValue: "Barcode is empty.",
@@ -96,8 +97,8 @@ const AdminProducts: React.FC = () => {
       );
       return;
     }
+
     if (!/^\d{4,14}$/.test(bc)) {
-      console.warn("[UI] barcode fails regex");
       toast.error(
         t("admin.products.errors.barcode", {
           defaultValue: "Invalid code: digits only, length 4–14.",
@@ -107,18 +108,51 @@ const AdminProducts: React.FC = () => {
     }
 
     try {
-      console.log("[UI] calling ensureByBarcode...");
-      await ProductApi.ensureByBarcode(bc);
-      await fetchProducts();
-      toast.success(
-        t("admin.products.toast.imported", {
-          defaultValue: "Imported from Erply (by barcode)!",
-        })
+      const res = await ProductApi.ensureByBarcode(bc);
+
+      if (res.ok && res.erplyDraft && res.data) {
+        toast.info(
+          t("admin.products.toast.draftFromErply", {
+            defaultValue: "Draft fetched from Erply. Fill category and save.",
+          })
+        );
+
+        navigate("/admin/products/create", {
+          state: { initialProduct: res.data },
+        });
+        return;
+      }
+
+      if (res.alreadyExists && res.data && (res.data as any)._id) {
+        const id = (res.data as any)._id as string;
+        toast.info(
+          t("admin.products.toast.alreadyExists", {
+            defaultValue: "Product with this barcode already exists. Opening editor.",
+          })
+        );
+        navigate(`/admin/products/edit/${id}`);
+        return;
+      }
+
+      if (res.notFound) {
+        toast.warn(
+          res.message ||
+            t("admin.products.errors.notFoundErply", {
+              defaultValue: "Product not found in Erply.",
+            })
+        );
+        return;
+      }
+
+      toast.error(
+        res.message ||
+          t("admin.products.errors.import", {
+            defaultValue: "Import from Erply failed.",
+          })
       );
     } catch (e: any) {
       console.error("[ensureByBarcode] failed:", e);
 
-      // если бэк вернул локализованное сообщение, показываем его
       const serverMsg =
         e?.response?.data?.message ||
         t("admin.products.errors.import", { defaultValue: "Import from Erply failed." });
@@ -127,16 +161,16 @@ const AdminProducts: React.FC = () => {
     }
   };
 
+  // IMPORT by Erply ID
   const handleImportByErplyId = async () => {
-    console.log("[UI] click: Import by Erply ID");
     const erplyId =
       (window.prompt(
-        t("admin.products.prompt.erplyId", { defaultValue: "Enter Erply product ID:" })
+        t("admin.products.prompt.erplyId", {
+          defaultValue: "Enter Erply product ID:",
+        })
       ) || "").trim();
 
-    console.log("[UI] erplyId input:", erplyId);
     if (!erplyId) {
-      console.warn("[UI] empty erplyId -> return");
       toast.info(
         t("admin.products.errors.erplyIdEmpty", {
           defaultValue: "Erply ID is empty.",
@@ -146,14 +180,19 @@ const AdminProducts: React.FC = () => {
     }
 
     try {
-      console.log("[UI] calling importFromErplyById...");
-      await ProductApi.importFromErplyById(erplyId);
-      await fetchProducts();
+      const product = await ProductApi.importFromErplyById(erplyId);
+
       toast.success(
         t("admin.products.toast.importedId", {
-          defaultValue: "Imported from Erply (by ID)!",
+          defaultValue: "Imported from Erply (by ID). You can edit it now.",
         })
       );
+
+      if (product && product._id) {
+        navigate(`/admin/products/edit/${product._id}`);
+      } else {
+        await fetchProducts();
+      }
     } catch (e: any) {
       console.error("[importFromErplyById] failed:", e);
 
@@ -190,6 +229,7 @@ const AdminProducts: React.FC = () => {
       <h2 className={styles.heading}>
         {t("admin.products.title", { defaultValue: "Manage Products" })}
       </h2>
+
       <AdminNavBar />
 
       {error && (
@@ -213,137 +253,229 @@ const AdminProducts: React.FC = () => {
           onClick={handleImportByBarcode}
           className={`${styles.button} ${styles.syncBtn}`}
         >
-          {t("admin.products.buttons.importBarcode", { defaultValue: "Import by barcode" })}
+          {t("admin.products.buttons.importBarcode", {
+            defaultValue: "Add product by barcode",
+          })}
         </button>
+
         <button
           onClick={handleImportByErplyId}
           className={`${styles.button} ${styles.syncBtn}`}
         >
-          {t("admin.products.buttons.importId", { defaultValue: "Import by Erply ID" })}
+          {t("admin.products.buttons.importId", {
+            defaultValue: "Import by Erply ID",
+          })}
         </button>
       </div>
 
-      <table className={styles.productTable}>
-        <thead>
-          <tr>
-            <th>{t("admin.products.table.images", { defaultValue: "Images" })}</th>
-            <th>{t("admin.products.table.name", { defaultValue: "Name" })}</th>
-            <th>{t("admin.products.table.category", { defaultValue: "Category" })}</th>
-            <th>
-              {t("admin.products.table.subcategory", { defaultValue: "Subcategory" })}
-            </th>
-            <th>{t("admin.products.table.brand", { defaultValue: "Brand" })}</th>
-            <th>{t("admin.products.table.discount", { defaultValue: "Discount" })}</th>
-            <th>{t("admin.products.table.barcode", { defaultValue: "Barcode" })}</th>
-            <th>{t("admin.products.table.price", { defaultValue: "Price" })}</th>
-            <th>{t("admin.products.table.stock", { defaultValue: "Stock" })}</th>
-            <th>{t("admin.products.table.featured", { defaultValue: "Featured" })}</th>
-            <th>{t("admin.products.table.active", { defaultValue: "Active" })}</th>
-            <th>{t("admin.products.table.actions", { defaultValue: "Actions" })}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map((product) => {
-            const nameText =
-              asText(product.name, lang) ||
-              t("product.noName", { defaultValue: "No Name" });
+      {/* ВАЖНО: .productTable — это ОБЁРТКА, а внутри обычный <table> */}
+      <div className={styles.productTable}>
+        <table>
+          <thead>
+            <tr>
+              <th>{t("admin.products.table.images", { defaultValue: "Images" })}</th>
+              <th>{t("admin.products.table.name", { defaultValue: "Name" })}</th>
+              <th>{t("admin.products.table.category", { defaultValue: "Category" })}</th>
+              <th>
+                {t("admin.products.table.subcategory", {
+                  defaultValue: "Subcategory",
+                })}
+              </th>
+              <th>{t("admin.products.table.brand", { defaultValue: "Brand" })}</th>
+              <th>{t("admin.products.table.discount", { defaultValue: "Discount" })}</th>
+              <th>{t("admin.products.table.barcode", { defaultValue: "Barcode" })}</th>
+              <th>{t("admin.products.table.price", { defaultValue: "Price" })}</th>
+              <th>{t("admin.products.table.stock", { defaultValue: "Stock" })}</th>
+              <th>{t("admin.products.table.featured", { defaultValue: "Featured" })}</th>
+              <th>{t("admin.products.table.active", { defaultValue: "Active" })}</th>
+              <th>{t("admin.products.table.actions", { defaultValue: "Actions" })}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((product) => {
+              const nameText =
+                asText(product.name, lang) ||
+                t("product.noName", { defaultValue: "No Name" });
 
-            const categoryName =
-              typeof product.category === "string"
-                ? product.category
-                : asText((product as any).category?.name, lang) || "—";
+              const categoryName =
+                typeof product.category === "string"
+                  ? product.category
+                  : asText((product as any).category?.name, lang) || "—";
 
-            const subcategoryName =
-              typeof product.subcategory === "string"
-                ? product.subcategory
-                : asText((product as any).subcategory?.name, lang) || "—";
+              const subcategoryName =
+                typeof product.subcategory === "string"
+                  ? product.subcategory
+                  : asText((product as any).subcategory?.name, lang) || "—";
 
-            const price =
-              typeof product.price === "number" && isFinite(product.price)
-                ? product.price.toFixed(2)
-                : "0.00";
+              const price =
+                typeof product.price === "number" && isFinite(product.price)
+                  ? product.price.toFixed(2)
+                  : "0.00";
 
-            const imagesArr = (Array.isArray(product.images)
-              ? product.images
-              : []) as any[];
-            const hasImages = imagesArr.length > 0;
+              const imagesArr = (Array.isArray(product.images)
+                ? product.images
+                : []) as any[];
+              const hasImages = imagesArr.length > 0;
 
-            const firstImgUrl = hasImages
-              ? (typeof imagesArr[0] === "string"
-                  ? imagesArr[0]
-                  : imagesArr[0]?.url) || "/images/no-image.png"
-              : "/images/no-image.png";
+              const firstImgUrl = hasImages
+                ? (typeof imagesArr[0] === "string"
+                    ? imagesArr[0]
+                    : imagesArr[0]?.url) || "/images/no-image.png"
+                : "/images/no-image.png";
 
-            const barcode =
-              typeof (product as any).barcode === "string" &&
-              (product as any).barcode.trim()
-                ? (product as any).barcode.trim()
-                : "—";
+              const barcode =
+                typeof (product as any).barcode === "string" &&
+                (product as any).barcode.trim()
+                  ? (product as any).barcode.trim()
+                  : "—";
 
-            const brand = product.brand || "—";
-            const discount =
-              product.discount != null ? `${product.discount}%` : "—";
-            const featured = product.isFeatured
-              ? t("common.yes", { defaultValue: "Yes" })
-              : t("common.no", { defaultValue: "No" });
-            const active =
-              product.isActive !== false
+              const brand = product.brand || "—";
+              const discount =
+                product.discount != null ? `${product.discount}%` : "—";
+              const featured = product.isFeatured
                 ? t("common.yes", { defaultValue: "Yes" })
                 : t("common.no", { defaultValue: "No" });
+              const active =
+                product.isActive !== false
+                  ? t("common.yes", { defaultValue: "Yes" })
+                  : t("common.no", { defaultValue: "No" });
 
-            return (
-              <tr key={product._id}>
-                <td>
-                  <img
-                    src={firstImgUrl}
-                    alt={nameText}
-                    className={styles.productImage}
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src =
-                        "/images/no-image.png";
-                    }}
-                  />
-                </td>
-                <td>{nameText}</td>
-                <td>{categoryName}</td>
-                <td>{subcategoryName}</td>
-                <td>{brand}</td>
-                <td>{discount}</td>
-                <td title={barcode}>{barcode}</td>
-                <td>€{price}</td>
-                <td>{product.stock ?? 0}</td>
-                <td>{featured}</td>
-                <td>{active}</td>
-                <td>
-                  {product.erplyId && (
+              return (
+                <tr key={product._id}>
+                  <td
+                    data-label={t("admin.products.table.images", {
+                      defaultValue: "Images",
+                    })}
+                  >
+                    <img
+                      src={firstImgUrl}
+                      alt={nameText}
+                      className={styles.productImage}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src =
+                          "/images/no-image.png";
+                      }}
+                    />
+                  </td>
+
+                  <td
+                    data-label={t("admin.products.table.name", {
+                      defaultValue: "Name",
+                    })}
+                  >
+                    {nameText}
+                  </td>
+
+                  <td
+                    data-label={t("admin.products.table.category", {
+                      defaultValue: "Category",
+                    })}
+                  >
+                    {categoryName}
+                  </td>
+
+                  <td
+                    data-label={t("admin.products.table.subcategory", {
+                      defaultValue: "Subcategory",
+                    })}
+                  >
+                    {subcategoryName}
+                  </td>
+
+                  <td
+                    data-label={t("admin.products.table.brand", {
+                      defaultValue: "Brand",
+                    })}
+                  >
+                    {brand}
+                  </td>
+
+                  <td
+                    data-label={t("admin.products.table.discount", {
+                      defaultValue: "Discount",
+                    })}
+                  >
+                    {discount}
+                  </td>
+
+                  <td
+                    data-label={t("admin.products.table.barcode", {
+                      defaultValue: "Barcode",
+                    })}
+                    title={barcode}
+                  >
+                    {barcode}
+                  </td>
+
+                  <td
+                    data-label={t("admin.products.table.price", {
+                      defaultValue: "Price",
+                    })}
+                  >
+                    €{price}
+                  </td>
+
+                  <td
+                    data-label={t("admin.products.table.stock", {
+                      defaultValue: "Stock",
+                    })}
+                  >
+                    {product.stock ?? 0}
+                  </td>
+
+                  <td
+                    data-label={t("admin.products.table.featured", {
+                      defaultValue: "Featured",
+                    })}
+                  >
+                    {featured}
+                  </td>
+
+                  <td
+                    data-label={t("admin.products.table.active", {
+                      defaultValue: "Active",
+                    })}
+                  >
+                    {active}
+                  </td>
+
+                  <td
+                    data-label={t("admin.products.table.actions", {
+                      defaultValue: "Actions",
+                    })}
+                  >
+                    {product.erplyId && (
+                      <button
+                        onClick={() => handleSync(product._id)}
+                        className={`${styles.button} ${styles.syncBtn}`}
+                        title={t("admin.products.buttons.sync", {
+                          defaultValue: "Sync price & stock from ERP",
+                        })}
+                      >
+                        {t("admin.products.buttons.sync", { defaultValue: "Sync" })}
+                      </button>
+                    )}
+
                     <button
-                      onClick={() => handleSync(product._id)}
-                      className={`${styles.button} ${styles.syncBtn}`}
-                      title={t("admin.products.buttons.sync", {
-                        defaultValue: "Sync price & stock from ERP",
-                      })}
+                      onClick={() => handleEdit(product._id)}
+                      className={`${styles.button} ${styles.editBtn}`}
                     >
-                      {t("admin.products.buttons.sync", { defaultValue: "Sync" })}
+                      {t("common.edit", { defaultValue: "Edit" })}
                     </button>
-                  )}
-                  <button
-                    onClick={() => handleEdit(product._id)}
-                    className={`${styles.button} ${styles.editBtn}`}
-                  >
-                    {t("common.edit", { defaultValue: "Edit" })}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(product._id)}
-                    className={`${styles.button} ${styles.deleteBtn}`}
-                  >
-                    {t("common.delete", { defaultValue: "Delete" })}
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+
+                    <button
+                      onClick={() => handleDelete(product._id)}
+                      className={`${styles.button} ${styles.deleteBtn}`}
+                    >
+                      {t("common.delete", { defaultValue: "Delete" })}
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       <BottomNav />
     </div>
@@ -351,4 +483,3 @@ const AdminProducts: React.FC = () => {
 };
 
 export default AdminProducts;
-

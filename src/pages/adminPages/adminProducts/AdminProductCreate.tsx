@@ -1,17 +1,22 @@
 // src/pages/adminPages/adminProducts/AdminProductCreate.tsx
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AdminProductForm from "../../../components/Admin/AdminProductForm";
 import { createProduct } from "../../../services/ProductService";
 import { toast } from "react-toastify";
-import { CreateProductPayload } from "../../../types/product";
+import { CreateProductPayload, Product } from "../../../types/product";
 import { AdminNavBar } from "../../../components/Admin/AdminNavBar";
 import styles from "./AdminProductCreateAndEdit.module.css";
 import { useTranslation } from "react-i18next";
 
 const AdminProductCreate: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation("common");
+
+  // черновик, который мы пробросим со страницы списка / кнопки "add by barcode"
+  const initialDataFromState =
+    (location.state as any)?.initialProduct as Partial<Product> | undefined;
 
   const handleSubmit = async (formData: FormData) => {
     try {
@@ -66,7 +71,9 @@ const AdminProductCreate: React.FC = () => {
     } catch (err) {
       console.error("Error creating product:", err);
       toast.error(
-        t("admin.products.create.toast.fail", { defaultValue: "Failed to create product." })
+        t("admin.products.create.toast.fail", {
+          defaultValue: "Failed to create product.",
+        })
       );
     }
   };
@@ -79,7 +86,10 @@ const AdminProductCreate: React.FC = () => {
           {t("admin.products.create.title", { defaultValue: "Create New Product" })}
         </h2>
         <AdminProductForm
-          submitText={t("admin.products.create.submit", { defaultValue: "Create Product" })}
+          initialData={initialDataFromState}
+          submitText={t("admin.products.create.submit", {
+            defaultValue: "Create Product",
+          })}
           onSubmit={handleSubmit}
         />
       </div>
@@ -88,3 +98,4 @@ const AdminProductCreate: React.FC = () => {
 };
 
 export default AdminProductCreate;
+
