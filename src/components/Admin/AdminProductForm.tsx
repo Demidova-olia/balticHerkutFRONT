@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Product, Lang, asText } from "../../types/product";
 import { Category } from "../../types/category";
 import { Subcategory } from "../../types/subcategory";
@@ -75,11 +75,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       : []
   );
 
-  const prevInitRef = useRef<{ id?: string; lang?: Lang }>({
-    id: (initialData as any)?._id,
-    lang,
-  });
-
+  // --- грузим категории / подкатегории один раз ---
   useEffect(() => {
     getCategories()
       .then(setCategories)
@@ -89,13 +85,8 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       .catch((err) => console.error("getSubcategories error:", err));
   }, []);
 
+  // --- КАЖДЫЙ РАЗ, когда меняется initialData или язык, перезаполняем форму ---
   useEffect(() => {
-    const nextId = (initialData as any)?._id as string | undefined;
-    const prevId = prevInitRef.current.id;
-    const prevLang = prevInitRef.current.lang;
-
-    if (!((!!nextId && nextId !== prevId) || prevLang !== lang)) return;
-
     const nextName =
       typeof initialData.name === "string"
         ? initialData.name
@@ -105,21 +96,17 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
         ? initialData.description
         : asText(initialData.description || "", lang);
 
-    setFormState((prev) => ({
-      ...prev,
+    setFormState({
       name: nextName,
       description: nextDesc,
-      price: initialData.price != null ? String(initialData.price) : prev.price,
-      stock: initialData.stock != null ? String(initialData.stock) : prev.stock,
-      barcode: (initialData as any)?.barcode ?? prev.barcode ?? "",
-      brand: initialData.brand ?? prev.brand ?? "",
-      discount:
-        initialData.discount != null
-          ? String(initialData.discount)
-          : prev.discount,
-      isFeatured: initialData.isFeatured ?? prev.isFeatured,
+      price: initialData.price != null ? String(initialData.price) : "",
+      stock: initialData.stock != null ? String(initialData.stock) : "",
+      barcode: (initialData as any)?.barcode ?? "",
+      brand: initialData.brand ?? "",
+      discount: initialData.discount != null ? String(initialData.discount) : "",
+      isFeatured: Boolean(initialData.isFeatured),
       isActive: initialData.isActive === false ? false : true,
-    }));
+    });
 
     const catId =
       typeof initialData.category === "string"
@@ -140,10 +127,11 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
         )
       : [];
     setExistingImages(ex);
-
-    prevInitRef.current = { id: nextId, lang };
+    setRemoveAllImages(false);
+    setImages([]);
   }, [initialData, lang]);
 
+  // --- когда категории/подкатегории догрузились, синхронизируем выбранные id ---
   useEffect(() => {
     const catId =
       typeof initialData.category === "string"
@@ -265,6 +253,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
 
       onSubmit(formData);
 
+      // Если это форма СОЗДАНИЯ (нет _id), после отправки очищаем
       if (!(initialData as any)?._id) {
         setFormState({
           name: "",
@@ -331,7 +320,7 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
           required
           className={styles.input}
           min={0}
-          step="0.01"        
+          step="0.01"
         />
       </div>
 
@@ -398,20 +387,36 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
           className={styles.input}
           min={0}
           max={100}
-          step="0.01"      
+          step="0.01"
         />
       </div>
 
       <div className={styles.formField}>
-        <label className={styles.label} style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-          <input type="checkbox" name="isFeatured" checked={formState.isFeatured} onChange={handleChange} />
+        <label
+          className={styles.label}
+          style={{ display: "inline-flex", gap: 8, alignItems: "center" }}
+        >
+          <input
+            type="checkbox"
+            name="isFeatured"
+            checked={formState.isFeatured}
+            onChange={handleChange}
+          />
           {t("admin.productForm.labels.isFeatured", { defaultValue: "Featured" })}
         </label>
       </div>
 
       <div className={styles.formField}>
-        <label className={styles.label} style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
-          <input type="checkbox" name="isActive" checked={formState.isActive} onChange={handleChange} />
+        <label
+          className={styles.label}
+          style={{ display: "inline-flex", gap: 8, alignItems: "center" }}
+        >
+          <input
+            type="checkbox"
+            name="isActive"
+            checked={formState.isActive}
+            onChange={handleChange}
+          />
           {t("admin.productForm.labels.isActive", { defaultValue: "Active" })}
         </label>
       </div>
@@ -460,7 +465,9 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
 
       <div className={styles.formField}>
         <label className={styles.label}>
-          {t("admin.productForm.labels.upload", { defaultValue: "Upload New Images" })}
+          {t("admin.productForm.labels.upload", {
+            defaultValue: "Upload New Images",
+          })}
         </label>
         <input
           type="file"
@@ -474,11 +481,17 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       {images.length > 0 && (
         <div className={styles.imagePreview}>
           <label className={styles.label}>
-            {t("admin.productForm.labels.newPreview", { defaultValue: "New Images Preview:" })}
+            {t("admin.productForm.labels.newPreview", {
+              defaultValue: "New Images Preview:",
+            })}
           </label>
           <div className={styles.imageGrid}>
             {images.map((img) => (
-              <img key={`${img.name}-${img.lastModified}`} src={URL.createObjectURL(img)} alt="preview" />
+              <img
+                key={`${img.name}-${img.lastModified}`}
+                src={URL.createObjectURL(img)}
+                alt="preview"
+              />
             ))}
           </div>
         </div>
@@ -487,7 +500,9 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
       {existingImages.length > 0 && (
         <div className={styles.imagePreview}>
           <label className={styles.label}>
-            {t("admin.productForm.labels.currentImages", { defaultValue: "Current Images:" })}
+            {t("admin.productForm.labels.currentImages", {
+              defaultValue: "Current Images:",
+            })}
           </label>
           <div className={styles.imageGrid}>
             {existingImages.map((img) => (
@@ -508,20 +523,31 @@ const AdminProductForm: React.FC<ProductFormProps> = ({
 
       {existingImages.length > 0 && (
         <div className={styles.formField}>
-          <label className={styles.label} style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+          <label
+            className={styles.label}
+            style={{ display: "inline-flex", gap: 8, alignItems: "center" }}
+          >
             <input
               type="checkbox"
               checked={removeAllImages}
               onChange={(e) => setRemoveAllImages(e.target.checked)}
             />
-            {t("admin.productForm.labels.removeAll", { defaultValue: "Remove all images" })}
+            {t("admin.productForm.labels.removeAll", {
+              defaultValue: "Remove all images",
+            })}
           </label>
         </div>
       )}
 
-      <button type="submit" disabled={isSubmitting} className={styles.submitButton}>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className={styles.submitButton}
+      >
         {isSubmitting
-          ? t("admin.productForm.buttons.submitting", { defaultValue: "Submitting..." })
+          ? t("admin.productForm.buttons.submitting", {
+              defaultValue: "Submitting...",
+            })
           : submitText}
       </button>
     </form>
