@@ -1,5 +1,4 @@
 // src/services/ProductService.ts
-import axios from "axios";
 import axiosInstance from "../utils/axios";
 import {
   ProductsListResponse,
@@ -12,21 +11,6 @@ import {
 /* ============================================================================
  * Helpers
  * ========================================================================== */
-
-const withApiPrefix = (u: string) => {
-  const base = String(axiosInstance.defaults.baseURL || "");
-  if (/\/api\/?$/.test(base)) return u; // baseURL already includes /api
-  return `/api${u.startsWith("/") ? "" : "/"}${u.replace(/^\//, "")}`;
-};
-
-const appendLocalized = (
-  fd: FormData,
-  key: string,
-  value?: string | Record<string, unknown>
-) => {
-  if (value == null) return;
-  fd.append(key, typeof value === "string" ? value : JSON.stringify(value));
-};
 
 const appendIfDefined = (fd: FormData, key: string, value: unknown) => {
   if (value == null || value === "") return;
@@ -103,8 +87,10 @@ export const getProductById = async (id: string): Promise<Product | null> => {
 export const createProduct = async (data: CreateProductPayload): Promise<Product> => {
   const fd = new FormData();
 
-  appendLocalized(fd, "name", data.name);
-  appendLocalized(fd, "description", data.description);
+  // name / description — всегда строки на текущем языке UI
+  appendIfDefined(fd, "name", data.name);
+  appendIfDefined(fd, "description", data.description);
+
   fd.append("price", String(data.price));
   fd.append("category", data.category);
   fd.append("stock", String(data.stock));
@@ -113,7 +99,7 @@ export const createProduct = async (data: CreateProductPayload): Promise<Product
   appendIfDefined(fd, "discount", data.discount);
   appendBoolean(fd, "isFeatured", data.isFeatured);
   appendBoolean(fd, "isActive", data.isActive);
-  fd.append("barcode", (data as any).barcode ?? "");
+  appendIfDefined(fd, "barcode", (data.barcode || "").trim());
 
   (data.images || []).forEach((item) => {
     if (item instanceof File) fd.append("images", item);
@@ -132,8 +118,8 @@ export const updateProduct = async (
 ): Promise<Product> => {
   const fd = new FormData();
 
-  appendLocalized(fd, "name", data.name);
-  appendLocalized(fd, "description", data.description);
+  appendIfDefined(fd, "name", data.name);
+  appendIfDefined(fd, "description", data.description);
   appendIfDefined(fd, "price", data.price);
   appendIfDefined(fd, "stock", data.stock);
   appendIfDefined(fd, "category", data.category);
@@ -143,7 +129,11 @@ export const updateProduct = async (
   appendBoolean(fd, "isFeatured", data.isFeatured);
   appendBoolean(fd, "isActive", data.isActive);
 
-  if ("barcode" in data) fd.append("barcode", (data as any).barcode ?? "");
+  // barcode: важно уметь и ставить, и очищать
+  if ("barcode" in data) {
+    // даже пустую строку отправляем — бэк тогда очистит штрихкод
+    fd.append("barcode", (data.barcode ?? "").trim());
+  }
 
   fd.append("removeAllImages", String(removeAllImages));
   if (existingImages.length) fd.append("existingImages", JSON.stringify(existingImages));
@@ -204,10 +194,7 @@ export const getProductsByCategoryAndSubcategory = async (
  * IMAGE OPERATIONS
  * ========================================================================== */
 
-export const deleteProductImage = async (
-  productId: string,
-  publicId: string
-) => {
+export const deleteProductImage = async (productId: string, publicId: string) => {
   const encoded = encodeURIComponent(publicId);
   const res = await axiosInstance.delete(`/products/${productId}/images/${encoded}`);
   return res.data;
@@ -227,59 +214,63 @@ export const updateProductImage = async (
 };
 
 /* ============================================================================
- * ERPLY
+ * ERPLY — ensureByBarcode ПРЕДЗАПОЛНЯЕТ форму
  * ========================================================================== */
 
-/**
- * SAFE ensureByBarcode()
- *
- * Никогда не бросает AxiosError.
- * Возвращает структурированный объект:
- *   ok: boolean
- *   status: number
- *   message: string
- *   data?: Product
- *   alreadyExists?: boolean
- *   notFound?: boolean
- *   erplyError?: boolean
- */
 export const ensureByBarcode = async (
   barcode: string
 ): Promise<{
   ok: boolean;
   status: number;
   message: string;
-  data?: Product;
+  data?: Partial<Product>;
+  // доп. флаги для удобства UI
+  erplyDraft?: boolean;
   alreadyExists?: boolean;
   notFound?: boolean;
   erplyError?: boolean;
 }> => {
   try {
-    const res = await axiosInstance.get(
-      withApiPrefix(`/products/ensure-by-barcode/${barcode}`),
-      {
-        validateStatus: () => true,
-        requestKey: `ensure:${barcode}`,
-        public: true,
-        skipAuthRedirect: true,
-      }
-    );
+    const res = await axiosInstance.get(`/products/ensure-by-barcode/${barcode}`, {
+      validateStatus: () => true,
+      requestKey: `ensure:${barcode}`,
+      public: true,
+      skipAuthRedirect: true,
+    });
 
     const status = res.status;
     const message = res.data?.message || "Unknown";
 
-    if (status === 201) {
-      return { ok: true, status, message, data: res.data.data };
+    // 200 — черновик из Erply (НЕ создан в Mongo)
+    if (status === 200) {
+      return {
+        ok: true,
+        status,
+        message,
+        data: res.data.data,
+        erplyDraft: true,
+      };
     }
+
+    // 409 — товар уже есть в Mongo, бэк тоже отдаёт data
     if (status === 409) {
-      return { ok: false, status, message, alreadyExists: true };
+      return {
+        ok: false,
+        status,
+        message,
+        alreadyExists: true,
+        data: res.data?.data, // здесь будет существующий продукт с _id
+      };
     }
+
     if (status === 404) {
       return { ok: false, status, message, notFound: true };
     }
+
     if (status === 400) {
       return { ok: false, status, message };
     }
+
     if ([500, 502, 504].includes(status)) {
       return { ok: false, status, message, erplyError: true };
     }
@@ -295,21 +286,20 @@ export const ensureByBarcode = async (
   }
 };
 
+// Жёсткий импорт напрямую в базу (создаёт/обновляет продукт в Mongo)
 export const importFromErplyById = async (erplyId: string): Promise<Product> => {
-  const url = withApiPrefix(`/products/import/erply/${erplyId}`);
-  const res = await axiosInstance.post(url);
+  const res = await axiosInstance.post(`/products/import/erply/${erplyId}`);
   return res.data.data;
 };
 
 export const importFromErplyByBarcode = async (barcode: string): Promise<Product> => {
-  const url = withApiPrefix(`/products/import-by-barcode/${barcode}`);
-  const res = await axiosInstance.post(url);
+  const res = await axiosInstance.post(`/products/import-by-barcode/${barcode}`);
   return res.data.data;
 };
 
 export const syncPriceStock = async (productId: string) => {
   const res = await axiosInstance.put(`/products/${productId}/sync-erply-light`);
-  return res.data;
+  return res.data.data;
 };
 
 /* ============================================================================
@@ -333,3 +323,4 @@ export const uploadImage = async (
   const data = await res.json();
   return { url: data.secure_url, public_id: data.public_id };
 };
+

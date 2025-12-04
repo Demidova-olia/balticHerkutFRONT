@@ -1,4 +1,3 @@
-// src/types/product.ts
 import { Category } from "./category";
 import { Subcategory } from "./subcategory";
 
@@ -45,6 +44,8 @@ export interface ExistingImage {
 export interface Product {
   _id: string;
 
+  // с бэка здесь обычно приходит уже строка (локализованный текст),
+  // а name_i18n содержит полный объект со всеми языками
   name: LocalizedField;
   name_i18n?: LocalizedString;
 
@@ -85,9 +86,11 @@ export interface Product {
  * Payloads
  * ========================================================================== */
 
+// Для create/update мы теперь всегда шлём простые строки на текущем языке UI.
+// Бэк сам определяет язык через x-client-lang и делает переводы.
 export interface CreateProductPayload {
-  name: string | Partial<LocalizedString>;
-  description: string | Partial<LocalizedString>;
+  name: string;
+  description: string;
   price: number;
   category: string;
   subcategory?: string;
@@ -101,8 +104,8 @@ export interface CreateProductPayload {
 }
 
 export interface UpdateProductPayload {
-  name?: string | Partial<LocalizedString>;
-  description?: string | Partial<LocalizedString>;
+  name?: string;
+  description?: string;
   price?: number;
   category?: string;
   subcategory?: string | null;
@@ -139,19 +142,21 @@ export interface ProductByIdResponse {
  * Импорт из Erply через отдельные эндпоинты:
  *  - POST /products/import/erply/:erplyId
  *  - POST /products/import-by-barcode/:barcode
+ *
+ * Сообщение теперь может быть локализованным, поэтому не фиксируем литералы.
  */
 export interface ImportFromErplyResponse {
-  message: "Imported from Erply" | "Product created from Erply";
+  message: string;
   data: Product;
 }
 
 export interface DeleteImageResponse {
-  message: "Image deleted";
+  message: "Image deleted" | string;
   data: { _id: string; public_id: string };
 }
 
 export interface DeleteProductResponse {
-  message: "Product deleted";
+  message: "Product deleted" | string;
   data: { _id: string };
 }
 
@@ -209,7 +214,13 @@ export const getCurrentLang = (): Lang => {
   return "en";
 };
 
+// Простой helper, чтобы дергать уже локализованный текст
 export const asText = (value: LocalizedField, lang: Lang = getCurrentLang()): string => {
   if (typeof value === "string") return value;
   return value?.[lang] || value?.en || value?.ru || value?.fi || "";
+};
+
+// Удобно использовать при запросах к API, чтобы бэк знал текущий язык
+export const getLangHeader = (): Record<string, string> => {
+  return { "x-client-lang": getCurrentLang() };
 };
