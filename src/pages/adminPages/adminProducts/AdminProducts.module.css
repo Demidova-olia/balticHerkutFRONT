@@ -13,6 +13,7 @@
   margin-bottom: 1.5rem;
   color: #1f2937;
 }
+
 .adminProducts {
   padding: 1rem;
   background-color: #f9fafb;
@@ -27,9 +28,17 @@ h2 {
   color: #111827;
 }
 
+/* ✅ верхняя панель с кнопками — в ряд и не обрезаются */
+.topBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+}
+
 .addProductBtn {
-  display: block;
-  margin: 0 auto 1.5rem;
   padding: 0.75rem 1.25rem;
   background-color: rgba(42, 199, 76, 0.212);
   color: #333;
@@ -50,7 +59,9 @@ h2 {
   background-color: white;
   border-radius: 0.5rem;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  /* ⛔ раньше было overflow: hidden; — из-за этого обрезались кнопки */
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .productTable table {
@@ -71,7 +82,6 @@ h2 {
   background-color: #f3f4f6;
   font-weight: 600;
 }
-
 
 .imageGallery {
   display: flex;
@@ -97,6 +107,11 @@ h2 {
   cursor: pointer;
   transition: background-color 0.2s ease;
   white-space: nowrap;
+}
+
+/* ячейка с действиями: разрешаем перенос строк внутри, чтобы всё влезало */
+.actionsCell {
+  white-space: normal;
 }
 
 .editBtn {
@@ -145,8 +160,14 @@ h2 {
   background-color: rgb(71, 116, 253);
   color: white;
 }
-.syncBtn { background-color: #10b981; }
-.syncBtn:hover { background-color: #059669; }
+
+.syncBtn {
+  background-color: #10b981;
+}
+
+.syncBtn:hover {
+  background-color: #059669;
+}
 
 @media (max-width: 768px) {
   .productTable thead {
@@ -199,4 +220,3 @@ h2 {
     content: none;
   }
 }
-
