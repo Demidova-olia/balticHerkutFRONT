@@ -124,9 +124,7 @@ const AdminProducts: React.FC = () => {
       }
 
       if (res.alreadyExists && res.data) {
-        const id =
-          res.existingId ||
-          (res.data as any)._id;
+        const id = res.existingId || (res.data as any)._id;
 
         if (id) {
           toast.info(
@@ -166,47 +164,7 @@ const AdminProducts: React.FC = () => {
     }
   };
 
-  const handleImportByErplyId = async () => {
-    const erplyId =
-      (window.prompt(
-        t("admin.products.prompt.erplyId", {
-          defaultValue: "Enter Erply product ID:",
-        })
-      ) || "").trim();
-
-    if (!erplyId) {
-      toast.info(
-        t("admin.products.errors.erplyIdEmpty", {
-          defaultValue: "Erply ID is empty.",
-        })
-      );
-      return;
-    }
-
-    try {
-      const product = await ProductApi.importFromErplyById(erplyId);
-
-      toast.success(
-        t("admin.products.toast.importedId", {
-          defaultValue: "Imported from Erply (by ID). You can edit it now.",
-        })
-      );
-
-      if (product && product._id) {
-        navigate(`/admin/products/edit/${product._id}`);
-      } else {
-        await fetchProducts();
-      }
-    } catch (e: any) {
-      console.error("[importFromErplyById] failed:", e);
-
-      const serverMsg =
-        e?.response?.data?.message ||
-        t("admin.products.errors.import", { defaultValue: "Import from Erply failed." });
-
-      toast.error(serverMsg);
-    }
-  };
+  // 👆 ФУНКЦИЮ handleImportByErplyId УДАЛИЛИ — больше нет prompt "Enter Erply product ID"
 
   const sorted = useMemo(
     () =>
@@ -262,14 +220,7 @@ const AdminProducts: React.FC = () => {
           })}
         </button>
 
-        <button
-          onClick={handleImportByErplyId}
-          className={`${styles.button} ${styles.syncBtn}`}
-        >
-          {t("admin.products.buttons.importId", {
-            defaultValue: "Import by Erply ID",
-          })}
-        </button>
+        {/* КНОПКА "Import by Erply ID" УДАЛЕНА */}
       </div>
 
       <div className={styles.productTable}>
@@ -342,6 +293,12 @@ const AdminProducts: React.FC = () => {
                 product.isActive !== false
                   ? t("common.yes", { defaultValue: "Yes" })
                   : t("common.no", { defaultValue: "No" });
+
+              // ✅ можно синхронизировать, если есть erplyId ИЛИ валидный штрихкод
+              const canSyncFromErply =
+                !!(product as any).erplyId ||
+                (typeof (product as any).barcode === "string" &&
+                  /^\d{4,14}$/.test((product as any).barcode.trim()));
 
               return (
                 <tr key={product._id}>
@@ -446,8 +403,9 @@ const AdminProducts: React.FC = () => {
                     data-label={t("admin.products.table.actions", {
                       defaultValue: "Actions",
                     })}
+                    className={styles.actionsCell}
                   >
-                    {product.erplyId && (
+                    {canSyncFromErply && (
                       <button
                         onClick={() => handleSync(product._id)}
                         className={`${styles.button} ${styles.syncBtn}`}
@@ -486,4 +444,5 @@ const AdminProducts: React.FC = () => {
 };
 
 export default AdminProducts;
+
 
