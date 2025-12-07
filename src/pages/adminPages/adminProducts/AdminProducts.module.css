@@ -59,14 +59,15 @@ h2 {
   background-color: white;
   border-radius: 0.5rem;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
-  /* ⛔ раньше было overflow: hidden; — из-за этого обрезались кнопки */
-  overflow-x: auto;
-  overflow-y: hidden;
+  /* убираем горизонтальный скролл — таблица должна влезать */
+  overflow: hidden;
 }
 
 .productTable table {
   width: 100%;
   border-collapse: collapse;
+  /* фиксированная раскладка — столбцы подстраиваются под ширину */
+  table-layout: fixed;
 }
 
 .productTable th,
@@ -76,6 +77,8 @@ h2 {
   font-size: 0.95rem;
   border-bottom: 1px solid #e5e7eb;
   vertical-align: top;
+  /* чтобы текст не растягивал таблицу по горизонтали */
+  word-break: break-word;
 }
 
 .productTable th {
@@ -98,20 +101,31 @@ h2 {
 }
 
 .button {
-  padding: 0.5rem 0.75rem;
-  margin: 0.2rem;
-  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+  margin: 0.15rem;
+  font-size: 0.8rem;
   font-weight: 500;
   border: none;
   border-radius: 0.375rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  white-space: nowrap;
+  white-space: nowrap; /* текст внутри кнопки без переноса */
 }
 
-/* ячейка с действиями: разрешаем перенос строк внутри, чтобы всё влезало */
+/* ячейка с действиями: flex и перенос кнопок на новую строку */
 .actionsCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  justify-content: flex-end;
+  align-items: center;
   white-space: normal;
+}
+
+/* немного ограничиваем ширину последней колонки */
+.productTable th:last-child,
+.productTable td.actionsCell {
+  width: 160px;
 }
 
 .editBtn {
